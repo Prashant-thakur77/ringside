@@ -1,6 +1,8 @@
 // Instruction builders for every Ringside instruction, with all accounts resolved explicitly.
-import anchorPkg from "@coral-xyz/anchor";
+import * as anchorNs from "@coral-xyz/anchor";
 import type { Program, Wallet } from "@coral-xyz/anchor";
+// Node ESM sees the CommonJS build as a default export; bundlers see named exports.
+const anchorPkg = ((anchorNs as unknown as { default?: typeof anchorNs }).default ?? anchorNs) as typeof anchorNs;
 const { AnchorProvider, BN } = anchorPkg;
 const ProgramCtor = anchorPkg.Program;
 import { getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } from "@solana/spl-token";

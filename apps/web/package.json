@@ -1,0 +1,45 @@
+{
+  "name": "@ringside/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "node scripts/copy-wasm.mjs",
+    "prebuild": "node scripts/copy-wasm.mjs",
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "0.32.1",
+    "@magicblock-labs/ephemeral-rollups-sdk": "0.18.0",
+    "@magicblock-labs/gum-react-sdk": "3.0.10",
+    "@ringside/client": "workspace:*",
+    "@solana/spl-token": "0.4.14",
+    "@solana/wallet-adapter-base": "^0.9.27",
+    "@solana/wallet-adapter-react": "^0.15.39",
+    "@solana/wallet-adapter-react-ui": "^0.9.39",
+    "@solana/wallet-adapter-wallets": "^0.19.37",
+    "@solana/web3.js": "1.98.4",
+    "@tanstack/react-query": "^5.80.0",
+    "buffer": "^6.0.3",
+    "motion": "^12.23.0",
+    "next": "15.5.6",
+    "pixi.js": "^8.13.0",
+    "qrcode.react": "^4.2.0",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "tweetnacl": "^1.0.3",
+    "uplot": "^1.6.32",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.13",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tailwindcss": "^4.1.13",
+    "typescript": "~5.8.3"
+  }
+}

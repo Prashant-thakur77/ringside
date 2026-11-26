@@ -301,7 +301,7 @@ async fn store_failed_trade(s: &S, sig: &str, logs: &[String]) -> Result<()> {
     sqlx::query("INSERT INTO rejections (signature,market,mode,trader,tick,seen_tick,reason,failed_tx,seen_ms) VALUES ($1,$2,$3,$4,0,$5,$6,TRUE,$7) ON CONFLICT DO NOTHING")
         .bind(sig).bind(&market).bind(mode.unwrap_or(0)).bind(key(1)).bind(seen_tick as i64).bind(code).bind(now_ms())
         .execute(&s.db).await?;
-    let _ = s.tx.send(json!({"type":"reject","market":market,"trader":key(1),"seen_tick":seen_tick,"reason":code,"failed_tx":true,"signature":sig}));
+    let _ = s.tx.send(json!({"type":"reject","market":market,"mode":mode.unwrap_or(0),"trader":key(1),"seen_tick":seen_tick,"reason":code,"failed_tx":true,"signature":sig}));
     Ok(())
 }
 
@@ -408,6 +408,7 @@ async fn poll_loop(s: S) {
                 }
                 if m.tick != mv.tick || m.status != mv.status {
                     let _ = upsert_match(&s, &key, &m).await;
+                    let _ = s.tx.send(json!({"type":"state","match_key":key,"match":m,"live":l,"delayed":d,"seen_ms":now_ms()}));
                 }
                 s.live.write().await.insert(key.clone(), (m, l, d));
             }
@@ -509,6 +510,17 @@ async fn replay(State(s): State<S>, Path(id): Path<String>) -> Json<Value> {
     }))
 }
 
+async fn state(State(s): State<S>, Path(id): Path<String>) -> Json<Value> {
+    let Some(key) = key_for(&s, &id).await else { return Json(json!({"error":"unknown match"})) };
+    if let Some((m, l, d)) = s.live.read().await.get(&key) {
+        return Json(json!({"match_key": key, "match": m, "live": l, "delayed": d}));
+    }
+    // Not cached (finished long ago): read it once.
+    let r = s.er("getMultipleAccounts", json!([[key], {"encoding":"base64"}])).await.ok();
+    let m = r.and_then(|r| r["value"][0].clone().as_object().map(|_| r["value"][0].clone())).and_then(|v| account_data(&v)).and_then(|d| decode_match(&d));
+    Json(json!({"match_key": key, "match": m, "live": null, "delayed": null}))
+}
+
 async fn judge(State(s): State<S>, Path(id): Path<String>) -> Json<Value> {
     let Some(key) = key_for(&s, &id).await else { return Json(json!({"error":"unknown match"})) };
     let courtsider = std::env::var("COURTSIDER").unwrap_or_default();
@@ -598,6 +610,7 @@ async fn main() -> Result<()> {
         .route("/matches", get(matches))
         .route("/matches/{id}/replay", get(replay))
         .route("/judge/{id}", get(judge))
+        .route("/matches/{id}/state", get(state))
         .route("/stats", get(stats))
         .route("/latency", post(post_latency))
         .route("/events", get(sse))

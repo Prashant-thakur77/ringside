@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel=stylesheet href=common.css><style>
+:root{--ground:#f1e9d6;--raised:#f8f2e3;--line:#cbbd9c;--ink:#22201a;--quiet:#5d5644;--red:#b8232f;--blue:#22479e}
+body{background:var(--ground);color:var(--ink)}
+.bar{display:flex;gap:18px;padding:12px 28px;border-bottom:3px double var(--ink);font:700 13px 'Space Mono'}
+.logo{font:900 24px 'Fraunces';margin-right:auto}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:28px;padding:36px 28px}
+h1{font:900 clamp(56px,7.5vw,120px)/.88 'Big Shoulders Display';text-transform:uppercase;letter-spacing:-.01em}
+.vs{display:flex;align-items:baseline;gap:14px}.vs b{font:900 64px 'Fraunces';color:var(--red)}.vs i{font:700 24px 'Fraunces'}.vs em{font:900 64px 'Fraunces';color:var(--blue);font-style:normal}
+.lead{color:var(--quiet);font-size:18px;max-width:46ch;margin-top:18px;line-height:1.55}
+.ticket{background:var(--raised);border:2px solid var(--ink);padding:18px;position:relative}
+.ticket:before{content:'';position:absolute;left:-2px;right:-2px;top:62%;border-top:2px dashed var(--ink)}
+.p{display:flex;justify-content:space-between;align-items:center;padding:10px 0}
+.price{font:700 52px 'Space Mono'}
+.stamp{position:absolute;right:16px;bottom:14px;transform:rotate(-8deg);border:3px solid var(--red);color:var(--red);font:700 16px 'Space Mono';padding:4px 10px}
+.btn{font:700 14px 'Space Mono';padding:12px 16px;background:var(--ink);color:var(--ground);border:0}
+</style></head><body>
+<div class=bar><span class=logo>Ringside</span><span>● LIVE R2 00:41</span><span>TICK 412</span></div>
+<div class=hero><div><div class=vs><b>RED</b><i>vs</i><em>BLUE</em></div><h1>In-play odds that can't be courtsided</h1><p class=lead>The fight and the order book live in the same rollup. Every fill is stamped with the tick it was priced on.</p></div>
+<div class=ticket><div class=p><span style="font:900 28px 'Big Shoulders Display';color:var(--red)">RED</span><span class=price>0.62</span><button class=btn>BUY</button></div><div class=p><span style="font:900 28px 'Big Shoulders Display';color:var(--blue)">BLUE</span><span class=price>0.39</span><button class=btn>BUY</button></div><div style="height:60px"></div><span class=stamp>FILLED · TICK 412</span></div></div>
+</body></html>
