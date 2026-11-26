@@ -6,7 +6,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 ## Phase 0 — Setup and capability spike (devnet-tee)
 
 - [x] P0.01 · Repo initialised, first commit is `.gitignore` only — `git show --stat HEAD~N` for the root commit lists only `.gitignore`
-- [x] P0.02 · Toolchain pinned: Solana CLI 3.1.9, Rust 1.89.0 (programs), Anchor 1.0.2, Node 24.10.0 — `solana --version`, `anchor --version`, `rustup run 1.89.0 rustc -V`, `node -v` print the pinned versions
+- [ ] P0.02 · Toolchain pinned: Solana CLI 3.1.9, Rust 1.89.0 (programs), Anchor 1.0.2, Node 24.10.0 — `solana --version`, `anchor --version`, `rustup run 1.89.0 rustc -V`, `node -v` print the pinned versions
 - [ ] P0.03 · `rust-toolchain.toml`, `.nvmrc`, `Anchor.toml` pin versions — files exist and `anchor build` uses them
 - [ ] P0.04 · Admin, relay, keeper and bot keypairs in `keys/` (gitignored) — `git check-ignore keys/admin.json` succeeds
 - [ ] P0.05 · Admin wallet funded with devnet SOL — `solana balance` ≥ 5 SOL on devnet
@@ -41,9 +41,9 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [x] P1.17 · `features(state) -> [i64;16]` (hp_diff, hp_sum, time_left, distance, facing adv, shield_ready a/b, cooldowns, overcharge/haste timers, medkit-distance diff, projectile threat, sudden-death flag) — test: 16 finite values, symmetric under A/B swap where expected
 - [x] P1.18 · `canonical_bytes(state)` + `hash_chain` (sha256(prev ‖ tick ‖ bytes)) — test: known-answer vector
 - [x] P1.19 · No floats, no HashMap, saturating arithmetic in sim — `grep -E "f32|f64|HashMap" crates/ringside-sim/src` → zero hits
-- [ ] P1.20 · `crates/ringside-wasm` with `step/replay/hash_chain` via wasm-bindgen — `wasm-pack build` succeeds
-- [ ] P1.21 · `crates/ringside-py` PyO3 module `ringside_sim.Env` (gymnasium-style reset/step) + fixed-point model eval — `maturin develop` and `python -c "import ringside_sim"`
-- [ ] P1.22 · Determinism test: 10,000 random-input episodes → identical hash chains native vs WASM (node) vs Python — test script prints 10000/10000 match
+- [x] P1.20 · `crates/ringside-wasm` with `step/replay/hash_chain` via wasm-bindgen — `wasm-pack build` succeeds
+- [x] P1.21 · `crates/ringside-py` PyO3 module `ringside_sim.Env` (gymnasium-style reset/step) + fixed-point model eval — `maturin develop` and `python -c "import ringside_sim"`
+- [x] P1.22 · Determinism test: 10,000 random-input episodes → identical hash chains native vs WASM (node) vs Python — test script prints 10000/10000 match
 - [x] P1.23 · Sim proptests (HP within [0,125], positions in arena, no panic) — `cargo test -p ringside-sim` green
 
 ## Phase 2 — Program accounts, delegation, match lifecycle

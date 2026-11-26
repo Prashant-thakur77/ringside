@@ -65,3 +65,17 @@
     test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
     test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
+
+## 2026-11-27 01:40 IST · Phase 1 complete: WASM + Python bindings, cross-target determinism
+- Combat tuning (plan-fixed values untouched: 100 HP, −12/hit, shield 1.5 s/6 s, power-ups): fire cd 700 ms, projectile 620 u/s, move 360 u/s, radius 28; bot aim noise and lead scale with skill. Bot-vs-bot matches now last 19–90 s with timeouts and sudden death; no policy dominates (aggressive beats kiting 92%, defensive beats aggressive 98%, kiting beats defensive 70%).
+- `scripts/build-wasm.sh`: wasm ok, 128K (wasm-bindgen 0.2.130, web + nodejs targets).
+- `maturin develop --release`: Installed ringside-sim-0.1.0 (VecEnv, generate_dataset, predict_int, params_to_bytes, replay, run_matches). Data gen speed: 2000 matches in 0.03 s.
+- Bug found and fixed: episode generator cast u64→usize before `%`, which truncates on wasm32 (4/10000 matched). Now modulo happens in u64.
+- `tests/determinism/run.sh` (10,000 episodes):
+```
+python vs native: 10000/10000 episodes identical
+python host episodes: 200 written
+wasm vs native: 10000/10000 episodes identical
+wasm vs python replay: 200/200 episodes, 124761 chain links compared
+determinism: native = python = wasm for 10000 episodes
+```

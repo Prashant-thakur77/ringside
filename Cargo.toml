@@ -3,6 +3,8 @@ resolver = "2"
 members = [
     "crates/ringside-fixed",
     "crates/ringside-sim",
+    "crates/ringside-wasm",
+    "crates/ringside-py",
 ]
 
 [workspace.package]

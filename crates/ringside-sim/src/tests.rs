@@ -64,7 +64,7 @@ fn dash_displacement_and_cooldown() {
     // dash is on cooldown: the third tick walks
     let ev = step(&mut s, [inp(3, false, true, false, 0), 0]);
     assert!(!ev.has(EV_DASH_A));
-    assert_eq!(units(s.fighters[0].y), 600 + 280 + 32);
+    assert_eq!(units(s.fighters[0].y), 600 + 280 + SPEED / 10);
     assert!(s.fighters[0].dash_cd > 0);
 }
 
@@ -89,14 +89,16 @@ fn hit_costs_12_hp() {
 
 #[test]
 fn shield_blocks_frontal_not_rear() {
-    // B faces A (aim 8 = west) with shield: blocked.
+    // B faces A (aim 8 = west) with shield: blocked. B stands close so the shot lands inside 1.5 s.
     let mut s = SimState::new(100, [0; 32]);
+    s.fighters[1].x = (800 * FP) as i32;
     let ev = run_until_hit(&mut s, inp(0, true, false, false, 0), inp(0, false, false, true, 8));
     assert!(ev.has(EV_BLOCK_B));
     assert_eq!(s.fighters[1].hp, MAX_HP);
     assert!(s.fighters[1].shield_cd > SHIELD_MS);
     // B faces away (aim 0 = east) with shield: hit lands in the back.
     let mut s = SimState::new(100, [0; 32]);
+    s.fighters[1].x = (800 * FP) as i32;
     let ev = run_until_hit(&mut s, inp(0, true, false, false, 0), inp(0, false, false, true, 0));
     assert!(ev.has(EV_HIT_B));
     assert_eq!(s.fighters[1].hp, MAX_HP - 12);

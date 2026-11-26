@@ -16,20 +16,20 @@ pub const FP: i64 = 1 << 16;
 
 pub const ARENA_W: i64 = 2000;
 pub const ARENA_H: i64 = 1200;
-pub const FIGHTER_R: i64 = 30;
+pub const FIGHTER_R: i64 = 28;
 pub const PROJ_R: i64 = 8;
 pub const POWERUP_R: i64 = 22;
 
 pub const MAX_HP: i16 = 100;
 pub const HIT_DMG: u8 = 12;
-pub const SPEED: i64 = 320;
+pub const SPEED: i64 = 360;
 pub const HASTE_PCT: i64 = 140;
 pub const DASH_SPEED: i64 = 1400;
 pub const DASH_MS: u16 = 200;
 pub const DASH_CD_MS: u16 = 2000;
-pub const FIRE_CD_MS: u16 = 450;
-pub const PROJ_SPEED: i64 = 900;
-pub const PROJ_TTL_MS: u16 = 1400;
+pub const FIRE_CD_MS: u16 = 700;
+pub const PROJ_SPEED: i64 = 620;
+pub const PROJ_TTL_MS: u16 = 2000;
 pub const SHIELD_MS: u16 = 1500;
 pub const SHIELD_CD_MS: u16 = 6000;
 pub const MEDKIT_HP: i16 = 25;
@@ -550,3 +550,71 @@ pub fn offline_wave_seed(match_seed: u64, w: u16) -> [u8; 32] {
 
 #[cfg(test)]
 mod tests;
+
+/// A VRF seed that became visible to the match just before tick `apply_at_tick` was stepped.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct SeedEvent {
+    pub apply_at_tick: u32,
+    pub seed: [u8; 32],
+}
+
+/// Replays a match from its initial state, inputs and VRF seed events, calling `on_link` with
+/// (tick, hash) after every step. Returns the final state and final hash.
+///
+/// This is the function the browser (WASM) and Python call to verify the onchain hash chain.
+#[cfg(feature = "hash")]
+pub fn replay<F: FnMut(u32, &[u8; 32])>(
+    initial: SimState,
+    inputs: &[[u16; 2]],
+    seeds: &[SeedEvent],
+    mut on_link: F,
+) -> (SimState, [u8; 32]) {
+    let mut s = initial;
+    let mut h = genesis_hash(&s);
+    let mut si = 0;
+    for inp in inputs {
+        if s.is_over() {
+            break;
+        }
+        let next = s.tick.wrapping_add(1);
+        while si < seeds.len() && seeds[si].apply_at_tick <= next {
+            s.vrf_seed = seeds[si].seed;
+            si += 1;
+        }
+        step(&mut s, *inp);
+        h = hash_link(&h, s.tick as u64, &encode(&s));
+        on_link(s.tick, &h);
+    }
+    (s, h)
+}
+
+/// Deterministic random episode used by the cross-target determinism test. Generates inputs and
+/// seed events from `episode` with SplitMix64 so every target can rebuild the same episode.
+pub fn determinism_episode(episode: u64, max_ticks: usize, inputs: &mut [[u16; 2]], seeds: &mut [SeedEvent]) -> (SimState, usize, usize) {
+    let mut r = episode.wrapping_mul(0x9E37_79B9_7F4A_7C15) ^ 0x5EED;
+    let mut seed0 = [0u8; 32];
+    for c in seed0.chunks_mut(8) {
+        c.copy_from_slice(&splitmix64(&mut r).to_le_bytes());
+    }
+    let n = (max_ticks / 2 + (splitmix64(&mut r) % (max_ticks as u64 / 2 + 1)) as usize).min(inputs.len());
+    let mut held = [0u16; 2];
+    for slot in inputs.iter_mut().take(n) {
+        for h in held.iter_mut() {
+            if splitmix64(&mut r) % 4 == 0 {
+                *h = splitmix64(&mut r) as u16 & 0x0f7f;
+            }
+        }
+        *slot = held;
+    }
+    let ns = (1 + (splitmix64(&mut r) % 6) as usize).min(seeds.len());
+    let mut t = 0u32;
+    for ev in seeds.iter_mut().take(ns) {
+        t += 1 + (splitmix64(&mut r) % 200) as u32;
+        let mut sd = [0u8; 32];
+        for c in sd.chunks_mut(8) {
+            c.copy_from_slice(&splitmix64(&mut r).to_le_bytes());
+        }
+        *ev = SeedEvent { apply_at_tick: t, seed: sd };
+    }
+    (SimState::new(DEFAULT_DT_MS, seed0), n, ns)
+}

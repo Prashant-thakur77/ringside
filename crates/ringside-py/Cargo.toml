@@ -1,0 +1,17 @@
+[package]
+name = "ringside-py"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Python bindings (PyO3) for the Ringside simulation, scripted bots and integer model"
+
+[lib]
+name = "ringside_sim"
+crate-type = ["cdylib"]
+
+[dependencies]
+rs_sim = { package = "ringside-sim", path = "../ringside-sim" }
+ringside-fixed = { path = "../ringside-fixed" }
+pyo3 = { version = "0.23", features = ["extension-module", "abi3-py312"] }
+numpy = "0.23"
+rayon = "1.10"

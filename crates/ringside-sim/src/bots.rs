@@ -71,8 +71,10 @@ impl Bot {
         let away = (toward + 8) & 15;
 
         // Aim: lead the target slightly by its velocity, plus noise that shrinks with skill.
-        let lead = aim_at(dx + (o.vx as i64 / FP) * 4, dy + (o.vy as i64 / FP) * 4);
-        let noise_pm = (1000 - self.skill as u64) / 3;
+        // Better bots lead more often and by more ticks; everyone has some aim noise.
+        let lead_ticks = if self.roll(self.skill as u64) { (self.skill / 200) as i64 } else { 0 };
+        let lead = aim_at(dx + (o.vx as i64 / FP) * lead_ticks, dy + (o.vy as i64 / FP) * lead_ticks);
+        let noise_pm = 150 + (1000 - self.skill as u64) / 2;
         let mut aim = lead;
         if self.roll(noise_pm) {
             aim = if self.roll(500) { (aim + 1) & 15 } else { (aim + 15) & 15 };
