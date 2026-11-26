@@ -6,7 +6,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 ## Phase 0 — Setup and capability spike (devnet-tee)
 
 - [x] P0.01 · Repo initialised, first commit is `.gitignore` only — `git show --stat HEAD~N` for the root commit lists only `.gitignore`
-- [ ] P0.02 · Toolchain pinned: Solana CLI 3.1.9, Rust 1.89.0 (programs), Anchor 1.0.2, Node 24.10.0 — `solana --version`, `anchor --version`, `rustup run 1.89.0 rustc -V`, `node -v` print the pinned versions
+- [x] P0.02 · Toolchain pinned: Solana CLI 3.1.9, Rust 1.89.0 (programs), Anchor 1.0.2, Node 24.10.0 — `solana --version`, `anchor --version`, `rustup run 1.89.0 rustc -V`, `node -v` print the pinned versions
 - [ ] P0.03 · `rust-toolchain.toml`, `.nvmrc`, `Anchor.toml` pin versions — files exist and `anchor build` uses them
 - [ ] P0.04 · Admin, relay, keeper and bot keypairs in `keys/` (gitignored) — `git check-ignore keys/admin.json` succeeds
 - [ ] P0.05 · Admin wallet funded with devnet SOL — `solana balance` ≥ 5 SOL on devnet
@@ -115,17 +115,17 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 ## Phase 6 — ML
 
 - [ ] P6.01 · Scripted bots aggressive / kiting / defensive / random in Rust sim policy + `bots/fighters/scripted.ts` — tests: each runs a full match
-- [ ] P6.02 · Data gen: ≥ 200,000 simulated matches, mixed pairings, random seeds, every 5th tick → (features, winner) — row counts printed
-- [ ] P6.03 · Split by match 70/15/15 — test asserts no match id in two splits
-- [ ] P6.04 · LightGBM teacher trained — val metrics printed
-- [ ] P6.05 · Logistic student on teacher soft labels + true labels — val metrics printed
-- [ ] P6.06 · Isotonic calibration on val → 64-knot table — table file written
-- [ ] P6.07 · Quantize to Q32.32 + run exact onchain integer implementation via PyO3 on held-out — integer predictions file
-- [ ] P6.08 · Metrics Brier / log-loss / ECE(10) for coin-flip, HP-ratio, LightGBM, logistic float, logistic integer — JSON written
-- [ ] P6.09 · Reliability diagram PNG — file exists
-- [ ] P6.10 · Model params blob + metrics hash — blob file + sha256
+- [x] P6.02 · Data gen: ≥ 200,000 simulated matches, mixed pairings, random seeds, every 5th tick → (features, winner) — row counts printed
+- [x] P6.03 · Split by match 70/15/15 — test asserts no match id in two splits
+- [x] P6.04 · LightGBM teacher trained — val metrics printed
+- [x] P6.05 · Logistic student on teacher soft labels + true labels — val metrics printed
+- [x] P6.06 · Isotonic calibration on val → 64-knot table — table file written
+- [x] P6.07 · Quantize to Q32.32 + run exact onchain integer implementation via PyO3 on held-out — integer predictions file
+- [x] P6.08 · Metrics Brier / log-loss / ECE(10) for coin-flip, HP-ratio, LightGBM, logistic float, logistic integer — JSON written
+- [x] P6.09 · Reliability diagram PNG — file exists
+- [x] P6.10 · Model params blob + metrics hash — blob file + sha256
 - [ ] P6.11 · `scripts/upload-model.ts` writes ModelParams on devnet — account readback matches blob
-- [ ] P6.12 · PyO3 gym env with 10 Hz decisions, obs = 16 features + relative positions, action = 9 moves × fire × dash × shield — env test
+- [x] P6.12 · PyO3 gym env with 10 Hz decisions, obs = 16 features + relative positions, action = 9 moves × fire × dash × shield — env test
 - [ ] P6.13 · PPO training (`ml/ppo/train.py`) self-play league + scripted opponents — training log + checkpoints
 - [ ] P6.14 · Export PPO to ONNX — `onnx.checker` passes; onnxruntime-node inference test
 - [ ] P6.15 · PPO win rate vs each scripted bot on held-out seeds — JSON

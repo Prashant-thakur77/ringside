@@ -79,3 +79,19 @@ wasm vs native: 10000/10000 episodes identical
 wasm vs python replay: 200/200 episodes, 124761 chain links compared
 determinism: native = python = wasm for 10000 episodes
 ```
+
+## 2026-11-27 02:45 IST · Phase 6 (part): win-probability model + PPO trainer
+- `ml/winprob/gen_data.py`: generated 200000 matches, 19218024 rows (every 5th tick) in 10.4 s.
+- Split by match id (`match_id % 20`): 70/15/15; `tests/python/test_ml.py` 5 passed (split disjoint by match, dataset shape, VecEnv contract, held-out seed parity, integer model).
+- `ml/winprob/train.py` (held-out = 30k unseen matches, 2,859,074 rows):
+```
+coin_flip                    brier 0.2500  logloss 0.6931  ece 0.0003
+hp_ratio                     brier 0.1925  logloss 0.5653  ece 0.1007
+lightgbm_float               brier 0.1639  logloss 0.4876  ece 0.0073
+logistic_float               brier 0.1735  logloss 0.5127  ece 0.0038
+logistic_onchain_integer     brier 0.1736  logloss 0.5127  ece 0.0034
+onchain-vs-float gap mean 0.0031, p99 0.0135, max 0.0183 (64-knot table vs float isotonic)
+metrics_hash 58114e353b24813fb6c3e928c10c8a818d24ae68e7e955e2e09bb0293c3461ad
+```
+- Program: added `predict_bytes` (reads the 4,744-byte blob in place; proptest proves it bit-identical to `ModelParams::predict`) because a decoded `ModelParams` would overflow the 4 KB BPF stack frame.
+- PPO: `ml/ppo/train.py` smoke run reached 27k env steps/s; a 60-minute league run is in progress.

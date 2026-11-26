@@ -8,7 +8,7 @@ pub mod bots;
 mod codec;
 mod features;
 
-pub use codec::{decode, encode, SIM_BYTES};
+pub use codec::{decode, encode, encode_into as encode_into_slice, SIM_BYTES};
 pub use features::{features, FEATURE_NAMES, N_FEATURES};
 
 /// Q16.16 scale.

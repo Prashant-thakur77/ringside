@@ -83,11 +83,14 @@ struct VecEnv {
     envs: Vec<OneEnv>,
     rng: u64,
     randomize_side: bool,
+    /// Held-out envs draw odd match seeds; training envs draw even ones, so evaluation matches
+    /// never appear in training.
+    heldout: bool,
 }
 
 impl VecEnv {
     fn fresh(&mut self, i: usize) {
-        let seed = sim::splitmix64(&mut self.rng);
+        let seed = (sim::splitmix64(&mut self.rng) & !1) | self.heldout as u64;
         let side = if self.randomize_side { (sim::splitmix64(&mut self.rng) & 1) as usize } else { 0 };
         let e = &mut self.envs[i];
         e.match_seed = seed;
@@ -100,8 +103,8 @@ impl VecEnv {
 #[pymethods]
 impl VecEnv {
     #[new]
-    #[pyo3(signature = (n, seed, randomize_side = true))]
-    fn new(n: usize, seed: u64, randomize_side: bool) -> Self {
+    #[pyo3(signature = (n, seed, randomize_side = true, heldout = false))]
+    fn new(n: usize, seed: u64, randomize_side: bool, heldout: bool) -> Self {
         let mut v = VecEnv {
             envs: (0..n)
                 .map(|_| OneEnv {
@@ -115,6 +118,7 @@ impl VecEnv {
                 .collect(),
             rng: seed,
             randomize_side,
+            heldout,
         };
         for i in 0..n {
             v.fresh(i);

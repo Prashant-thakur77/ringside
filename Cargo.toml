@@ -5,6 +5,7 @@ members = [
     "crates/ringside-sim",
     "crates/ringside-wasm",
     "crates/ringside-py",
+    "programs/ringside",
 ]
 
 [workspace.package]

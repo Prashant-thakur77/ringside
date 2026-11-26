@@ -137,6 +137,69 @@ impl ModelParams {
     }
 }
 
+/// Byte offsets inside the serialized blob.
+const OFF_MEAN: usize = 0;
+const OFF_INV: usize = N_FEATURES * 8;
+const OFF_W: usize = 2 * N_FEATURES * 8;
+const OFF_BIAS: usize = 3 * N_FEATURES * 8;
+const OFF_LUT: usize = OFF_BIAS + 8;
+const OFF_CALIB: usize = OFF_LUT + LUT_LEN * 4;
+
+#[inline]
+fn rd_i64(b: &[u8], o: usize) -> i64 {
+    let mut a = [0u8; 8];
+    a.copy_from_slice(&b[o..o + 8]);
+    i64::from_le_bytes(a)
+}
+#[inline]
+fn rd_u32(b: &[u8], o: usize) -> u32 {
+    let mut a = [0u8; 4];
+    a.copy_from_slice(&b[o..o + 4]);
+    u32::from_le_bytes(a)
+}
+
+/// Calibrated P(A wins) ×2^32 computed directly from the serialized blob, without building a
+/// `ModelParams` on the stack (the onchain path: BPF frames are limited to 4 KB).
+/// Bit-identical to [`ModelParams::predict`].
+pub fn predict_bytes(blob: &[u8], x: &[i64; N_FEATURES]) -> Result<u32, ModelError> {
+    if blob.len() < PARAMS_BYTES {
+        return Err(ModelError::BadLength);
+    }
+    let mut z: i128 = rd_i64(blob, OFF_BIAS) as i128;
+    for i in 0..N_FEATURES {
+        let centered = x[i].checked_sub(rd_i64(blob, OFF_MEAN + 8 * i)).ok_or(ModelError::Math)?;
+        let std = mul(centered, rd_i64(blob, OFF_INV + 8 * i)).ok_or(ModelError::Math)?;
+        z += (rd_i64(blob, OFF_W + 8 * i) as i128 * std as i128) >> 32;
+    }
+    let z = z.clamp(-(Z_LIMIT as i128), Z_LIMIT as i128) as i64;
+    // LUT interpolation (same arithmetic as `lut_sigmoid`).
+    let raw = if z <= crate::LUT_MIN {
+        rd_u32(blob, OFF_LUT)
+    } else {
+        let off = (z - crate::LUT_MIN) as u64;
+        let fb = 32 - crate::LUT_SHIFT;
+        let idx = (off >> fb) as usize;
+        if idx >= LUT_LEN - 1 {
+            rd_u32(blob, OFF_LUT + 4 * (LUT_LEN - 1))
+        } else {
+            let frac = (off & ((1u64 << fb) - 1)) as i64;
+            let a = rd_u32(blob, OFF_LUT + 4 * idx) as i64;
+            let b = rd_u32(blob, OFF_LUT + 4 * (idx + 1)) as i64;
+            (a + (((b - a) * frac) >> fb)).clamp(0, u32::MAX as i64) as u32
+        }
+    };
+    // Calibration interpolation (same arithmetic as `calibrate`).
+    let pos = raw as u64 * (CALIB_LEN as u64 - 1);
+    let j = (pos >> 32) as usize;
+    if j >= CALIB_LEN - 1 {
+        return Ok(rd_u32(blob, OFF_CALIB + 4 * (CALIB_LEN - 1)));
+    }
+    let frac = (pos & 0xffff_ffff) as i128;
+    let a = rd_u32(blob, OFF_CALIB + 4 * j) as i128;
+    let b = rd_u32(blob, OFF_CALIB + 4 * (j + 1)) as i128;
+    Ok((a + (((b - a) * frac) >> 32)).clamp(0, u32::MAX as i128) as u32)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -171,6 +234,21 @@ mod tests {
     }
 
     proptest! {
+        #[test]
+        fn predict_bytes_matches_struct(
+            w in proptest::array::uniform16(-3.0f64..3.0),
+            x in proptest::array::uniform16(-4.0f64..4.0),
+            b in -2.0f64..2.0,
+        ) {
+            let mut p = sample_params(&w, b);
+            for (j, v) in p.calib.iter_mut().enumerate() {
+                *v = ((j as u64 * j as u64 * u32::MAX as u64) / (63 * 63)) as u32;
+            }
+            let blob = p.to_bytes();
+            let xi: [i64; N_FEATURES] = core::array::from_fn(|i| q(x[i]));
+            prop_assert_eq!(predict_bytes(&blob, &xi).unwrap(), p.predict(&xi).unwrap());
+        }
+
         #[test]
         fn integer_model_matches_float(
             w in proptest::array::uniform16(-2.0f64..2.0),

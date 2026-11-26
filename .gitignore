@@ -15,3 +15,6 @@ __pycache__/
 test-ledger/
 .vercel/
 *.log
+target-*/
+ml/winprob/out/test_preds.npz
+ml/ppo/out/league/

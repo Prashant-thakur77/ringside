@@ -1,0 +1,30 @@
+[package]
+name = "ringside"
+version = "0.1.0"
+description = "Ringside: onchain duel + in-play win market on MagicBlock ephemeral rollups"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "ringside"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+custom-heap = []
+custom-panic = []
+anchor-debug = []
+
+[dependencies]
+anchor-lang = { version = "=1.0.2", features = ["init-if-needed"] }
+anchor-spl = { version = "=1.0.2" }
+ephemeral-rollups-sdk = { version = "=0.18.0", features = ["anchor", "access-control", "vrf", "crank"] }
+session-keys = { version = "=3.1.1", features = ["no-entrypoint"] }
+bytemuck = { version = "1", features = ["derive", "min_const_generics"] }
+ringside-fixed = { path = "../../crates/ringside-fixed", default-features = false }
+ringside-sim = { path = "../../crates/ringside-sim", default-features = false }
