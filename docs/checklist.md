@@ -138,7 +138,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [ ] P7.04 · Indexer axum REST (matches, match detail, replay inputs, stats) + SSE stream — curl returns JSON
 - [ ] P7.05 · Indexer verifies MatchRecord on L1 after finalize and retries — log shows check
 - [ ] P7.06 · OpenTelemetry spans in bots and indexer — spans exported
-- [ ] P7.07 · Shared TS client lib (PDAs, IDL, connections, TEE auth with token-only, auto-refresh) — unit test for token URL
+- [x] P7.07 · Shared TS client lib (PDAs, IDL, connections, TEE auth with token-only, auto-refresh) — unit test for token URL
 - [ ] P7.08 · `bots/fighters/ai.ts` ONNX fighter plays matches 24/7, labeled AI — devnet match played
 - [ ] P7.09 · `bots/spectators/*.ts` momentum, contrarian, noise, Kelly-sized — devnet trades
 - [ ] P7.10 · `bots/courtsider.ts` trades both books on lag > spread — devnet fills and rejects

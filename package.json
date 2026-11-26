@@ -1,0 +1,21 @@
+{
+  "name": "ringside",
+  "private": true,
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=24.10.0"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "build:wasm": "./scripts/build-wasm.sh",
+    "test:determinism": "./tests/determinism/run.sh"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "onnxruntime-node",
+      "bufferutil",
+      "utf-8-validate",
+      "esbuild"
+    ]
+  }
+}
