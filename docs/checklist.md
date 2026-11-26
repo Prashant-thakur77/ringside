@@ -7,10 +7,10 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 
 - [x] P0.01 · Repo initialised, first commit is `.gitignore` only — `git show --stat HEAD~N` for the root commit lists only `.gitignore`
 - [x] P0.02 · Toolchain pinned: Solana CLI 3.1.9, Rust 1.89.0 (programs), Anchor 1.0.2, Node 24.10.0 — `solana --version`, `anchor --version`, `rustup run 1.89.0 rustc -V`, `node -v` print the pinned versions
-- [ ] P0.03 · `rust-toolchain.toml`, `.nvmrc`, `Anchor.toml` pin versions — files exist and `anchor build` uses them
-- [ ] P0.04 · Admin, relay, keeper and bot keypairs in `keys/` (gitignored) — `git check-ignore keys/admin.json` succeeds
+- [x] P0.03 · `rust-toolchain.toml`, `.nvmrc`, `Anchor.toml` pin versions — files exist and `anchor build` uses them
+- [x] P0.04 · Admin, relay, keeper and bot keypairs in `keys/` (gitignored) — `git check-ignore keys/admin.json` succeeds
 - [ ] P0.05 · Admin wallet funded with devnet SOL — `solana balance` ≥ 5 SOL on devnet
-- [ ] P0.06 · `.env.example` with every variable from plan §13 — file lists all 16 variables
+- [x] P0.06 · `.env.example` with every variable from plan §13 — file lists all 16 variables
 - [ ] P0.07 · Spike program `spike` builds with ephemeral-rollups-sdk 0.18 (anchor + access-control + vrf) — `anchor build -p spike` exit 0
 - [ ] P0.08 · Spike 1: delegate PDA to TEE validator, create permission + set private — devnet tx signatures recorded in docs/spike.md
 - [ ] P0.09 · Spike 1: member read with token succeeds; non-member read fails; after flip to public the read succeeds — script output in docs/spike.md
