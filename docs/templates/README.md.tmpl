@@ -78,8 +78,10 @@ All numbers below come from `eval/results/results.json`, written by `eval/make_r
 | Book | Matches | Courtsider PnL / match | 95% CI | Stale fills accepted | House PnL / match |
 |---|---|---|---|---|---|
 | TV delay 0.5 s | {{delay.500.n_matches}} | {{delay.500.pnl_mean:+.2f}} | {{delay.500.pnl_ci95.0:+.2f}} to {{delay.500.pnl_ci95.1:+.2f}} | {{delay.500.stale_fills_accepted}} | {{delay.500.house_pnl_mean:+.2f}} |
+| TV delay 1 s | {{delay.1000.n_matches}} | {{delay.1000.pnl_mean:+.2f}} | {{delay.1000.pnl_ci95.0:+.2f}} to {{delay.1000.pnl_ci95.1:+.2f}} | {{delay.1000.stale_fills_accepted}} | {{delay.1000.house_pnl_mean:+.2f}} |
 | TV delay 2 s | {{delay.2000.n_matches}} | {{delay.2000.pnl_mean:+.2f}} | {{delay.2000.pnl_ci95.0:+.2f}} to {{delay.2000.pnl_ci95.1:+.2f}} | {{delay.2000.stale_fills_accepted}} | {{delay.2000.house_pnl_mean:+.2f}} |
 | TV delay 5 s | {{delay.5000.n_matches}} | {{delay.5000.pnl_mean:+.2f}} | {{delay.5000.pnl_ci95.0:+.2f}} to {{delay.5000.pnl_ci95.1:+.2f}} | {{delay.5000.stale_fills_accepted}} | {{delay.5000.house_pnl_mean:+.2f}} |
+| TV delay 8 s | {{delay.8000.n_matches}} | {{delay.8000.pnl_mean:+.2f}} | {{delay.8000.pnl_ci95.0:+.2f}} to {{delay.8000.pnl_ci95.1:+.2f}} | {{delay.8000.stale_fills_accepted}} | {{delay.8000.house_pnl_mean:+.2f}} |
 | Ringside | {{e1.ringside.n_matches}} | {{e1.ringside.pnl_mean:+.2f}} | {{e1.ringside.pnl_ci95.0:+.2f}} to {{e1.ringside.pnl_ci95.1:+.2f}} | {{e1.ringside.stale_fills_accepted}} | {{e1.ringside.house_pnl_mean:+.2f}} |
 
 On Ringside the courtsider sent {{e1.ringside.stale_attempts}} orders stamped with the tick it saw on the delayed feed; {{e1.ringside.stale_rejections}} were rejected with `ErrStaleTick`. It also traded at the live tick {{e1.ringside.fresh_fills}} times, where it pays the spread like everyone else.
@@ -135,7 +137,7 @@ python ml/ppo/train.py --minutes 60                  # E7
 cd bots && npx tsx lobby.ts --matches 50 --delays 500,2000,5000   # E1 (courtsider runs alongside)
 python eval/e3_latency.py                            # E3 (indexer stats)
 cd bots && npx tsx soak/setup.ts <match> 16 && ./soak/target/release/ringside-soak <match> 16 40   # E4
-npx tsx eval/e5_privacy.ts <match> live && npx tsx eval/e5_privacy.ts <match> revealed           # E5
+npx tsx scripts/e5-privacy.ts <match> live && npx tsx scripts/e5-privacy.ts <match> revealed           # E5
 python eval/e6_replay.py 20                          # E6
 python eval/make_report.py && python scripts/render_docs.py && python scripts/check_consistency.py
 ```

@@ -158,6 +158,12 @@ export class MatchRunner {
           this.opts.onTick?.(g);
           const wave = g.sim.readUInt16LE(SIM_WAVE);
           if (g.vrfRequestedWave !== wave && wave < 7) void this.requestWave(id, wave);
+          // Decide every INPUT_EVERY ticks (inputs persist between ticks onchain).
+          if (g.tick % Number(process.env.INPUT_EVERY ?? 1) !== 0) {
+            await sleep(Math.max(20, this.opts.tickMs / 3));
+            g = await this.game(id);
+            continue;
+          }
           const [ia, ib] = await Promise.all([this.brains[0].act(g.sim, 0), this.brains[1]?.act(g.sim, 1) ?? Promise.resolve(-1)]);
           void this.sendInput(id, 0, ia);
           if (ib >= 0) void this.sendInput(id, 1, ib);

@@ -13,23 +13,34 @@ const arg = (k: string, d: string) => {
   const i = process.argv.indexOf(`--${k}`);
   return i > 0 ? process.argv[i + 1] : d;
 };
+// --runner <k>: only run matches (fighters fighter-a-k / fighter-b-k), no bots; several runners can
+//   play matches in parallel. --arena: only the bots (relay, spectators, courtsider) for every match.
 const env = new Env(profile());
 const admin = loadKeypair("admin");
-const feed = new Feed(() => env.er(admin));
-startRelay(env, feed);
-startSpectators(env, feed);
-if (!process.argv.includes("--no-courtsider")) startCourtsider(env, feed);
-await feed.start();
+const runnerIdx = arg("runner", "");
+const arenaOnly = process.argv.includes("--arena");
+if (!runnerIdx) {
+  const feed = new Feed(() => env.er(admin));
+  startRelay(env, feed);
+  startSpectators(env, feed);
+  if (!process.argv.includes("--no-courtsider")) startCourtsider(env, feed);
+  await feed.start();
+}
+if (arenaOnly) {
+  console.log("[arena] bots running for every match");
+  await new Promise(() => {});
+}
+const fighterKeys = runnerIdx ? [`fighter-a-${runnerIdx}`, `fighter-b-${runnerIdx}`] : ["fighter-a", "fighter-b"];
 
 const total = Number(arg("matches", "0")); // 0 = forever
 const delays = arg("delays", "5000").split(",").map(Number);
 const ai = await brainFor("ai");
-const botWallets = ["spec-1", "spec-2", "spec-3", "spec-4", "courtsider", "fighter-a", "fighter-b"].map(ensureKeypair);
+const botWallets = (runnerIdx ? fighterKeys : ["spec-1", "spec-2", "spec-3", "spec-4", "courtsider", ...fighterKeys]).map(ensureKeypair);
 for (let n = 0; total === 0 || n < total; n++) {
   if (n % 5 === 0) await refill(env, admin, botWallets);
   const opp = n % 3 === 0 ? ai : await brainFor(POLICIES[n % POLICIES.length]);
-  const delay = delays[n % delays.length];
-  const runner = new MatchRunner(env, admin, ensureKeypair("keeper"), [ensureKeypair("fighter-a"), ensureKeypair("fighter-b")], [ai, opp], {
+  const delay = delays[(n + Number(runnerIdx || 0)) % delays.length];
+  const runner = new MatchRunner(env, admin, ensureKeypair(runnerIdx ? `keeper-${runnerIdx}` : "keeper"), [ensureKeypair(fighterKeys[0]), ensureKeypair(fighterKeys[1])], [ai, opp], {
     stake: 1_000_000n,
     delayMs: delay,
     crank: process.env.KEEPER_ONLY !== "1",

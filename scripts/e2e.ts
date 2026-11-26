@@ -16,6 +16,7 @@ import { brainFor } from "../bots/lib/brains.ts";
 import { MatchRunner } from "../bots/lib/runner.ts";
 import { joinPositions } from "../bots/lib/positions.ts";
 import { refill } from "../bots/lib/refill.ts";
+import { execFileSync } from "node:child_process";
 
 const env = new Env(profile());
 const admin = loadKeypair("admin");
@@ -105,6 +106,12 @@ const proofs = async () => {
     spike.push(`5. Session-key trade failed: ${String((e as Error).message).split("\n")[0]}`);
     log(`session-key trade failed: ${String((e as Error).message).slice(0, 400)}`);
   }
+  // E5: privacy reads against the courtsider's private Position while the match is live.
+  try {
+    console.log(execFileSync("npx", ["tsx", path.join(ROOT, "scripts/e5-privacy.ts"), id.toString(), "live", process.env.E5_N ?? "20"], { cwd: path.join(ROOT, "scripts"), encoding: "utf8" }));
+  } catch (e) {
+    log(`E5 live phase failed: ${String((e as Error).message).split("\n")[0]}`);
+  }
   proofsDone = true;
 };
 runner.opts.onTick = (g) => {
@@ -117,6 +124,13 @@ runner.opts.onTick = (g) => {
 const t0 = Date.now();
 const r = await runner.run(id);
 log(`match ${id}: winner ${r.winner} at tick ${r.ticks} via ${r.crank} (${(Date.now() - t0) / 1000}s)`);
+
+// E5 after the reveal.
+try {
+  console.log(execFileSync("npx", ["tsx", path.join(ROOT, "scripts/e5-privacy.ts"), id.toString(), "revealed", process.env.E5_N ?? "20"], { cwd: path.join(ROOT, "scripts"), encoding: "utf8" }));
+} catch (e) {
+  log(`E5 revealed phase failed: ${String((e as Error).message).split("\n")[0]}`);
+}
 
 // Find the VRF callback and settle transactions in the match's ER history.
 const er = await env.er(admin);

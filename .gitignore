@@ -19,3 +19,4 @@ ml/winprob/out/test_preds.npz
 ml/ppo/out/league/
 .design-refs/
 .local-stack/
+.devnet/

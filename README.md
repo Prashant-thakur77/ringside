@@ -78,8 +78,10 @@ All numbers below come from `eval/results/results.json`, written by `eval/make_r
 | Book | Matches | Courtsider PnL / match | 95% CI | Stale fills accepted | House PnL / match |
 |---|---|---|---|---|---|
 | TV delay 0.5 s | 1 | +1.26 | +1.26 to +1.26 | 10 | +2.33 |
+| TV delay 1 s | PENDING | PENDING | PENDING to PENDING | PENDING | PENDING |
 | TV delay 2 s | 4 | +17.69 | +11.37 to +24.02 | 41 | -17.28 |
 | TV delay 5 s | 89 | +13.44 | +11.41 to +15.51 | 862 | -15.95 |
+| TV delay 8 s | PENDING | PENDING | PENDING to PENDING | PENDING | PENDING |
 | Ringside | 94 | +0.62 | +0.31 to +0.91 | 52 | +3.11 |
 
 On Ringside the courtsider sent 1181 orders stamped with the tick it saw on the delayed feed; 1011 were rejected with `ErrStaleTick`. It also traded at the live tick 833 times, where it pays the spread like everyone else.
@@ -139,7 +141,7 @@ python ml/ppo/train.py --minutes 60                  # E7
 cd bots && npx tsx lobby.ts --matches 50 --delays 500,2000,5000   # E1 (courtsider runs alongside)
 python eval/e3_latency.py                            # E3 (indexer stats)
 cd bots && npx tsx soak/setup.ts <match> 16 && ./soak/target/release/ringside-soak <match> 16 40   # E4
-npx tsx eval/e5_privacy.ts <match> live && npx tsx eval/e5_privacy.ts <match> revealed           # E5
+npx tsx scripts/e5-privacy.ts <match> live && npx tsx scripts/e5-privacy.ts <match> revealed           # E5
 python eval/e6_replay.py 20                          # E6
 python eval/make_report.py && python scripts/render_docs.py && python scripts/check_consistency.py
 ```

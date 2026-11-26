@@ -4,7 +4,7 @@ Inputs (eval/data/, written by the experiment scripts):
   courtsider-<env>.jsonl   E1 per-match courtsider stats (bots/courtsider.ts)
   e3-<env>.json            E3 latency snapshot (eval/e3_latency.py)
   e4-soak-<env>.json       E4 soak (bots/soak) ; eval/results/cu_magicsvm.json (MagicSVM CU)
-  e5-<env>.json            E5 privacy leak test (eval/e5_privacy.ts)
+  e5-<env>.json            E5 privacy leak test (scripts/e5-privacy.ts)
   e6-<env>.json            E6 replay determinism (eval/e6_replay.py)
   ml/winprob/out/metrics.json, ml/ppo/out/eval.json   E2, E7 (held-out)
 Usage: python eval/make_report.py [env]   (env: devnet | local; default: devnet if its E1 data exists)

@@ -1,7 +1,7 @@
 // E5: privacy leak test on devnet-tee. Reads a private Position N times as (a) a non-member with a
 // valid TEE token, (b) an unauthenticated client, (c) the opposing fighter; then the owner (control);
 // after the reveal, the non-member again. Baseline: a Position without a permission (plain ER) read
-// by the non-member in one call. Usage: tsx eval/e5_privacy.ts <matchId> <phase: live|revealed> [N]
+// by the non-member in one call. Usage: tsx scripts/e5-privacy.ts <matchId> <phase: live|revealed> [N]
 import fs from "node:fs";
 import path from "node:path";
 import { Connection, type Keypair } from "@solana/web3.js";
