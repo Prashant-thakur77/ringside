@@ -157,3 +157,9 @@ tv_delay {'fills': 20, 'stale_fills_accepted': 20, 'stale_rejections': 0}
 - Full suite: workspace 54 passed · MagicSVM 5 passed · determinism 10000/10000 native = python = wasm · python 5 passed · client 3 passed · indexer 2 passed · `pnpm -r typecheck` 0 errors.
 - `cargo +nightly fuzz run trade -- -runs=200000`: `Done 200000 runs in 6 second(s)`, no invariant violation (USDC conserved, shares = inventory, loss ≤ cap, prices in [0.01, 0.99], bid < ask, settlement = liability).
 - Soak (local ER, `bots/soak`, 16 bots × 40 trades): 640/640 succeeded, submit→confirm p50 16.5 ms / p95 17.4 / p99 18.1, trade CU p50 24,682, max exposure 0.73 of cap 60. First run exposed duplicate-signature collisions (identical order bytes); orders now carry unique limit bytes.
+
+## 2026-11-27 03:05 IST · Fight flow, leaderboard, docs pipeline, CI
+- `bots/matchmaker.ts` (POST /challenge, /friendly) + `bots/test-human.ts` on the local ER: `challenge { matchId: '1795727634714', corner: 'blue', opponent: 'AI · PPO' }` → human joined (sig 3KNEBshd…) → `over: status 4 winner 1 tick 95`. Web: /fight page, fighter panel with onboarding + WASD/mouse controls through the session key (browser wallet run still to do).
+- `/leaderboard` (indexer, Profiles read from the ER): fighter-a elo 1285 (24/34), fighter-b 1115 (10/34).
+- README / docs/submission.md / docs/video.md are rendered from templates by `scripts/render_docs.py`; `scripts/check_consistency.py` re-renders and diffs, rejects literal measured numbers and checks the site's results.json copy. Remaining failures are only devnet values (links, E5) still PENDING.
+- CI: `.github/workflows/ci.yml` (rust fmt/clippy/test, anchor build + MagicSVM, determinism 10,000, web typecheck/build, python smoke, indexer).

@@ -24,6 +24,7 @@ const clock = (tick: number) => {
 export default function Lobby() {
   const { data: rows } = useQuery({ queryKey: ["matches"], queryFn: () => api<Row[]>("/matches?limit=40"), refetchInterval: 2000 });
   const { data: stats } = useQuery({ queryKey: ["stats"], queryFn: () => api<{ tick_cadence_ms?: { p50: number; p95: number; n: number } }>("/stats"), refetchInterval: 10000 });
+  const { data: board } = useQuery({ queryKey: ["leaderboard"], queryFn: () => api<{ wallet: string; elo: number; matches: number; wins: number }[]>("/leaderboard"), refetchInterval: 15000 });
   const states = useLive((s) => s.states);
   const all = (rows ?? []).map((r) => {
     const st = states[r.match_key];
@@ -49,6 +50,9 @@ export default function Lobby() {
                 Watch the live match →
               </Link>
             )}
+            <Link href="/fight" className="num rounded border border-red px-5 py-3 text-red-ink">
+              Fight an AI
+            </Link>
             <Link href="/proof" className="num rounded border border-rule px-5 py-3 text-chalk">
               See the courtsider A/B
             </Link>
@@ -98,9 +102,22 @@ export default function Lobby() {
         </ul>
       </section>
 
-      <section className="mt-14" aria-labelledby="results">
+      <section className="mt-14 grid gap-8 md:grid-cols-[1fr_1.4fr]">
+      <div aria-labelledby="board">
+        <h2 id="board" className="display mb-3 text-3xl font-extrabold">Leaderboard</h2>
+        <ol className="num text-sm">
+          {(board ?? []).slice(0, 10).map((p, i) => (
+            <li key={p.wallet} className="flex justify-between border-b border-rule py-2">
+              <span><span className="text-chalk-quiet">{String(i + 1).padStart(2, "0")}</span> {labelFor(p.wallet)}</span>
+              <span>{p.elo} elo · {p.wins}/{p.matches}</span>
+            </li>
+          ))}
+          {!board?.length && <li className="py-2 text-chalk-quiet">No ranked fighters yet.</li>}
+        </ol>
+      </div>
+      <div aria-labelledby="results">
         <h2 id="results" className="display mb-3 text-3xl font-extrabold">Results</h2>
-        <ul className="grid gap-2 md:grid-cols-2">
+        <ul className="grid gap-2">
           {done.map((r) => (
             <li key={r.match_key} className="flex items-center justify-between rounded border border-rule px-4 py-3">
               <span className="num text-sm">
@@ -113,6 +130,7 @@ export default function Lobby() {
             </li>
           ))}
         </ul>
+      </div>
       </section>
     </div>
   );

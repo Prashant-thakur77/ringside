@@ -24,6 +24,7 @@ export function Scorebug() {
         </Link>
         <div className="hidden items-center gap-5 text-sm text-chalk-quiet md:flex">
           <Link href="/" className="hover:text-chalk">Lobby</Link>
+          <Link href="/fight" className="hover:text-chalk">Fight</Link>
           <Link href="/proof" className="hover:text-chalk">Proof</Link>
           <Link href="/docs" className="hover:text-chalk">How it works</Link>
         </div>

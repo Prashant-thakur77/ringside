@@ -41,8 +41,8 @@ export class MatchRunner {
     readonly env: Env,
     readonly admin: Keypair,
     readonly keeper: Keypair,
-    readonly fighters: [Keypair, Keypair],
-    readonly brains: [Brain, Brain],
+    readonly fighters: [Keypair, Keypair | null],
+    readonly brains: [Brain, Brain | null],
     readonly opts: RunOptions,
   ) {}
 
@@ -54,11 +54,11 @@ export class MatchRunner {
     return this.env.er(k);
   }
 
-  async create(id: bigint) {
+  async create(id: bigint, opponent: PublicKey = PublicKey.default) {
     const { env, admin } = this;
     const game = matchPda(id);
     const r1 = await timed("create_match", { match: game.toBase58() }, async () =>
-      send(env.base, [await env.ix.createMatch(admin.publicKey, id, this.opts.stake, PublicKey.default, this.opts.delayMs), createAssociatedTokenAccountIdempotentInstruction(admin.publicKey, env.ata(game), game, env.p.mint)], [admin]),
+      send(env.base, [await env.ix.createMatch(admin.publicKey, id, this.opts.stake, opponent, this.opts.delayMs), createAssociatedTokenAccountIdempotentInstruction(admin.publicKey, env.ata(game), game, env.p.mint)], [admin]),
     );
     this.sigs.create = r1.sig;
     const r2 = await timed("delegate_match", { match: game.toBase58() }, async () =>
@@ -83,6 +83,7 @@ export class MatchRunner {
 
   async join(id: bigint) {
     for (const [i, f] of this.fighters.entries()) {
+      if (!f) continue; // human fighter joins from the web app
       const er = await this.er(f);
       const r = await timed("join_fight", { match: matchPda(id).toBase58() }, async () => send(er, [await this.env.ix.joinFight(f.publicKey, f.publicKey, id)], [f]));
       this.sigs[`join_${i ? "b" : "a"}`] = r.sig;
@@ -122,6 +123,7 @@ export class MatchRunner {
     this.lastInput[i] = bits;
     this.seq[i] += 1n;
     const f = this.fighters[i];
+    if (!f) return;
     const er = await this.er(f);
     const seq = this.seq[i];
     timed("submit_input", { match: matchPda(id).toBase58() }, async () => send(er, [await this.env.ix.submitInput(f.publicKey, f.publicKey, id, seq, bits)], [f], { skipPreflight: true })).catch((e) => {
@@ -152,9 +154,9 @@ export class MatchRunner {
           this.opts.onTick?.(g);
           const wave = g.sim.readUInt16LE(SIM_WAVE);
           if (g.vrfRequestedWave !== wave && wave < 7) void this.requestWave(id);
-          const [ia, ib] = await Promise.all([this.brains[0].act(g.sim, 0), this.brains[1].act(g.sim, 1)]);
+          const [ia, ib] = await Promise.all([this.brains[0].act(g.sim, 0), this.brains[1]?.act(g.sim, 1) ?? Promise.resolve(-1)]);
           void this.sendInput(id, 0, ia);
-          void this.sendInput(id, 1, ib);
+          if (ib >= 0) void this.sendInput(id, 1, ib);
         } else if (this.opts.crank && Date.now() - lastProgress > 2500 && !keeperTimer) {
           // Switch A: crank did not advance the match.
           startKeeper();
@@ -230,11 +232,23 @@ export class MatchRunner {
     return false;
   }
 
-  async run(id = BigInt(Date.now())): Promise<RunResult> {
-    await this.create(id);
+  /** Waits until the human opponent has joined (status Live) or gives up. */
+  async waitLive(id: bigint, timeoutMs = 180_000) {
+    const t0 = Date.now();
+    for (;;) {
+      const g = await this.game(id);
+      if (g.status !== 0) return g;
+      if (Date.now() - t0 > timeoutMs) throw new Error("opponent did not join in time");
+      await sleep(500);
+    }
+  }
+
+  async run(id = BigInt(Date.now()), opponent?: PublicKey): Promise<RunResult> {
+    await this.create(id, opponent);
     this.log(`match ${id} created and delegated`);
     await this.opts.onCreated?.(id);
     await this.join(id);
+    if (!this.fighters[1]) await this.waitLive(id);
     let g = await this.game(id);
     this.log(`match ${id} live (status ${g.status})`);
     void this.requestWave(id);

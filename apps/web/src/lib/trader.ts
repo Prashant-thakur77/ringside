@@ -11,7 +11,7 @@ import { createApproveInstruction, createAssociatedTokenAccountIdempotentInstruc
 import { Connection, PublicKey, Transaction, type TransactionInstruction } from "@solana/web3.js";
 import { delegateSpl } from "@magicblock-labs/ephemeral-rollups-sdk";
 import { Ix, ringsideProgram, marketPda, positionPda, PROGRAM_ID, TeeSession, TEE_VALIDATOR, USDC_MINT } from "@ringside/client";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { createContext, createElement, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { ER_RPC, SOLANA_RPC } from "./config";
 
 const MINT = new PublicKey(process.env.NEXT_PUBLIC_MINT ?? USDC_MINT.toBase58());
@@ -36,7 +36,7 @@ const codeOf = (e: unknown) => {
   return m ? (m[0].includes("0x") ? parseInt(m[1], 16) : Number(m[1])) : null;
 };
 
-export function useTrader() {
+function useTraderState() {
   const wallet = useWallet();
   const anchorWallet = useAnchorWallet();
   const session = useSessionWallet();
@@ -109,6 +109,19 @@ export function useTrader() {
     [pk, wallet.signTransaction, er, base, ix],
   );
 
+  /** Fighters only need ER funds (no position). */
+  const fund = useCallback(
+    (amount: bigint) =>
+      run("Funding your stake", async () => {
+        if (!pk || !wallet.signTransaction || !er) throw new Error("connect first");
+        const ixs: TransactionInstruction[] = [createAssociatedTokenAccountIdempotentInstruction(pk, getAssociatedTokenAddressSync(MINT, pk), pk, MINT)];
+        ixs.push(...(await delegateSpl(pk, MINT, amount, { payer: pk, validator: VALIDATOR, initIfMissing: true, initVaultIfMissing: true, initAtasIfMissing: true, idempotent: true })));
+        await sendWith(base, ixs, pk, wallet.signTransaction!);
+        setJoined((s) => new Set(s).add("funded"));
+      }),
+    [pk, wallet.signTransaction, er, base],
+  );
+
   const startSession = useCallback(
     (cap: bigint) =>
       run("Starting a 2-hour session", async () => {
@@ -164,5 +177,20 @@ export function useTrader() {
     [pk, er, session, ix],
   );
 
-  return { step, busy, error, er, getPass, fundAndJoin, startSession, trade, joinFight, sendInput, joined, pk, sessionKey: session.publicKey };
+  return { step, busy, error, er, getPass, fund, fundAndJoin, startSession, trade, joinFight, sendInput, joined, pk, sessionKey: session.publicKey };
+}
+
+type Trader = ReturnType<typeof useTraderState>;
+const Ctx = createContext<Trader | null>(null);
+
+/** One trader per app: the TEE connection, session and onboarding state are shared. */
+export function TraderProvider({ children }: { children: ReactNode }) {
+  const t = useTraderState();
+  return createElement(Ctx.Provider, { value: t }, children);
+}
+
+export function useTrader(): Trader {
+  const t = useContext(Ctx);
+  if (!t) throw new Error("useTrader outside TraderProvider");
+  return t;
 }

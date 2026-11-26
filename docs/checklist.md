@@ -157,7 +157,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [ ] P8.05 · TEE auth: `verifyTeeRpcIntegrity` → `getAuthToken` → `?token=` only, auto refresh — unit test + devnet
 - [x] P8.06 · Connections: base RPC, TEE RPC, ConnectionMagicRouter — used by client
 - [x] P8.07 · `/` lobby: live matches, odds, volume, spectators, tick cadence, Fight / Watch / Leaderboard — page renders live data
-- [ ] P8.08 · Leaderboard from Profiles — renders
+- [x] P8.08 · Leaderboard from Profiles — renders
 - [ ] P8.09 · Fight flow: stake 1/5/10, queue, challenge-by-link, Fight an AI — devnet match created from UI
 - [x] P8.10 · `/m/[id]` Pixi v8 arena, WASM interpolation at 60 fps, local prediction + reconciliation — renders a live match
 - [ ] P8.11 · Fighter controls: WASD/joystick, click/tap fire, Space dash, Shift shield — inputs land onchain

@@ -7,6 +7,8 @@ import { Flap } from "@/components/Flap";
 import { JudgePanel } from "@/components/JudgePanel";
 import { OddsChart, type OddsPoint } from "@/components/OddsChart";
 import { TradeTicket } from "@/components/TradeTicket";
+import { FighterPanel, useFighterInput } from "@/components/FighterPanel";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { api, price, STATUS, useLive, type LiveState } from "@/lib/live";
 import { labelFor } from "@/lib/names";
 import { loadSim, hexToBytes, type StateView } from "@/lib/wasm";
@@ -18,12 +20,16 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   const [snap, setSnap] = useState<(LiveState & { match_key: string }) | null>(null);
   const [view, setView] = useState<StateView | null>(null);
   const [judge, setJudge] = useState(false);
+  const [fight, setFight] = useState(false);
+  const { publicKey } = useWallet();
   const [points, setPoints] = useState<OddsPoint[]>([]);
   const lastTick = useRef(-1);
 
   useEffect(() => {
     api<LiveState & { match_key: string }>(`/matches/${id}/state`).then(setSnap).catch(() => {});
-    if (new URLSearchParams(window.location.search).get("judge") === "1") setJudge(true);
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("judge") === "1") setJudge(true);
+    if (q.get("fight") === "1") setFight(true);
   }, [id]);
   const streamed = useLive((s) => (snap ? s.states[snap.match_key] : undefined));
   const st = streamed ?? snap;
@@ -38,6 +44,8 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
   }, [st]);
 
   const m = st?.match;
+  const myCorner = publicKey && m ? (m.fighters[0] === publicKey.toBase58() ? 0 : m.fighters[1] === publicKey.toBase58() ? 1 : -1) : -1;
+  const onInput = useFighterInput(matchId, fight && myCorner >= 0 && !!m && m.status >= 1 && m.status <= 2);
   const live = st?.live ?? null;
   const closed = !m || m.status >= 3;
   const secs = Math.floor((m?.tick ?? 0) / 10);
@@ -73,7 +81,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
         <div>
           <div className="overflow-hidden rounded border border-rule">
-            <Arena simHex={m?.sim_hex} className="w-full" />
+            <Arena simHex={m?.sim_hex} className="w-full" onInput={fight && myCorner >= 0 ? onInput : undefined} me={myCorner === 1 ? 1 : 0} />
           </div>
           <div className="mt-3 rounded border border-rule bg-slate-2 p-3">
             <div className="mb-1 flex items-baseline justify-between">
@@ -108,7 +116,11 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
               </div>
             )}
           </section>
-          <TradeTicket matchId={matchId} book={live} closed={closed} />
+          {fight ? (
+            <FighterPanel matchId={matchId} stake={m?.stake ?? 1_000_000} joined={myCorner >= 0} live={!!m && (m.status === 1 || m.status === 2)} />
+          ) : (
+            <TradeTicket matchId={matchId} book={live} closed={closed} />
+          )}
           <section className="hidden rounded border border-rule bg-slate-2 p-4 md:flex md:items-center md:gap-4" aria-label="Trade from your phone">
             <div className="rounded bg-chalk p-2"><QRCodeSVG value={`${SITE_URL}/m/${id}`} size={96} bgColor="#ecebe4" fgColor="#171b19" /></div>
             <p className="text-sm text-chalk-quiet">Scan to watch and trade this match on your phone. One wallet prompt, then gasless.</p>

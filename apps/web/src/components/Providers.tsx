@@ -8,13 +8,18 @@ import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adap
 import { SessionWalletProvider, useSessionKeyManager } from "@magicblock-labs/gum-react-sdk";
 import { useMemo, useState, type ReactNode } from "react";
 import { SOLANA_RPC } from "@/lib/config";
+import { TraderProvider } from "@/lib/trader";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 function Sessions({ children }: { children: ReactNode }) {
   const wallet = useAnchorWallet();
   const { connection } = useConnection();
   const session = useSessionKeyManager(wallet!, connection, "devnet");
-  return <SessionWalletProvider sessionWallet={session}>{children}</SessionWalletProvider>;
+  return (
+    <SessionWalletProvider sessionWallet={session}>
+      <TraderProvider>{children}</TraderProvider>
+    </SessionWalletProvider>
+  );
 }
 
 export function Providers({ children }: { children: ReactNode }) {

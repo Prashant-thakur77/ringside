@@ -652,6 +652,30 @@ async fn state(State(s): State<S>, Path(id): Path<String>) -> Json<Value> {
     Json(json!({"match_key": key, "match": m, "live": null, "delayed": null}))
 }
 
+async fn leaderboard(State(s): State<S>) -> Json<Value> {
+    let list = s
+        .er(
+            "getProgramAccounts",
+            json!([PROGRAM_ID, {"encoding":"base64","filters":[{"dataSize": 8 + 53}]}]),
+        )
+        .await
+        .unwrap_or(Value::Null);
+    let mut rows: Vec<Value> = list
+        .as_array()
+        .cloned()
+        .unwrap_or_default()
+        .iter()
+        .filter_map(|a| account_data(&a["account"]))
+        .filter(|d| d.len() >= 61)
+        .map(|d| {
+            let u32a = |o: usize| u32::from_le_bytes(d[o..o + 4].try_into().unwrap());
+            json!({"wallet": bs58::encode(&d[8..40]).into_string(), "total_staked": u64::from_le_bytes(d[40..48].try_into().unwrap()), "elo": u32a(48), "matches": u32a(52), "wins": u32a(56)})
+        })
+        .collect();
+    rows.sort_by_key(|r| std::cmp::Reverse(r["elo"].as_u64().unwrap_or(0)));
+    Json(json!(rows))
+}
+
 async fn judge(State(s): State<S>, Path(id): Path<String>) -> Json<Value> {
     let Some(key) = key_for(&s, &id).await else {
         return Json(json!({"error":"unknown match"}));
@@ -783,6 +807,7 @@ async fn main() -> Result<()> {
         .route("/judge/{id}", get(judge))
         .route("/matches/{id}/state", get(state))
         .route("/stats", get(stats))
+        .route("/leaderboard", get(leaderboard))
         .route("/latency", post(post_latency))
         .route("/events", get(sse))
         .layer(CorsLayer::permissive())
