@@ -30,6 +30,11 @@ def resolve(path, data):
 def render_text(text, results, links):
     def sub(m):
         expr = m.group(1)
+        if expr.startswith("bullets:"):
+            # bullets:negative.detail → one "- " line per element of results["negative"]
+            arr, _, field = expr[8:].partition(".")
+            items = results.get(arr) or []
+            return "\n".join(f"- {it.get(field, 'PENDING')}" for it in items) if items else "PENDING"
         if expr.startswith("link:"):
             v = links.get(expr[5:])
             return v if v else "PENDING"
