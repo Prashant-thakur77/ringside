@@ -22,7 +22,7 @@ if git grep -nE '^\s*\[\s*([0-9]{1,3}\s*,\s*){63}[0-9]{1,3}\s*\]\s*$' -- . ; the
 echo "== links"
 for u in $(grep -ohE 'https?://[^ )>"`]+' README.md docs/submission.md | sort -u); do
   code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 20 "$u")
-  case "$code" in 2*|3*) echo "ok   $code $u" ;; *) echo "FAIL $code $u"; fail=1 ;; esac
+  case "$code" in 2*|3*) echo "ok   $code $u" ;; 401|403|429) echo "warn $code (blocks automated clients) $u" ;; *) echo "FAIL $code $u"; fail=1 ;; esac
 done
 [ $fail -eq 0 ] && echo "AUDIT: PASS" || echo "AUDIT: FAIL"
 exit $fail
