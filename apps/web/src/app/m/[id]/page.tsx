@@ -27,6 +27,10 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
 
   useEffect(() => {
     api<LiveState & { match_key: string }>(`/matches/${id}/state`).then(setSnap).catch(() => {});
+    // Seed the odds line with every tick so far (hits marked), not only ticks after page load.
+    api<{ ticks: { tick: number; fair_p: number; flags: number }[] }>(`/matches/${id}/replay`)
+      .then((r) => setPoints((p) => [...r.ticks.map((t) => ({ tick: t.tick, live: t.fair_p, hit: (t.flags & 3) !== 0 })), ...p.filter((x) => x.tick > (r.ticks.at(-1)?.tick ?? 0))]))
+      .catch(() => {});
     const q = new URLSearchParams(window.location.search);
     if (q.get("judge") === "1") setJudge(true);
     if (q.get("fight") === "1") setFight(true);
@@ -38,7 +42,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
     if (!st?.match) return;
     if (st.match.tick !== lastTick.current && st.live) {
       lastTick.current = st.match.tick;
-      setPoints((p) => [...p.slice(-600), { tick: st.match.tick, live: st.live!.fair_p, delayed: st.delayed?.fair_p }]);
+      setPoints((p) => [...p.slice(-1200), { tick: st.match.tick, live: st.live!.fair_p, delayed: st.delayed?.fair_p }]);
     }
     loadSim().then((sim) => setView(JSON.parse(sim.stateJson(hexToBytes(st.match.sim_hex)))));
   }, [st]);
@@ -78,6 +82,8 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
         </div>
       </div>
 
+      {judge && <JudgePanel matchId={id} live={live} delayed={st?.delayed ?? null} gameTick={m?.tick ?? 0} />}
+
       <div className="mt-4 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
         <div>
           <div className="overflow-hidden rounded border border-rule">
@@ -110,8 +116,8 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
               {live && live.frozen_until_tick > live.last_priced_tick ? " · FROZEN (lethal-range hit)" : ""}
             </p>
             {m && m.status >= 3 && (
-              <div className="bell mt-3 border-t-2 border-brass pt-2">
-                <p className="display text-2xl font-extrabold text-brass">{m.winner === 1 ? "Red wins" : m.winner === 2 ? "Blue wins" : m.winner === 3 ? "Draw" : "Bell"}</p>
+              <div className="bell mt-3 border-t-4 border-brass pt-3">
+                <p className="display text-[56px] font-black leading-none text-brass">{m.winner === 1 ? "Red wins" : m.winner === 2 ? "Blue wins" : m.winner === 3 ? "Draw" : "Bell"}</p>
                 <Link href={`/replay/${id}`} className="num text-sm underline">Replay and verify the hash chain →</Link>
               </div>
             )}
@@ -127,7 +133,6 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
           </section>
         </div>
       </div>
-      {judge && <JudgePanel matchId={id} live={live} delayed={st?.delayed ?? null} gameTick={m?.tick ?? 0} />}
     </div>
   );
 }

@@ -57,7 +57,7 @@ export function JudgePanel({ matchId, live, delayed, gameTick }: { matchId: stri
   const events = useLive((s) => s.events);
   const mine = events.filter((e) => (!COURTSIDER || e.trader === COURTSIDER) && (e.type === "trade" || e.type === "reject"));
   return (
-    <section aria-labelledby="judge" className="mt-6">
+    <section aria-labelledby="judge" className="mt-4">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="judge" className="display text-3xl font-extrabold">Judge mode · the courtsider A/B</h2>
         <p className="text-sm text-chalk-quiet">Same bot, same match, same pricing code. Only the feed differs.</p>

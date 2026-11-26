@@ -30,7 +30,8 @@ export default function Lobby() {
     const st = states[r.match_key];
     return st ? { ...r, status: st.match.status, tick: st.match.tick, winner: st.match.winner, books: { live: st.live, delayed: st.delayed } } : r;
   });
-  const live = all.filter((r) => r.status === 1 || r.status === 2 || r.status === 0);
+  // Unjoined challenges expire from the card after 5 minutes (match ids are creation timestamps).
+  const live = all.filter((r) => r.status === 1 || r.status === 2 || (r.status === 0 && Date.now() - Number(r.match_id) < 5 * 60_000));
   const done = all.filter((r) => r.status >= 3).slice(0, 12);
 
   return (
@@ -58,16 +59,28 @@ export default function Lobby() {
             </Link>
           </div>
         </div>
-        <aside className="self-end rounded border border-rule bg-slate-2 p-5">
-          <p className="label">HOW A FILL WORKS</p>
-          <ol className="mt-3 space-y-3 text-[15px]">
-            <li><span className="num text-brass">01</span> The fight advances one tick (100 ms) on the rollup.</li>
-            <li><span className="num text-brass">02</span> The same instruction re-prices the book from the new state.</li>
-            <li><span className="num text-brass">03</span> Your order carries the tick you saw. More than 2 ticks behind → rejected onchain.</li>
-          </ol>
+        <aside className="self-end">
+          {live[0]?.books?.live ? (
+            <Link href={`/m/${live[0].match_id}`} className="block rounded border border-rule bg-slate-2 p-5 hover:border-chalk-quiet">
+              <p className="label"><span className="live-dot text-red-ink">●</span> ON NOW · {clock(live[0].tick)} · TICK {String(live[0].tick).padStart(6, "0")}</p>
+              <p className="display mt-3 text-[34px] font-extrabold">
+                <span className="text-red-ink">{labelFor(live[0].fighters[0])}</span> <span className="text-lg text-chalk-quiet">vs</span> <span className="text-blue-ink">{labelFor(live[0].fighters[1])}</span>
+              </p>
+              <div className="mt-4 flex items-end gap-6">
+                <div><p className="label">RED</p><Flap value={(live[0].books.live.ask_a / 1e6).toFixed(3)} size={40} tone="red" /></div>
+                <div><p className="label">BLUE</p><Flap value={(live[0].books.live.ask_b / 1e6).toFixed(3)} size={40} tone="blue" /></div>
+              </div>
+              <p className="num mt-4 text-[13px] text-chalk-quiet">Re-priced in the same instruction as every tick. An order more than 2 ticks behind is rejected onchain.</p>
+            </Link>
+          ) : (
+            <div className="rounded border border-rule bg-slate-2 p-5">
+              <p className="label">BETWEEN BOUTS</p>
+              <p className="mt-3 text-[15px] text-chalk-quiet">The fight advances one tick every 100 ms and the same instruction re-prices the book. Orders more than 2 ticks behind are rejected onchain.</p>
+            </div>
+          )}
           {stats?.tick_cadence_ms?.p50 != null && (
-            <p className="num mt-4 text-[13px] text-chalk-quiet">
-              Measured tick cadence: p50 {Math.round(stats.tick_cadence_ms.p50)} ms · p95 {Math.round(stats.tick_cadence_ms.p95)} ms ({stats.tick_cadence_ms.n} ticks)
+            <p className="num mt-3 text-[12px] text-chalk-quiet">
+              Measured tick cadence p50 {Math.round(stats.tick_cadence_ms.p50)} ms · p95 {Math.round(stats.tick_cadence_ms.p95)} ms over {stats.tick_cadence_ms.n} ticks
             </p>
           )}
         </aside>
@@ -117,15 +130,17 @@ export default function Lobby() {
       </div>
       <div aria-labelledby="results">
         <h2 id="results" className="display mb-3 text-3xl font-extrabold">Results</h2>
-        <ul className="grid gap-2">
-          {done.map((r) => (
-            <li key={r.match_key} className="flex items-center justify-between rounded border border-rule px-4 py-3">
-              <span className="num text-sm">
-                <span className={r.winner === 1 ? "text-red-ink" : r.winner === 2 ? "text-blue-ink" : "text-chalk"}>{r.winner === 1 ? "RED" : r.winner === 2 ? "BLUE" : "DRAW"}</span> · tick {r.tick} · {r.books?.live ? `${(r.books.live.volume / 1e6).toFixed(1)} vol` : ""}
+        <ul>
+          {done.slice(0, 6).map((r) => (
+            <li key={r.match_key} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-rule py-4">
+              <span className="display text-[26px] font-extrabold">
+                <span className={r.winner === 1 ? "text-red-ink" : "text-chalk-quiet"}>{labelFor(r.fighters[0])}</span>
+                <span className="mx-2 text-base text-chalk-quiet">vs</span>
+                <span className={r.winner === 2 ? "text-blue-ink" : "text-chalk-quiet"}>{labelFor(r.fighters[1])}</span>
               </span>
-              <span className="flex gap-4 text-sm">
-                <Link href={`/m/${r.match_id}`} className="text-chalk-quiet hover:text-chalk">Card</Link>
-                <Link href={`/replay/${r.match_id}`} className="text-brass">Replay + verify →</Link>
+              <span className="flex items-baseline gap-4">
+                <span className="num text-[12px] text-chalk-quiet">{r.winner === 3 ? "DRAW" : `${r.winner === 1 ? "RED" : "BLUE"} · T${r.tick}`}</span>
+                <Link href={`/replay/${r.match_id}`} className="num text-sm text-brass">Replay + verify →</Link>
               </span>
             </li>
           ))}

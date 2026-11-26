@@ -3,6 +3,7 @@
 // or, for the live strip, from the indexer.
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/live";
+import { CourtsiderBars, PROOF_COLORS, Reliability } from "@/components/ProofCharts";
 
 type R = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 const f = (v: unknown, d = 2) => (typeof v === "number" ? v.toFixed(d) : "—");
@@ -30,7 +31,7 @@ export default function Proof() {
           <h1 className="display mt-2 text-[clamp(48px,7vw,112px)] font-black">Same bot. Same matches. Different feed.</h1>
           {h && (
             <p className="mt-5 max-w-[60ch] text-lg">
-              Over {h.n_matches} held-out matches with a {h.delay_ms / 1000} s TV delay, the courtsider made <b className="num">{f(h.courtsider_pnl_per_match_tv)}</b> per match on the delayed book and{" "}
+              Over the {h.n_matches} held-out matches with a {h.delay_ms / 1000} s TV delay, the courtsider made <b className="num">{f(h.courtsider_pnl_per_match_tv)}</b> per match on the delayed book and{" "}
               <b className="num">{f(h.courtsider_pnl_per_match_ringside)}</b> on Ringside. Stale fills accepted: <b className="num">{h.stale_fills_accepted_tv}</b> vs <b className="num">{h.stale_fills_accepted_ringside}</b>.
             </p>
           )}
@@ -40,7 +41,12 @@ export default function Proof() {
         <Round n="01" title="Courtsiding A/B">
           {r?.e1 && (
             <>
-              <img src="/results/e1_courtsider_ab.png" alt="Courtsider PnL per match by feed delay vs Ringside" className="w-full border border-ink/30" />
+              <CourtsiderBars
+                bars={[
+                  ...r.e1.delays.map((d: R) => ({ label: `TV ${d.delay_ms / 1000} s`, mean: d.pnl_mean, lo: d.pnl_ci95[0], hi: d.pnl_ci95[1], color: PROOF_COLORS.TV, n: d.n_matches })),
+                  { label: "Ringside", mean: r.e1.ringside.pnl_mean, lo: r.e1.ringside.pnl_ci95[0], hi: r.e1.ringside.pnl_ci95[1], color: PROOF_COLORS.RS, n: r.e1.ringside.n_matches },
+                ]}
+              />
               <table className="num mt-4 w-full text-left text-sm">
                 <thead><tr className="border-b border-ink"><th>Book</th><th>Matches</th><th>PnL / match</th><th>95% CI</th><th>Stale fills accepted</th><th>House PnL / match</th></tr></thead>
                 <tbody>
@@ -58,7 +64,13 @@ export default function Proof() {
         <Round n="02" title="Is the price right?">
           {r?.e2 && (
             <div className="grid gap-6 md:grid-cols-[1fr_1fr]">
-              <img src="/results/e2_reliability.png" alt="Reliability diagram on held-out matches" className="w-full border border-ink/30" />
+              <Reliability
+                series={[
+                  { name: "HP-ratio heuristic", color: PROOF_COLORS.TV, pts: r.e2.reliability.hp_ratio, ece: r.e2.models.hp_ratio.ece },
+                  { name: "LightGBM (float)", color: PROOF_COLORS.THIRD, pts: r.e2.reliability.lightgbm_float, ece: r.e2.models.lightgbm_float.ece },
+                  { name: "Onchain integer model", color: PROOF_COLORS.RS, pts: r.e2.reliability.logistic_onchain_integer, ece: r.e2.models.logistic_onchain_integer.ece },
+                ]}
+              />
               <table className="num w-full self-start text-left text-sm">
                 <thead><tr className="border-b border-ink"><th>Model (held-out)</th><th>Brier</th><th>Log-loss</th><th>ECE</th></tr></thead>
                 <tbody>
@@ -82,7 +94,7 @@ export default function Proof() {
           {live?.tick_cadence_ms?.p50 != null && <p className="num mt-3 text-sm text-ink-quiet">Live now (indexer): tick cadence p50 {f(live.tick_cadence_ms.p50, 0)} ms over {live.tick_cadence_ms.n} ticks.</p>}
         </Round>
 
-        <Round n="04" title="Sealed until the bell">
+        {r?.e5 && <Round n="04" title="Sealed until the bell">
           {r?.e5 && (
             <ul className="num space-y-1 text-sm">
               {Object.entries(r.e5.attempts as R).map(([k, n]) => (
@@ -91,7 +103,7 @@ export default function Proof() {
               <li>after reveal: {r.e5.after_reveal_readable ? "readable" : "not readable"} · plain ER baseline: {r.e5.plain_er_readable ? "readable in one call" : "—"}</li>
             </ul>
           )}
-        </Round>
+        </Round>}
 
         <Round n="05" title="Load, replays, fighters">
           <div className="num grid gap-4 text-sm md:grid-cols-3">
@@ -106,7 +118,7 @@ export default function Proof() {
             {(r?.negative ?? []).map((n: R) => (
               <li key={n.title}><b>{n.title}.</b> {n.detail}</li>
             ))}
-            {r?.weakest_case && <li><b>Weakest case: {r.weakest_case.title}.</b> {r.weakest_case.detail}</li>}
+            {r?.weakest_case && <li><b>Weakest case:</b> {r.weakest_case.title.toLowerCase()} (above).</li>}
           </ul>
         </Round>
       </div>

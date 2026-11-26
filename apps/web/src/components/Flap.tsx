@@ -12,7 +12,7 @@ export function Flap({ value, size = 40, tone }: { value: string; size?: number;
     <span className="inline-flex gap-[3px]" aria-label={value} role="text">
       {chars.map((c, i) => (
         <span key={i} className="flap" style={{ width: c === "." ? size * 0.42 : size * 0.68, height: size * 1.3, fontSize: size, color }} aria-hidden>
-          <span key={`${i}-${c}`} className={old[i] !== c ? "changed" : ""}>
+          <span key={`${i}-${c}`} className={old[i] !== c ? "changed wiped" : ""}>
             {c}
           </span>
         </span>

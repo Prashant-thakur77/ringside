@@ -18,6 +18,7 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
+matplotlib.rcParams["font.family"] = "DejaVu Sans Mono"
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -128,7 +129,7 @@ def e2():
     fig.savefig(OUT / "e2_reliability.png")
     plt.close(fig)
     return {"heldout": True, "n_test_matches": m["test_matches"], "n_test_rows": m["rows"]["test"], "n_matches_total": m["n_matches"], "models": m["metrics_heldout"],
-            "onchain_vs_float_gap": m["onchain_vs_float_abs_gap"], "buckets": m["buckets_heldout"], "metrics_hash": m["metrics_hash"]}
+            "onchain_vs_float_gap": m["onchain_vs_float_abs_gap"], "buckets": m["buckets_heldout"], "metrics_hash": m["metrics_hash"], "reliability": m["reliability_heldout"]}
 
 
 def e3(env):

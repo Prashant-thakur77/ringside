@@ -16,7 +16,7 @@ export default function Docs() {
       <div className="mx-auto max-w-[1100px] space-y-14 px-4 py-12 md:px-7">
         <header>
           <p className="num text-[12px] text-ink-quiet">HOW IT WORKS</p>
-          <h1 className="display mt-2 text-[clamp(48px,7vw,112px)] font-black">The game tick, the price and your fill are one rollup state</h1>
+          <h1 className="display mt-2 text-[clamp(48px,7vw,112px)] font-black" style={{ lineHeight: 0.94 }}>The game tick, the price and your fill are one rollup state</h1>
           <p className="mt-5 max-w-[62ch] text-lg">
             Sportsbooks stream 5–8 seconds behind the action and freeze markets because faster watchers pick off stale prices. Ringside puts the fight and the order book in the same rollup: the instruction that advances the duel also re-prices the book, and every order carries the tick it saw.
           </p>

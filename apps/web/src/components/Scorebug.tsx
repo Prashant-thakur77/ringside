@@ -2,7 +2,8 @@
 // Pinned header: the live clock and tick freshness are always on screen.
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useLive, useNow, useFeed } from "@/lib/live";
+import { useQuery } from "@tanstack/react-query";
+import { api, useLive, useNow, useFeed } from "@/lib/live";
 
 const WalletButton = dynamic(async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton, { ssr: false });
 
@@ -11,7 +12,11 @@ export function Scorebug() {
   const states = useLive((s) => s.states);
   const lastTickAt = useLive((s) => s.lastTickAt);
   const now = useNow(200);
-  const live = Object.values(states).filter((s) => s.match.status === 1 || s.match.status === 2);
+  // One status source: the stream when it is flowing, the indexer list otherwise.
+  const { data: list } = useQuery({ queryKey: ["matches"], queryFn: () => api<{ match_key: string; status: number }[]>("/matches?limit=40"), refetchInterval: 2000 });
+  const fresh = now - lastTickAt < 3000;
+  const live = Object.values(states).filter((s) => (s.match.status === 1 || s.match.status === 2) && fresh);
+  const listedLive = (list ?? []).filter((m) => m.status === 1 || m.status === 2).length;
   const top = live.sort((a, b) => b.seen_ms - a.seen_ms)[0];
   const t = top?.match.tick ?? 0;
   const secs = Math.floor((t * 100) / 1000);
@@ -37,11 +42,18 @@ export function Scorebug() {
               <span className="hidden text-chalk-quiet sm:inline">TICK {String(t).padStart(6, "0")}</span>
               <span className="hidden text-chalk-quiet sm:inline">{Math.max(0, now - lastTickAt)} ms ago</span>
             </>
+          ) : listedLive ? (
+            <span className="text-red-ink"><span className="live-dot">●</span> LIVE · {listedLive} on</span>
           ) : (
             <span className="hidden text-chalk-quiet sm:inline">waiting for the next bell</span>
           )}
         </div>
         <WalletButton style={{ height: 36, padding: "0 12px", whiteSpace: "nowrap", fontFamily: "var(--font-mono)", fontSize: 13, background: "#1f2522", border: "1px solid #333b37", borderRadius: 4 }} />
+      </nav>
+      <nav aria-label="Sections" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-rule bg-slate/95 text-center text-[13px] backdrop-blur md:hidden">
+        {[["/", "Lobby"], ["/fight", "Fight"], ["/proof", "Proof"], ["/docs", "How it works"]].map(([href, label]) => (
+          <Link key={href} href={href} className="num py-3 text-chalk-quiet hover:text-chalk">{label}</Link>
+        ))}
       </nav>
     </header>
   );

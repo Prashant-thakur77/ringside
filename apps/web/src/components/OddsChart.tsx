@@ -11,13 +11,13 @@ export interface OddsPoint {
   hit?: boolean;
 }
 
-export function OddsChart({ points, height = 160, showDelayed = false }: { points: OddsPoint[]; height?: number; showDelayed?: boolean }) {
+export function OddsChart({ points, height = 240, showDelayed = false, window = 300 }: { points: OddsPoint[]; height?: number; showDelayed?: boolean; window?: number }) {
   const el = useRef<HTMLDivElement>(null);
   const plot = useRef<UPlot | null>(null);
   const latest = useRef<OddsPoint[]>(points);
   latest.current = points;
   const toData = (pts: OddsPoint[]) => {
-    const p = pts.slice(-300);
+    const p = pts.slice(-window);
     return [p.map((x) => x.tick), p.map((x) => x.live), p.map((x) => x.delayed ?? null)] as unknown as UPlot.AlignedData;
   };
 
@@ -30,6 +30,26 @@ export function OddsChart({ points, height = 160, showDelayed = false }: { point
         height,
         legend: { show: false },
         cursor: { show: false },
+        hooks: {
+          // brass rule at every tick where a hit landed
+          draw: [
+            (u) => {
+              const ctx = u.ctx;
+              const pts = latest.current.slice(-window).filter((x) => x.hit);
+              ctx.save();
+              ctx.strokeStyle = "rgba(201,162,74,0.55)";
+              ctx.lineWidth = 1;
+              for (const p of pts) {
+                const x = u.valToPos(p.tick, "x", true);
+                ctx.beginPath();
+                ctx.moveTo(x, u.bbox.top);
+                ctx.lineTo(x, u.bbox.top + u.bbox.height);
+                ctx.stroke();
+              }
+              ctx.restore();
+            },
+          ],
+        },
         scales: { x: { time: false }, y: { range: [0, 1] } },
         axes: [
           { stroke: "#9aa39c", grid: { show: false }, ticks: { stroke: "#333b37" }, font: "11px var(--font-plex-mono)", values: (_u, v) => v.map((t) => `${Math.round(t / 10)}s`) },
@@ -37,7 +57,7 @@ export function OddsChart({ points, height = 160, showDelayed = false }: { point
         ],
         series: [
           {},
-          { stroke: "#ff6b72", width: 2, fill: "rgba(214,51,63,0.08)" },
+          { stroke: "#ff6b72", width: 2, fill: "rgba(214,51,63,0.12)", fillTo: 0.5 },
           { stroke: "#c9a24a", width: 1.5, dash: [5, 4], show: showDelayed },
         ],
       };

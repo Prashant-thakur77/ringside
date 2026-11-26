@@ -12,7 +12,7 @@ Target length about 3 minutes (the form names no limit). Every number on screen 
 
 **0:40 Phone.** Point a phone at the QR code on the match screen. One wallet prompt, then the judge buys blue at the price on the board. The fill ticket prints with its tick and latency. Blue lands a comeback; the odds line swings; at the bell the payout lands in the same second.
 
-**1:15 Proof.** The A/B chart: +12.46 per match on the delayed book against +0.38 on Ringside over 71 held-out matches. The reliability diagram: onchain integer model Brier 0.1736 against 0.2500 for a coin flip. Tick cadence p50 100 ms, measured.
+**1:15 Proof.** The A/B chart: +13.44 per match on the delayed book against +0.62 on Ringside over 89 held-out matches. The reliability diagram: onchain integer model Brier 0.1736 against 0.2500 for a coin flip. Tick cadence p50 100 ms, measured.
 
 **1:45 Sealed until the bell.** A spectator's position read by another wallet: denied. After settle, the same read succeeds. Voice: "Positions stay private inside the TEE until the bell, then everyone can check them."
 
@@ -27,7 +27,7 @@ Target length about 3 minutes (the form names no limit). Every number on screen 
 | # | Shot | Source | Length |
 |---|---|---|---|
 | 1 | Broadcast clock behind the duel, courtsider draining the delayed board | Judge mode on a live devnet match, TV-delay side, clock overlay | 12 s |
-| 2 | Same order rejected on Ringside, stamp + explorer tx | Judge mode Ringside side + local:4gK3ChUnZZhuZPfMYSdxdsTCyMFohVVFetwVT5Z5WCXPZfZAqrwqVw6yABPxkgmnb5bNYHs5koifDYJuVZkWNotC | 13 s |
+| 2 | Same order rejected on Ringside, stamp + explorer tx | Judge mode Ringside side + local:5LL1F6LuXjT5EmhdQGSxCY5dThSg5PVxYShPA1DeLYQ3C3VJ45EJumLVbdadQM1bBgnHL2NRuxUBQFEFzGByMBBx | 13 s |
 | 3 | Lobby → live match, odds line moving | PENDING | 15 s |
 | 4 | Phone scan of the QR, onboarding, Buy Blue, fill ticket | Phone screen recording | 35 s |
 | 5 | A/B chart and reliability diagram | /proof, eval/results/*.png | 30 s |
