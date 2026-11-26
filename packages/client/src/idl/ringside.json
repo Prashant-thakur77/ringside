@@ -4679,6 +4679,16 @@
           },
           {
             "name": "tick",
+            "docs": [
+              "Tick the book was priced on (for the TV-delay book: the relayed, late tick)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "game_tick",
+            "docs": [
+              "The fight's actual tick when the fill executed."
+            ],
             "type": "u64"
           },
           {

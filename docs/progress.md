@@ -136,3 +136,14 @@ courtsider …173049: delayed pnl 13.56 (13 fills, 13 stale accepted) · ringsid
 [lobby] match …173049 (AI · PPO vs Scripted · defensive, delay 2000 ms): winner 1 at tick 96, crank
 ```
 - Scripted fighters (P6.01) run from the Rust policies through WASM (`bots/lib/brains.ts`), identical to training opponents.
+
+## 2026-11-27 03:45 IST · Indexer (Rust) on the local ER
+- `services/indexer` (tokio + axum + sqlx/Postgres 16 + tungstenite logs subscription, TEE token auth): `cargo +stable test` 2 passed.
+- After a lobby match (delay 2000 ms): `/matches/<id>/replay` → 121 ticks, complete chain; `/judge/<id>`:
+```
+ringside {'fills': 66, 'stale_fills_accepted': 0, 'stale_rejections': 16, 'reject_sig': '4TKZwAvj…'}
+tv_delay {'fills': 20, 'stale_fills_accepted': 20, 'stale_rejections': 0}
+```
+- `/stats` reports tick cadence p50/p95/p99, quote age at fill, submit→confirm by kind (from bot OTel spans), counts.
+- MatchRecord check + finalize retry: the indexer builds and signs the finalize + commit_match transaction itself; the ER accepted it (sig 5LdXt9W4…). Locally the record cannot land (v1 settlement tx, see decisions); live check on devnet.
+- Program: TradeEvent now carries `game_tick` so staleness on the TV-delay book is measured against the fight's real tick.

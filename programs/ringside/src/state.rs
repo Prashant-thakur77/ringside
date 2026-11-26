@@ -254,7 +254,10 @@ pub struct ConfigArgs {
 pub struct TradeEvent {
     pub market: Pubkey,
     pub trader: Pubkey,
+    /// Tick the book was priced on (for the TV-delay book: the relayed, late tick).
     pub tick: u64,
+    /// The fight's actual tick when the fill executed.
+    pub game_tick: u64,
     pub seen_tick: u64,
     pub price: u64,
     pub qty: u64,

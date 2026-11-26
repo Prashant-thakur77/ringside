@@ -538,11 +538,11 @@ pub mod ringside {
         let signer = ctx.accounts.signer.key();
         let market_key = ctx.accounts.market.key();
         let unix_ms = Clock::get()?.unix_timestamp.saturating_mul(1000);
-        let (live, barred) = {
+        let (live, barred, game_tick) = {
             let g = ctx.accounts.game.load()?;
             let live = g.status == ST_LIVE || g.status == ST_SUDDEN_DEATH;
             let barred = g.fighters.iter().chain(g.fighter_session_signers.iter()).any(|k| *k != Pubkey::default() && (*k == trader || *k == signer));
-            (live, barred)
+            (live, barred, g.tick() as u64)
         };
         let mut m = ctx.accounts.market.load_mut()?;
         require!(live && m.status == MK_OPEN, RingsideError::ErrClosed);
@@ -619,6 +619,7 @@ pub mod ringside {
             market: market_key,
             trader,
             tick: tick_now,
+            game_tick,
             seen_tick,
             price: fill.price,
             qty,

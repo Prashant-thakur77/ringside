@@ -4685,6 +4685,16 @@ export type Ringside = {
           },
           {
             "name": "tick",
+            "docs": [
+              "Tick the book was priced on (for the TV-delay book: the relayed, late tick)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "gameTick",
+            "docs": [
+              "The fight's actual tick when the fill executed."
+            ],
             "type": "u64"
           },
           {

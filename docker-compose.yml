@@ -1,0 +1,41 @@
+# Postgres + indexer + bots. Keys and deployment state are mounted read-only from ./keys.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ringside
+      POSTGRES_PASSWORD: ringside
+      POSTGRES_DB: ringside
+    ports: ["5434:5432"]
+    volumes: ["pg:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ringside"]
+      interval: 5s
+      retries: 20
+
+  indexer:
+    build: { context: ., dockerfile: services/indexer/Dockerfile }
+    depends_on: { postgres: { condition: service_healthy } }
+    environment:
+      DATABASE_URL: postgres://ringside:ringside@postgres:5432/ringside
+      RINGSIDE_ENV: ${RINGSIDE_ENV:-devnet}
+      SOLANA_RPC: ${SOLANA_RPC:-https://api.devnet.solana.com}
+      ER_RPC: ${ER_RPC:-https://devnet-tee.magicblock.app}
+      INDEXER_KEYPAIR: /keys/indexer.json
+      PORT: "8787"
+    volumes: ["./keys:/keys:ro"]
+    ports: ["8787:8787"]
+    restart: unless-stopped
+
+  bots:
+    build: { context: ., dockerfile: bots/Dockerfile }
+    depends_on: [indexer]
+    environment:
+      RINGSIDE_ENV: ${RINGSIDE_ENV:-devnet}
+      INDEXER_URL: http://indexer:8787
+    volumes: ["./keys:/app/keys"]
+    command: ["npx", "tsx", "bots/lobby.ts"]
+    restart: unless-stopped
+
+volumes:
+  pg: {}

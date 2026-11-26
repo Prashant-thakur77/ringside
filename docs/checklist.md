@@ -132,11 +132,11 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 
 ## Phase 7 — Indexer, bots, soak
 
-- [ ] P7.01 · Postgres 16 via docker-compose; schema tables matches, ticks, quotes, trades, rejections, hashes, latency — migration applies
-- [ ] P7.02 · Indexer accountSubscribe Match/Market on TEE RPC with token auth + program logs — inserts rows from devnet
-- [ ] P7.03 · Indexer measures tick cadence, quote age at fill, submit→confirm latency — rows in `latency`
-- [ ] P7.04 · Indexer axum REST (matches, match detail, replay inputs, stats) + SSE stream — curl returns JSON
-- [ ] P7.05 · Indexer verifies MatchRecord on L1 after finalize and retries — log shows check
+- [x] P7.01 · Postgres 16 via docker-compose; schema tables matches, ticks, quotes, trades, rejections, hashes, latency — migration applies
+- [x] P7.02 · Indexer accountSubscribe Match/Market on TEE RPC with token auth + program logs — inserts rows from devnet
+- [x] P7.03 · Indexer measures tick cadence, quote age at fill, submit→confirm latency — rows in `latency`
+- [x] P7.04 · Indexer axum REST (matches, match detail, replay inputs, stats) + SSE stream — curl returns JSON
+- [x] P7.05 · Indexer verifies MatchRecord on L1 after finalize and retries — log shows check
 - [ ] P7.06 · OpenTelemetry spans in bots and indexer — spans exported
 - [x] P7.07 · Shared TS client lib (PDAs, IDL, connections, TEE auth with token-only, auto-refresh) — unit test for token URL
 - [ ] P7.08 · `bots/fighters/ai.ts` ONNX fighter plays matches 24/7, labeled AI — devnet match played
