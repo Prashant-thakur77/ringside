@@ -11,7 +11,7 @@ use ringside_fixed::{CALIB_LEN, LUT_LEN, ONE};
 use rs_sim::bots::{Bot, Policy};
 use rs_sim::{self as sim, Input, SeedEvent, SimState, N_FEATURES};
 
-pub use ringside_agent::{action_to_input, observe, OBS_DIM, N_ACTIONS};
+pub use ringside_agent::{action_to_input, observe, N_ACTIONS, OBS_DIM};
 
 fn err<E: std::fmt::Debug>(e: E) -> PyErr {
     PyValueError::new_err(format!("{e:?}"))
@@ -41,7 +41,11 @@ struct VecEnv {
 impl VecEnv {
     fn fresh(&mut self, i: usize) {
         let seed = (sim::splitmix64(&mut self.rng) & !1) | self.heldout as u64;
-        let side = if self.randomize_side { (sim::splitmix64(&mut self.rng) & 1) as usize } else { 0 };
+        let side = if self.randomize_side {
+            (sim::splitmix64(&mut self.rng) & 1) as usize
+        } else {
+            0
+        };
         let e = &mut self.envs[i];
         e.match_seed = seed;
         e.agent_side = side;
@@ -124,7 +128,12 @@ impl VecEnv {
         py: Python<'py>,
         actions: PyReadonlyArray1<'py, i64>,
         opp_actions: PyReadonlyArray1<'py, i64>,
-    ) -> PyResult<(Bound<'py, PyArray2<f32>>, Bound<'py, PyArray1<f32>>, Bound<'py, PyArray1<bool>>, Bound<'py, PyArray1<f32>>)> {
+    ) -> PyResult<(
+        Bound<'py, PyArray2<f32>>,
+        Bound<'py, PyArray1<f32>>,
+        Bound<'py, PyArray1<bool>>,
+        Bound<'py, PyArray1<f32>>,
+    )> {
         let acts = actions.as_array();
         let opps = opp_actions.as_array();
         let n = self.envs.len();
@@ -199,7 +208,15 @@ fn generate_dataset<'py>(py: Python<'py>, start: u64, n: u64, base_seed: u64, ev
                 let mut a = Bot::new(Policy::from_u8(pa), ska, sim::splitmix64(&mut r));
                 let mut b = Bot::new(Policy::from_u8(pb), skb, sim::splitmix64(&mut r));
                 let mut s = SimState::new(sim::DEFAULT_DT_MS, sim::offline_wave_seed(match_seed, 0));
-                let mut rows = Rows { x: vec![], mid: vec![], tick: vec![], y: vec![], hp: vec![], phase: vec![], meta: [m as i64, pa as i64, pb as i64, ska as i64, skb as i64] };
+                let mut rows = Rows {
+                    x: vec![],
+                    mid: vec![],
+                    tick: vec![],
+                    y: vec![],
+                    hp: vec![],
+                    phase: vec![],
+                    meta: [m as i64, pa as i64, pb as i64, ska as i64, skb as i64],
+                };
                 while !s.is_over() {
                     if s.tick % every == 0 {
                         rows.x.extend_from_slice(&sim::features(&s));
@@ -256,7 +273,12 @@ fn generate_dataset<'py>(py: Python<'py>, start: u64, n: u64, base_seed: u64, ev
 /// Exact onchain integer model: calibrated P(A wins) ×2^32 for each row of raw Q32.32 features.
 #[pyfunction]
 #[pyo3(signature = (params, x, calibrated = true))]
-fn predict_int<'py>(py: Python<'py>, params: &[u8], x: PyReadonlyArray2<'py, i64>, calibrated: bool) -> PyResult<Bound<'py, PyArray1<u32>>> {
+fn predict_int<'py>(
+    py: Python<'py>,
+    params: &[u8],
+    x: PyReadonlyArray2<'py, i64>,
+    calibrated: bool,
+) -> PyResult<Bound<'py, PyArray1<u32>>> {
     let m = ModelParams::from_bytes(params).map_err(err)?;
     let a = x.as_array();
     if a.ncols() != N_FEATURES {
@@ -274,8 +296,21 @@ fn predict_int<'py>(py: Python<'py>, params: &[u8], x: PyReadonlyArray2<'py, i64
 
 /// Serializes model parameters to the onchain blob layout.
 #[pyfunction]
-fn params_to_bytes<'py>(py: Python<'py>, mean: Vec<i64>, inv_scale: Vec<i64>, weights: Vec<i64>, bias: i64, lut: Vec<u32>, calib: Vec<u32>) -> PyResult<Bound<'py, PyBytes>> {
-    if mean.len() != N_FEATURES || inv_scale.len() != N_FEATURES || weights.len() != N_FEATURES || lut.len() != LUT_LEN || calib.len() != CALIB_LEN {
+fn params_to_bytes<'py>(
+    py: Python<'py>,
+    mean: Vec<i64>,
+    inv_scale: Vec<i64>,
+    weights: Vec<i64>,
+    bias: i64,
+    lut: Vec<u32>,
+    calib: Vec<u32>,
+) -> PyResult<Bound<'py, PyBytes>> {
+    if mean.len() != N_FEATURES
+        || inv_scale.len() != N_FEATURES
+        || weights.len() != N_FEATURES
+        || lut.len() != LUT_LEN
+        || calib.len() != CALIB_LEN
+    {
         return Err(PyValueError::new_err("bad lengths"));
     }
     let p = ModelParams {
@@ -317,7 +352,12 @@ fn parse_seeds(b: &[u8]) -> PyResult<Vec<SeedEvent>> {
     if b.len() % 36 != 0 {
         return Err(PyValueError::new_err("seed events must be 36-byte records"));
     }
-    Ok(b.chunks(36).map(|c| SeedEvent { apply_at_tick: u32::from_le_bytes(c[..4].try_into().unwrap()), seed: c[4..].try_into().unwrap() }).collect())
+    Ok(b.chunks(36)
+        .map(|c| SeedEvent {
+            apply_at_tick: u32::from_le_bytes(c[..4].try_into().unwrap()),
+            seed: c[4..].try_into().unwrap(),
+        })
+        .collect())
 }
 
 /// Replays a match; returns the list of 32-byte chain hashes, one per tick.
@@ -341,7 +381,10 @@ fn genesis_hash<'py>(py: Python<'py>, state: &[u8]) -> PyResult<Bound<'py, PyByt
 #[pyfunction]
 fn determinism_episode_hash<'py>(py: Python<'py>, episode: u64) -> Bound<'py, PyBytes> {
     let mut inputs = vec![[0u16; 2]; 1100];
-    let mut seeds = [SeedEvent { apply_at_tick: 0, seed: [0; 32] }; 8];
+    let mut seeds = [SeedEvent {
+        apply_at_tick: 0,
+        seed: [0; 32],
+    }; 8];
     let (init, n, ns) = sim::determinism_episode(episode, 1100, &mut inputs, &mut seeds);
     PyBytes::new(py, &sim::replay(init, &inputs[..n], &seeds[..ns], |_, _| {}).1)
 }
@@ -350,7 +393,12 @@ fn determinism_episode_hash<'py>(py: Python<'py>, episode: u64) -> Bound<'py, Py
 /// [policy_a, skill_a, policy_b, skill_b, match_seed]. Returns (winner, ticks) arrays.
 #[pyfunction]
 fn run_matches<'py>(py: Python<'py>, specs: PyReadonlyArray2<'py, i64>) -> PyResult<(Bound<'py, PyArray1<u8>>, Bound<'py, PyArray1<u32>>)> {
-    let rows: Vec<[i64; 5]> = specs.as_array().rows().into_iter().map(|r| core::array::from_fn(|i| r[i])).collect();
+    let rows: Vec<[i64; 5]> = specs
+        .as_array()
+        .rows()
+        .into_iter()
+        .map(|r| core::array::from_fn(|i| r[i]))
+        .collect();
     let res: Vec<(u8, u32)> = py.allow_threads(|| {
         rows.par_iter()
             .map(|r| {
@@ -368,7 +416,14 @@ fn run_matches<'py>(py: Python<'py>, specs: PyReadonlyArray2<'py, i64>) -> PyRes
 
 #[pyfunction]
 fn encode_input(mv: u8, fire: bool, dash: bool, shield: bool, aim: u8) -> u16 {
-    Input { mv, fire, dash, shield, aim }.encode()
+    Input {
+        mv,
+        fire,
+        dash,
+        shield,
+        aim,
+    }
+    .encode()
 }
 
 #[pymodule]

@@ -93,7 +93,11 @@ fn ix(data: impl InstructionData, accs: impl ToAccountMetas) -> Instruction {
         accounts: accs
             .to_account_metas(None)
             .into_iter()
-            .map(|m| AccountMeta { pubkey: ad(&m.pubkey), is_signer: m.is_signer, is_writable: m.is_writable })
+            .map(|m| AccountMeta {
+                pubkey: ad(&m.pubkey),
+                is_signer: m.is_signer,
+                is_writable: m.is_writable,
+            })
             .collect(),
         data: data.data(),
     }
@@ -127,7 +131,11 @@ fn unique<'a>(s: &[&'a Keypair]) -> Vec<&'a Keypair> {
 impl World {
     fn tx(&mut self, target: TransactionTarget, signers: &[&Keypair], ixs: Vec<Instruction>) -> Result<Vec<String>, String> {
         let signers = unique(signers);
-        let tx = Transaction::new(&signers, Message::new(&ixs, Some(&signers[0].pubkey())), self.svm.latest_blockhash_for(target));
+        let tx = Transaction::new(
+            &signers,
+            Message::new(&ixs, Some(&signers[0].pubkey())),
+            self.svm.latest_blockhash_for(target),
+        );
         let r = self.svm.send_transaction_to(target, tx);
         self.svm.expire_blockhash_for(target);
         match r {
@@ -145,7 +153,10 @@ impl World {
         }
     }
     fn account(&self, target: TransactionTarget, a: &Address) -> Vec<u8> {
-        self.svm.get_account_for(target, a).unwrap_or_else(|| panic!("missing {a} on {target:?}")).data
+        self.svm
+            .get_account_for(target, a)
+            .unwrap_or_else(|| panic!("missing {a} on {target:?}"))
+            .data
     }
     fn game(&self) -> Match {
         *bytemuck_from::<Match>(&self.account(TransactionTarget::Ephemeral, &match_pda(MATCH_ID)))
@@ -186,7 +197,11 @@ fn create_mint_ixs(payer: &Address, mint: &Address, rent: u64) -> Vec<Instructio
             accounts: vec![AccountMeta::new(*payer, true), AccountMeta::new(*mint, true)],
             data: create,
         },
-        Instruction { program_id: TOKEN, accounts: vec![AccountMeta::new(*mint, false)], data: init },
+        Instruction {
+            program_id: TOKEN,
+            accounts: vec![AccountMeta::new(*mint, false)],
+            data: init,
+        },
     ]
 }
 
@@ -210,7 +225,11 @@ fn mint_to_ix(mint: &Address, dest: &Address, auth: &Address, amount: u64) -> In
     data.extend_from_slice(&amount.to_le_bytes());
     Instruction {
         program_id: TOKEN,
-        accounts: vec![AccountMeta::new(*mint, false), AccountMeta::new(*dest, false), AccountMeta::new_readonly(*auth, true)],
+        accounts: vec![
+            AccountMeta::new(*mint, false),
+            AccountMeta::new(*dest, false),
+            AccountMeta::new_readonly(*auth, true),
+        ],
         data,
     }
 }
@@ -294,7 +313,14 @@ fn config_args(relay: &Address) -> ConfigArgs {
         min_slot_gap: 1,
         freeze_ticks: 2,
         relay_authority: pk(relay),
-        spread: SpreadArgs { s_base: 20_000, s_vol_bps: 5_000, s_time: 20_000, k_skew: 30_000, exposure_cap_per_match: 40 * USDC, max_qty: 25 },
+        spread: SpreadArgs {
+            s_base: 20_000,
+            s_vol_bps: 5_000,
+            s_time: 20_000,
+            k_skew: 30_000,
+            exposure_cap_per_match: 40 * USDC,
+            max_qty: 25,
+        },
     }
 }
 
@@ -302,13 +328,26 @@ fn config_args(relay: &Address) -> ConfigArgs {
 fn setup() -> World {
     let mut svm = MagicSVM::new();
     svm.add_program_from_file(pid(), root().join("target/deploy/ringside.so")).unwrap();
-    svm.add_program_from_file(ad(&session_keys::ID), PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("fixtures/session-keys.so")).unwrap();
+    svm.add_program_from_file(
+        ad(&session_keys::ID),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("fixtures/session-keys.so"),
+    )
+    .unwrap();
     let mut c: Clock = svm.get_sysvar();
     c.unix_timestamp = 1_790_000_000;
     svm.set_sysvar(&c);
     svm.ephemeral_mut().set_sysvar(&c);
     let validator = svm.validator_identity();
-    let w = World { svm, admin: Keypair::new(), relay: Keypair::new(), a: Keypair::new(), b: Keypair::new(), spec: Keypair::new(), mint: Address::default(), validator };
+    let w = World {
+        svm,
+        admin: Keypair::new(),
+        relay: Keypair::new(),
+        a: Keypair::new(),
+        b: Keypair::new(),
+        spec: Keypair::new(),
+        mint: Address::default(),
+        validator,
+    };
     let mut w = w;
     for k in [&w.admin, &w.relay, &w.a, &w.b, &w.spec] {
         w.svm.airdrop(&k.pubkey(), 20 * LAMPORTS_PER_SOL).unwrap();
@@ -318,10 +357,19 @@ fn setup() -> World {
     w.mint = mint_kp.pubkey();
     let mint = w.mint;
     let rent = w.svm.minimum_balance_for_rent_exemption(82);
-    w.ok(TransactionTarget::Base, &[&admin, &mint_kp], create_mint_ixs(&admin.pubkey(), &mint, rent), "mint");
+    w.ok(
+        TransactionTarget::Base,
+        &[&admin, &mint_kp],
+        create_mint_ixs(&admin.pubkey(), &mint, rent),
+        "mint",
+    );
     let people: Vec<Address> = [&w.admin, &w.a, &w.b, &w.spec].iter().map(|k| k.pubkey()).collect();
     let mut ixs: Vec<Instruction> = people.iter().map(|p| create_ata_ix(&admin.pubkey(), p, &mint)).collect();
-    ixs.extend(people.iter().map(|p| mint_to_ix(&mint, &ata(p, &mint), &admin.pubkey(), 1_000 * USDC)));
+    ixs.extend(
+        people
+            .iter()
+            .map(|p| mint_to_ix(&mint, &ata(p, &mint), &admin.pubkey(), 1_000 * USDC)),
+    );
     w.ok(TransactionTarget::Base, &[&admin], ixs, "atas");
 
     // Config + model.
@@ -330,8 +378,15 @@ fn setup() -> World {
         TransactionTarget::Base,
         &[&admin],
         vec![ix(
-            instruction::InitializeConfig { args: config_args(&w.relay.pubkey()) },
-            accounts::InitializeConfig { admin: pk(&admin.pubkey()), config: pk(&cfg), usdc_mint: pk(&mint), system_program: system_program::ID },
+            instruction::InitializeConfig {
+                args: config_args(&w.relay.pubkey()),
+            },
+            accounts::InitializeConfig {
+                admin: pk(&admin.pubkey()),
+                config: pk(&cfg),
+                usdc_mint: pk(&mint),
+                system_program: system_program::ID,
+            },
         )],
         "initialize_config",
     );
@@ -340,7 +395,15 @@ fn setup() -> World {
     w.ok(
         TransactionTarget::Base,
         &[&admin],
-        vec![ix(instruction::CreateModel { version: 1 }, accounts::CreateModel { admin: pk(&admin.pubkey()), config: pk(&cfg), model: pk(&model), system_program: system_program::ID })],
+        vec![ix(
+            instruction::CreateModel { version: 1 },
+            accounts::CreateModel {
+                admin: pk(&admin.pubkey()),
+                config: pk(&cfg),
+                model: pk(&model),
+                system_program: system_program::ID,
+            },
+        )],
         "create_model",
     );
     for (i, chunk) in blob.chunks(900).enumerate() {
@@ -348,8 +411,16 @@ fn setup() -> World {
             TransactionTarget::Base,
             &[&admin],
             vec![ix(
-                instruction::SetModelParams { version: 1, offset: (i * 900) as u32, chunk: chunk.to_vec() },
-                accounts::SetModel { admin: pk(&admin.pubkey()), config: pk(&cfg), model: pk(&model) },
+                instruction::SetModelParams {
+                    version: 1,
+                    offset: (i * 900) as u32,
+                    chunk: chunk.to_vec(),
+                },
+                accounts::SetModel {
+                    admin: pk(&admin.pubkey()),
+                    config: pk(&cfg),
+                    model: pk(&model),
+                },
             )],
             "set_model_params",
         );
@@ -357,14 +428,33 @@ fn setup() -> World {
     w.ok(
         TransactionTarget::Base,
         &[&admin],
-        vec![ix(instruction::FinalizeModel { version: 1, metrics_hash: [7; 32] }, accounts::FinalizeModel { admin: pk(&admin.pubkey()), config: pk(&cfg), model: pk(&model) })],
+        vec![ix(
+            instruction::FinalizeModel {
+                version: 1,
+                metrics_hash: [7; 32],
+            },
+            accounts::FinalizeModel {
+                admin: pk(&admin.pubkey()),
+                config: pk(&cfg),
+                model: pk(&model),
+            },
+        )],
         "finalize_model",
     );
     let stored = w.account(TransactionTarget::Base, &model);
     assert_eq!(&stored[8 + 72..8 + 72 + blob.len()], &blob[..], "model blob round-trips");
 
     // eSPL vault for the mint, house vault eATA, and user deposits.
-    w.ok(TransactionTarget::Base, &[&admin], vec![init_vault_ix(&admin.pubkey(), &mint), create_ata_ix(&admin.pubkey(), &vault(&mint), &mint), delegate_eata_ix(&admin.pubkey(), &vault(&mint), &mint, &validator)], "espl vault");
+    w.ok(
+        TransactionTarget::Base,
+        &[&admin],
+        vec![
+            init_vault_ix(&admin.pubkey(), &mint),
+            create_ata_ix(&admin.pubkey(), &vault(&mint), &mint),
+            delegate_eata_ix(&admin.pubkey(), &vault(&mint), &mint, &validator),
+        ],
+        "espl vault",
+    );
     let house_eata = eata(&cfg, &mint);
     w.ok(
         TransactionTarget::Base,
@@ -390,12 +480,21 @@ fn setup() -> World {
         }],
         "init_house_vault",
     );
-    for k in [w.admin.insecure_clone(), w.a.insecure_clone(), w.b.insecure_clone(), w.spec.insecure_clone()] {
+    for k in [
+        w.admin.insecure_clone(),
+        w.a.insecure_clone(),
+        w.b.insecure_clone(),
+        w.spec.insecure_clone(),
+    ] {
         let amount = if k.pubkey() == admin.pubkey() { 500 * USDC } else { 100 * USDC };
         w.ok(
             TransactionTarget::Base,
             &[&admin, &k],
-            vec![init_eata_ix(&admin.pubkey(), &k.pubkey(), &mint), transfer_to_vault_ix(&k.pubkey(), &mint, amount), delegate_eata_ix(&admin.pubkey(), &k.pubkey(), &mint, &validator)],
+            vec![
+                init_eata_ix(&admin.pubkey(), &k.pubkey(), &mint),
+                transfer_to_vault_ix(&k.pubkey(), &mint, amount),
+                delegate_eata_ix(&admin.pubkey(), &k.pubkey(), &mint, &validator),
+            ],
             "user deposit",
         );
     }
@@ -405,7 +504,13 @@ fn setup() -> World {
         &[&admin],
         vec![ix(
             instruction::TopupHouseVault { amount: 400 * USDC },
-            accounts::TopupHouse { admin: pk(&admin.pubkey()), config: pk(&cfg), admin_token: pk(&ata(&admin.pubkey(), &mint)), house_token: pk(&ata(&cfg, &mint)), token_program: pk(&TOKEN) },
+            accounts::TopupHouse {
+                admin: pk(&admin.pubkey()),
+                config: pk(&cfg),
+                admin_token: pk(&ata(&admin.pubkey(), &mint)),
+                house_token: pk(&ata(&cfg, &mint)),
+                token_program: pk(&TOKEN),
+            },
         )],
         "topup_house_vault",
     );
@@ -414,7 +519,20 @@ fn setup() -> World {
     // Profiles.
     for k in [w.a.insecure_clone(), w.b.insecure_clone()] {
         let prof = profile_pda(&k.pubkey());
-        w.ok(TransactionTarget::Base, &[&admin], vec![ix(instruction::CreateProfile {}, accounts::CreateProfile { payer: pk(&admin.pubkey()), wallet: pk(&k.pubkey()), profile: pk(&prof), system_program: system_program::ID })], "create_profile");
+        w.ok(
+            TransactionTarget::Base,
+            &[&admin],
+            vec![ix(
+                instruction::CreateProfile {},
+                accounts::CreateProfile {
+                    payer: pk(&admin.pubkey()),
+                    wallet: pk(&k.pubkey()),
+                    profile: pk(&prof),
+                    system_program: system_program::ID,
+                },
+            )],
+            "create_profile",
+        );
         let mut d = ix(
             instruction::DelegateProfile {},
             accounts::DelegateProfile {
@@ -448,7 +566,12 @@ fn create_and_delegate_match(w: &mut World, id: u64) {
         TransactionTarget::Base,
         &[&admin],
         vec![ix(
-            instruction::CreateMatch { match_id: id, stake: STAKE, opponent: Pubkey::default(), delay_ms: 5000 },
+            instruction::CreateMatch {
+                match_id: id,
+                stake: STAKE,
+                opponent: Pubkey::default(),
+                delay_ms: 5000,
+            },
             accounts::CreateMatch {
                 creator: pk(&admin.pubkey()),
                 config: pk(&cfg),
@@ -503,7 +626,11 @@ fn create_and_delegate_match(w: &mut World, id: u64) {
     );
     e.accounts.push(AccountMeta::new_readonly(validator, false));
     w.ok(TransactionTarget::Base, &[&admin], vec![d, e], "delegate_match + delegate_escrow");
-    assert_eq!(w.svm.get_account_for(TransactionTarget::Base, &game).unwrap().owner, DLP, "match delegated on base");
+    assert_eq!(
+        w.svm.get_account_for(TransactionTarget::Base, &game).unwrap().owner,
+        DLP,
+        "match delegated on base"
+    );
 }
 
 fn join_ix(w: &World, signer: &Address, player: &Address, id: u64) -> Instruction {
@@ -523,21 +650,56 @@ fn join_ix(w: &World, signer: &Address, player: &Address, id: u64) -> Instructio
 }
 
 fn tick_ix(id: u64) -> Instruction {
-    ix(instruction::Tick { _match_id: id }, accounts::Tick { config: pk(&config_pda()), model: pk(&model_pda(1)), game: pk(&match_pda(id)), market_live: pk(&market_pda(id, MODE_LIVE)) })
+    ix(
+        instruction::Tick { _match_id: id },
+        accounts::Tick {
+            config: pk(&config_pda()),
+            model: pk(&model_pda(1)),
+            game: pk(&match_pda(id)),
+            market_live: pk(&market_pda(id, MODE_LIVE)),
+        },
+    )
 }
 
 fn input_ix(player: &Address, id: u64, seq: u64, bits: u16) -> Instruction {
     ix(
-        instruction::SubmitInput { _match_id: id, seq, input_bits: bits },
-        accounts::SubmitInput { signer: pk(player), player: pk(player), game: pk(&match_pda(id)), session_token: None },
+        instruction::SubmitInput {
+            _match_id: id,
+            seq,
+            input_bits: bits,
+        },
+        accounts::SubmitInput {
+            signer: pk(player),
+            player: pk(player),
+            game: pk(&match_pda(id)),
+            session_token: None,
+        },
     )
 }
 
 #[allow(clippy::too_many_arguments)]
-fn trade_ix(w: &World, trader: &Address, mode: u8, seen: u64, side: TradeSide, dir: TradeDir, qty: u64, limit: u64, record: bool) -> Instruction {
+fn trade_ix(
+    w: &World,
+    trader: &Address,
+    mode: u8,
+    seen: u64,
+    side: TradeSide,
+    dir: TradeDir,
+    qty: u64,
+    limit: u64,
+    record: bool,
+) -> Instruction {
     let market = market_pda(MATCH_ID, mode);
     ix(
-        instruction::Trade { _match_id: MATCH_ID, seen_tick: seen, side, dir, qty, limit_price: limit, record_rejects: record },
+        instruction::Trade {
+            _match_id: MATCH_ID,
+            seen_tick: seen,
+            side,
+            dir,
+            qty,
+            limit_price: limit,
+            record_rejects: record,
+        },
         accounts::Trade {
             signer: pk(trader),
             trader: pk(trader),
@@ -583,7 +745,16 @@ fn join_position(w: &mut World, who: &Keypair, mode: u8) -> Address {
         TransactionTarget::Base,
         &[&admin],
         vec![
-            ix(instruction::JoinPosition {}, accounts::JoinPosition { payer: pk(&admin.pubkey()), owner: pk(&who.pubkey()), market: pk(&market), position: pk(&pos), system_program: system_program::ID }),
+            ix(
+                instruction::JoinPosition {},
+                accounts::JoinPosition {
+                    payer: pk(&admin.pubkey()),
+                    owner: pk(&who.pubkey()),
+                    market: pk(&market),
+                    position: pk(&pos),
+                    system_program: system_program::ID,
+                },
+            ),
             {
                 let mut d = ix(
                     instruction::DelegatePosition {},
@@ -659,7 +830,9 @@ fn request_wave(w: &mut World) {
 
 fn consumed(logs: &[String]) -> Option<u64> {
     let me = format!("Program {} consumed ", ringside::ID);
-    logs.iter().rev().find_map(|l| l.strip_prefix(&me).and_then(|r| r.split(' ').next()).and_then(|n| n.parse().ok()))
+    logs.iter()
+        .rev()
+        .find_map(|l| l.strip_prefix(&me).and_then(|r| r.split(' ').next()).and_then(|n| n.parse().ok()))
 }
 
 const E_STALE: u32 = 6000;
@@ -675,14 +848,26 @@ const E_UNAUTH: u32 = 6015;
 #[test]
 fn full_match_lifecycle() {
     let mut w = setup();
-    let (a, b, spec, admin, relay) = (w.a.insecure_clone(), w.b.insecure_clone(), w.spec.insecure_clone(), w.admin.insecure_clone(), w.relay.insecure_clone());
+    let (a, b, spec, admin, relay) = (
+        w.a.insecure_clone(),
+        w.b.insecure_clone(),
+        w.spec.insecure_clone(),
+        w.admin.insecure_clone(),
+        w.relay.insecure_clone(),
+    );
     let mint = w.mint;
 
     // Positions exist before the bell; ticking a lobby match is rejected.
     let pos_live = join_position(&mut w, &spec, MODE_LIVE);
     let pos_delayed = join_position(&mut w, &spec, MODE_DELAYED);
     let pos_fighter = join_position(&mut w, &a, MODE_LIVE);
-    w.err(TransactionTarget::Ephemeral, &[&admin], vec![tick_ix(MATCH_ID)], E_CLOSED, "tick in lobby");
+    w.err(
+        TransactionTarget::Ephemeral,
+        &[&admin],
+        vec![tick_ix(MATCH_ID)],
+        E_CLOSED,
+        "tick in lobby",
+    );
 
     // Fighters join; stakes move to escrow; the match goes live.
     let a_before = w.token(TransactionTarget::Ephemeral, &ata(&a.pubkey(), &mint));
@@ -708,16 +893,45 @@ fn full_match_lifecycle() {
     assert_ne!(seed0, [0u8; 32]);
 
     // Inputs: only fighters, monotonic, one per tick.
-    w.err(TransactionTarget::Ephemeral, &[&spec], vec![input_ix(&spec.pubkey(), MATCH_ID, 1, 0)], E_NOT_FIGHTER, "spectator input");
-    w.ok(TransactionTarget::Ephemeral, &[&a], vec![input_ix(&a.pubkey(), MATCH_ID, 1, 0x0010)], "input A");
-    w.err(TransactionTarget::Ephemeral, &[&a], vec![input_ix(&a.pubkey(), MATCH_ID, 2, 0x0010)], E_BAD_SEQ, "second input same tick");
-    w.err(TransactionTarget::Ephemeral, &[&a], vec![input_ix(&a.pubkey(), MATCH_ID, 1, 0x0010)], E_BAD_SEQ, "non-monotonic seq");
+    w.err(
+        TransactionTarget::Ephemeral,
+        &[&spec],
+        vec![input_ix(&spec.pubkey(), MATCH_ID, 1, 0)],
+        E_NOT_FIGHTER,
+        "spectator input",
+    );
+    w.ok(
+        TransactionTarget::Ephemeral,
+        &[&a],
+        vec![input_ix(&a.pubkey(), MATCH_ID, 1, 0x0010)],
+        "input A",
+    );
+    w.err(
+        TransactionTarget::Ephemeral,
+        &[&a],
+        vec![input_ix(&a.pubkey(), MATCH_ID, 2, 0x0010)],
+        E_BAD_SEQ,
+        "second input same tick",
+    );
+    w.err(
+        TransactionTarget::Ephemeral,
+        &[&a],
+        vec![input_ix(&a.pubkey(), MATCH_ID, 1, 0x0010)],
+        E_BAD_SEQ,
+        "non-monotonic seq",
+    );
 
     // Time gate: same slot → too early.
     let c = w.er_clock();
     w.set_er_clock(c.slot + 1, c.unix_timestamp);
     w.ok(TransactionTarget::Ephemeral, &[&admin], vec![tick_ix(MATCH_ID)], "tick 1");
-    w.err(TransactionTarget::Ephemeral, &[&admin], vec![tick_ix(MATCH_ID)], E_TOO_EARLY, "tick twice in one slot");
+    w.err(
+        TransactionTarget::Ephemeral,
+        &[&admin],
+        vec![tick_ix(MATCH_ID)],
+        E_TOO_EARLY,
+        "tick twice in one slot",
+    );
     // Wall-clock bound: game time cannot run ahead of real time by more than a second.
     let mut gated = 0;
     for _ in 0..30 {
@@ -730,7 +944,10 @@ fn full_match_lifecycle() {
 
     // Track inputs per tick to re-derive the hash chain off-chain.
     let mut inputs_log: Vec<[u16; 2]> = vec![];
-    let mut seeds: Vec<ringside_sim::SeedEvent> = vec![ringside_sim::SeedEvent { apply_at_tick: 1, seed: seed0 }];
+    let mut seeds: Vec<ringside_sim::SeedEvent> = vec![ringside_sim::SeedEvent {
+        apply_at_tick: 1,
+        seed: seed0,
+    }];
     // Re-read the ticks already executed.
     let executed = w.game().tick();
     assert!(executed >= 1);
@@ -761,11 +978,21 @@ fn full_match_lifecycle() {
         let ib = bot_b.act(&s, 1);
         seq[0] += 1;
         seq[1] += 1;
-        w.ok(TransactionTarget::Ephemeral, &[&a, &b], vec![input_ix(&a.pubkey(), MATCH_ID, seq[0], ia), input_ix(&b.pubkey(), MATCH_ID, seq[1], ib)], "inputs");
+        w.ok(
+            TransactionTarget::Ephemeral,
+            &[&a, &b],
+            vec![
+                input_ix(&a.pubkey(), MATCH_ID, seq[0], ia),
+                input_ix(&b.pubkey(), MATCH_ID, seq[1], ib),
+            ],
+            "inputs",
+        );
         if s.wave_index != g.vrf_requested_wave && s.wave_index < 6 && g.vrf_requested_wave != s.wave_index {
             request_wave(&mut w);
             let g2 = w.game();
-            let seed: [u8; 32] = g2.sim[ringside::SIM_SEED_OFFSET..ringside::SIM_SEED_OFFSET + 32].try_into().unwrap();
+            let seed: [u8; 32] = g2.sim[ringside::SIM_SEED_OFFSET..ringside::SIM_SEED_OFFSET + 32]
+                .try_into()
+                .unwrap();
             chain_state.vrf_seed = seed;
         }
         // Keep the wall clock ahead of game time so only the slot gate applies.
@@ -785,12 +1012,32 @@ fn full_match_lifecycle() {
 
         let m = w.market(MODE_LIVE);
         if g.status == ST_LIVE || g.status == ST_SUDDEN_DEATH {
-            assert_eq!(m.last_priced_tick, g.tick() as u64, "book priced in the same instruction as the tick");
+            assert_eq!(
+                m.last_priced_tick,
+                g.tick() as u64,
+                "book priced in the same instruction as the tick"
+            );
             assert!(m.bid_a < m.ask_a && m.bid_a >= 10_000 && m.ask_a <= 990_000);
             if m.frozen_until_tick > m.last_priced_tick && !lethal_freeze_seen {
                 lethal_freeze_seen = true;
-                let t = trade_ix(&w, &spec.pubkey(), MODE_LIVE, m.last_priced_tick, TradeSide::A, TradeDir::Buy, 1, USDC, false);
-                w.err(TransactionTarget::Ephemeral, &[&spec], vec![t], 6012, "frozen after lethal-range hit");
+                let t = trade_ix(
+                    &w,
+                    &spec.pubkey(),
+                    MODE_LIVE,
+                    m.last_priced_tick,
+                    TradeSide::A,
+                    TradeDir::Buy,
+                    1,
+                    USDC,
+                    false,
+                );
+                w.err(
+                    TransactionTarget::Ephemeral,
+                    &[&spec],
+                    vec![t],
+                    6012,
+                    "frozen after lethal-range hit",
+                );
             }
         }
         if g.tick() == 30 && !traded && m.frozen_until_tick <= m.last_priced_tick {
@@ -804,7 +1051,10 @@ fn full_match_lifecycle() {
             let m2 = w.market(MODE_LIVE);
             assert_eq!(m2.inv_a, 10);
             assert_eq!(m2.n_trades, 1);
-            assert_eq!(w.token(TransactionTarget::Ephemeral, &ata(&spec.pubkey(), &mint)), spec_before - 10 * m.ask_a);
+            assert_eq!(
+                w.token(TransactionTarget::Ephemeral, &ata(&spec.pubkey(), &mint)),
+                spec_before - 10 * m.ask_a
+            );
             // Sell some back.
             let t = trade_ix(&w, &spec.pubkey(), MODE_LIVE, tick, TradeSide::A, TradeDir::Sell, 2, 0, false);
             w.ok(TransactionTarget::Ephemeral, &[&spec], vec![t], "sell A");
@@ -822,30 +1072,74 @@ fn full_match_lifecycle() {
             w.err(TransactionTarget::Ephemeral, &[&a], vec![t], E_FIGHTER, "fighter barred");
             let _ = pos_fighter;
             // Slippage: limit below ask.
-            let t = trade_ix(&w, &spec.pubkey(), MODE_LIVE, tick, TradeSide::B, TradeDir::Buy, 1, m.ask_b - 1, false);
+            let t = trade_ix(
+                &w,
+                &spec.pubkey(),
+                MODE_LIVE,
+                tick,
+                TradeSide::B,
+                TradeDir::Buy,
+                1,
+                m.ask_b - 1,
+                false,
+            );
             w.err(TransactionTarget::Ephemeral, &[&spec], vec![t], E_SLIPPAGE, "slippage");
             // Exposure: cap 40 USDC; a large A buy pushes worst-case loss over it.
             for _ in 0..4 {
                 let m3 = w.market(MODE_LIVE);
-                let t = trade_ix(&w, &spec.pubkey(), MODE_LIVE, m3.last_priced_tick, TradeSide::A, TradeDir::Buy, 25, USDC, false);
+                let t = trade_ix(
+                    &w,
+                    &spec.pubkey(),
+                    MODE_LIVE,
+                    m3.last_priced_tick,
+                    TradeSide::A,
+                    TradeDir::Buy,
+                    25,
+                    USDC,
+                    false,
+                );
                 if w.tx(TransactionTarget::Ephemeral, &[&spec], vec![t]).is_err() {
                     break;
                 }
             }
             let m3 = w.market(MODE_LIVE);
-            let t = trade_ix(&w, &spec.pubkey(), MODE_LIVE, m3.last_priced_tick, TradeSide::A, TradeDir::Buy, 25, USDC, false);
+            let t = trade_ix(
+                &w,
+                &spec.pubkey(),
+                MODE_LIVE,
+                m3.last_priced_tick,
+                TradeSide::A,
+                TradeDir::Buy,
+                25,
+                USDC,
+                false,
+            );
             w.err(TransactionTarget::Ephemeral, &[&spec], vec![t], E_EXPOSURE, "exposure cap");
             assert!(w.market(MODE_LIVE).max_exposure_seen <= 40 * USDC);
 
             // Private position: only the owner (and the house authority) can read it on the ER.
             w.svm.set_authorized_user(None);
-            assert!(w.svm.get_account_for(TransactionTarget::Ephemeral, &pos_live).is_none(), "unauthenticated read denied");
+            assert!(
+                w.svm.get_account_for(TransactionTarget::Ephemeral, &pos_live).is_none(),
+                "unauthenticated read denied"
+            );
             w.svm.set_authorized_user(Some(b.pubkey()));
-            assert!(w.svm.get_account_for(TransactionTarget::Ephemeral, &pos_live).is_none(), "opposing fighter denied");
+            assert!(
+                w.svm.get_account_for(TransactionTarget::Ephemeral, &pos_live).is_none(),
+                "opposing fighter denied"
+            );
             w.svm.set_authorized_user(Some(spec.pubkey()));
-            assert!(w.svm.get_account_for(TransactionTarget::Ephemeral, &pos_live).is_some(), "owner can read");
+            assert!(
+                w.svm.get_account_for(TransactionTarget::Ephemeral, &pos_live).is_some(),
+                "owner can read"
+            );
             w.svm.set_authorized_user(None);
-            assert!(w.svm.get_account_for(TransactionTarget::Ephemeral, &market_pda(MATCH_ID, MODE_LIVE)).is_some(), "market is public");
+            assert!(
+                w.svm
+                    .get_account_for(TransactionTarget::Ephemeral, &market_pda(MATCH_ID, MODE_LIVE))
+                    .is_some(),
+                "market is public"
+            );
             w.svm.set_authorized_user(Some(spec.pubkey()));
         }
         if g.tick() == 60 && !checked_relay {
@@ -854,11 +1148,28 @@ fn full_match_lifecycle() {
             let old = ringside_sim::features(&chain_state);
             let r = |signer: &Keypair| {
                 ix(
-                    instruction::RelayDelayedState { _match_id: MATCH_ID, tick: 10, features: old, time_left_ms: 89_000, lethal: false },
-                    accounts::RelayDelayed { relay: pk(&signer.pubkey()), config: pk(&config_pda()), model: pk(&model_pda(1)), market_delayed: pk(&market_pda(MATCH_ID, MODE_DELAYED)) },
+                    instruction::RelayDelayedState {
+                        _match_id: MATCH_ID,
+                        tick: 10,
+                        features: old,
+                        time_left_ms: 89_000,
+                        lethal: false,
+                    },
+                    accounts::RelayDelayed {
+                        relay: pk(&signer.pubkey()),
+                        config: pk(&config_pda()),
+                        model: pk(&model_pda(1)),
+                        market_delayed: pk(&market_pda(MATCH_ID, MODE_DELAYED)),
+                    },
                 )
             };
-            w.err(TransactionTarget::Ephemeral, &[&spec], vec![r(&spec)], E_UNAUTH, "relay by non-relay");
+            w.err(
+                TransactionTarget::Ephemeral,
+                &[&spec],
+                vec![r(&spec)],
+                E_UNAUTH,
+                "relay by non-relay",
+            );
             w.ok(TransactionTarget::Ephemeral, &[&relay], vec![r(&relay)], "relay");
             let md = w.market(MODE_DELAYED);
             assert_eq!(md.last_priced_tick, 10);
@@ -868,13 +1179,26 @@ fn full_match_lifecycle() {
             w.ok(TransactionTarget::Ephemeral, &[&spec], vec![t], "delayed book fill on old tick");
             // The live book rejects the same seen_tick.
             let t = trade_ix(&w, &spec.pubkey(), MODE_LIVE, 10, TradeSide::A, TradeDir::Buy, 3, USDC, false);
-            w.err(TransactionTarget::Ephemeral, &[&spec], vec![t], E_STALE, "live book rejects old tick");
+            w.err(
+                TransactionTarget::Ephemeral,
+                &[&spec],
+                vec![t],
+                E_STALE,
+                "live book rejects old tick",
+            );
         }
     }
     assert!(traded && saw_stale && checked_relay);
     tick_cu.sort();
     let p = |q: f64| tick_cu[((tick_cu.len() - 1) as f64 * q) as usize];
-    let report = format!("{{\"tick_cu_p50\":{},\"tick_cu_p99\":{},\"tick_cu_max\":{},\"trade_cu\":{},\"ticks_measured\":{}}}", p(0.5), p(0.99), tick_cu[tick_cu.len() - 1], trade_cu[0], tick_cu.len());
+    let report = format!(
+        "{{\"tick_cu_p50\":{},\"tick_cu_p99\":{},\"tick_cu_max\":{},\"trade_cu\":{},\"ticks_measured\":{}}}",
+        p(0.5),
+        p(0.99),
+        tick_cu[tick_cu.len() - 1],
+        trade_cu[0],
+        tick_cu.len()
+    );
     std::fs::create_dir_all(root().join("eval/results")).unwrap();
     std::fs::write(root().join("eval/results/cu_magicsvm.json"), &report).unwrap();
     println!("CU {report}");
@@ -885,13 +1209,27 @@ fn full_match_lifecycle() {
     let m = w.market(MODE_LIVE);
     assert_eq!(m.status, MK_CLOSED);
     // Trading after the bell is closed.
-    let t = trade_ix(&w, &spec.pubkey(), MODE_LIVE, m.last_priced_tick, TradeSide::A, TradeDir::Buy, 1, USDC, false);
+    let t = trade_ix(
+        &w,
+        &spec.pubkey(),
+        MODE_LIVE,
+        m.last_priced_tick,
+        TradeSide::A,
+        TradeDir::Buy,
+        1,
+        USDC,
+        false,
+    );
     w.err(TransactionTarget::Ephemeral, &[&spec], vec![t], E_CLOSED, "closed after the bell");
     // Ticks after the end are harmless no-ops.
     do_tick(&mut w).expect("tick after end is a no-op");
 
     // Settle: fighter payout, fee, profiles, reveal of the passed positions.
-    let winner_key = if g.winner == ringside_sim::WINNER_A { a.pubkey() } else { b.pubkey() };
+    let winner_key = if g.winner == ringside_sim::WINNER_A {
+        a.pubkey()
+    } else {
+        b.pubkey()
+    };
     let wb = w.token(TransactionTarget::Ephemeral, &ata(&winner_key, &mint));
     let mut s = settle_ix(&w, MATCH_ID);
     for p in [pos_live, pos_delayed] {
@@ -902,14 +1240,25 @@ fn full_match_lifecycle() {
     let g = w.game();
     assert!(g.status == ST_SETTLED || g.status == ST_DRAW);
     if g.status == ST_SETTLED {
-        assert_eq!(w.token(TransactionTarget::Ephemeral, &ata(&winner_key, &mint)), wb + 2 * STAKE - 2 * STAKE / 100);
+        assert_eq!(
+            w.token(TransactionTarget::Ephemeral, &ata(&winner_key, &mint)),
+            wb + 2 * STAKE - 2 * STAKE / 100
+        );
         assert_eq!(w.market(MODE_LIVE).fee_accrued, 2 * STAKE / 100);
     }
     assert_eq!(w.token(TransactionTarget::Ephemeral, &ata(&match_pda(MATCH_ID), &mint)), 0);
-    w.ok(TransactionTarget::Ephemeral, &[&admin], vec![settle_ix(&w, MATCH_ID)], "settle is idempotent");
+    w.ok(
+        TransactionTarget::Ephemeral,
+        &[&admin],
+        vec![settle_ix(&w, MATCH_ID)],
+        "settle is idempotent",
+    );
     // Reveal: anyone can read the positions now.
     w.svm.set_authorized_user(None);
-    assert!(w.svm.get_account_for(TransactionTarget::Ephemeral, &pos_live).is_some(), "revealed after settle");
+    assert!(
+        w.svm.get_account_for(TransactionTarget::Ephemeral, &pos_live).is_some(),
+        "revealed after settle"
+    );
     w.svm.set_authorized_user(Some(spec.pubkey()));
 
     // Claims pay winning shares 1 USDC each, once.
@@ -937,10 +1286,16 @@ fn full_match_lifecycle() {
         ringside_sim::WINNER_B => shares_b * USDC,
         _ => i64::from_le_bytes(pos_data[8 + 80..8 + 88].try_into().unwrap()).max(0) as u64,
     };
-    assert_eq!(w.token(TransactionTarget::Ephemeral, &ata(&spec.pubkey(), &mint)), before + expected);
+    assert_eq!(
+        w.token(TransactionTarget::Ephemeral, &ata(&spec.pubkey(), &mint)),
+        before + expected
+    );
     let c2 = claim(&w);
     w.ok(TransactionTarget::Ephemeral, &[&admin], vec![c2], "claim twice is a no-op");
-    assert_eq!(w.token(TransactionTarget::Ephemeral, &ata(&spec.pubkey(), &mint)), before + expected);
+    assert_eq!(
+        w.token(TransactionTarget::Ephemeral, &ata(&spec.pubkey(), &mint)),
+        before + expected
+    );
 
     // Finalize: commit + Magic Action writes the MatchRecord on the base layer.
     let f = ix(
@@ -969,31 +1324,65 @@ fn full_match_lifecycle() {
     let admin_before = w.token(TransactionTarget::Ephemeral, &ata(&admin.pubkey(), &mint));
     let wf = ix(
         instruction::WithdrawFees { _match_id: MATCH_ID },
-        accounts::WithdrawFees { admin: pk(&admin.pubkey()), config: pk(&config_pda()), market_live: pk(&market_pda(MATCH_ID, MODE_LIVE)), admin_token: pk(&ata(&admin.pubkey(), &mint)), house_token: pk(&ata(&config_pda(), &mint)), token_program: pk(&TOKEN) },
+        accounts::WithdrawFees {
+            admin: pk(&admin.pubkey()),
+            config: pk(&config_pda()),
+            market_live: pk(&market_pda(MATCH_ID, MODE_LIVE)),
+            admin_token: pk(&ata(&admin.pubkey(), &mint)),
+            house_token: pk(&ata(&config_pda(), &mint)),
+            token_program: pk(&TOKEN),
+        },
     );
     w.ok(TransactionTarget::Ephemeral, &[&admin], vec![wf], "withdraw_fees");
-    assert_eq!(w.token(TransactionTarget::Ephemeral, &ata(&admin.pubkey(), &mint)), admin_before + fee);
+    assert_eq!(
+        w.token(TransactionTarget::Ephemeral, &ata(&admin.pubkey(), &mint)),
+        admin_before + fee
+    );
     let mut cl = ix(
         instruction::CleanupPositions { _match_id: MATCH_ID },
-        accounts::Cleanup { payer: pk(&admin.pubkey()), game: pk(&match_pda(MATCH_ID)), market_delayed: pk(&market_pda(MATCH_ID, MODE_DELAYED)), magic_program: MAGIC_PROGRAM_ID, magic_context: pk(&ad(&MAGIC_CONTEXT_ID)) },
+        accounts::Cleanup {
+            payer: pk(&admin.pubkey()),
+            game: pk(&match_pda(MATCH_ID)),
+            market_delayed: pk(&market_pda(MATCH_ID, MODE_DELAYED)),
+            magic_program: MAGIC_PROGRAM_ID,
+            magic_context: pk(&ad(&MAGIC_CONTEXT_ID)),
+        },
     );
     cl.accounts.push(AccountMeta::new(pos_live, false));
     cl.accounts.push(AccountMeta::new(market_pda(MATCH_ID, MODE_DELAYED), false));
     w.ok(TransactionTarget::Ephemeral, &[&admin], vec![cl], "cleanup_positions");
     let slot = w.er_clock().slot;
     let _ = w.svm.warp_to_slot(slot + 2);
-    assert_eq!(w.svm.get_account_for(TransactionTarget::Base, &pos_live).unwrap().owner, pid(), "position undelegated back to the program");
+    assert_eq!(
+        w.svm.get_account_for(TransactionTarget::Base, &pos_live).unwrap().owner,
+        pid(),
+        "position undelegated back to the program"
+    );
 
     // Direct calls to the action handler are rejected (escrow signer missing).
     let direct = ix(
         instruction::WriteMatchRecord {
-            args: RecordArgs { match_id: MATCH_ID, final_hash: [0; 32], ticks: 0, volume_live: 0, volume_delayed: 0, house_pnl_live: 0, house_pnl_delayed: 0, start_unix: 0, end_unix: 0, winner: 0 },
+            args: RecordArgs {
+                match_id: MATCH_ID,
+                final_hash: [0; 32],
+                ticks: 0,
+                volume_live: 0,
+                volume_delayed: 0,
+                house_pnl_live: 0,
+                house_pnl_delayed: 0,
+                start_unix: 0,
+                end_unix: 0,
+                winner: 0,
+            },
         },
         accounts::WriteMatchRecord {
             record: pk(&record_pda(MATCH_ID)),
             source_program: ringside::ID,
             escrow_auth: pk(&admin.pubkey()),
-            escrow: pk(&ad(&ephemeral_rollups_sdk::pda::ephemeral_balance_pda_from_payer(&pk(&admin.pubkey()), 255))),
+            escrow: pk(&ad(&ephemeral_rollups_sdk::pda::ephemeral_balance_pda_from_payer(
+                &pk(&admin.pubkey()),
+                255,
+            ))),
         },
     );
     let mut direct = direct;
@@ -1019,7 +1408,11 @@ fn crank_schedules_ticks_with_derived_task_id() {
     let c = w.er_clock();
     w.set_er_clock(c.slot, start + 100);
     let sched = ix(
-        instruction::ScheduleTick { match_id: MATCH_ID, interval_ms: 100, iterations: 50 },
+        instruction::ScheduleTick {
+            match_id: MATCH_ID,
+            interval_ms: 100,
+            iterations: 50,
+        },
         accounts::ScheduleTick {
             payer: pk(&admin.pubkey()),
             magic_program: MAGIC_PROGRAM_ID,
@@ -1046,7 +1439,11 @@ fn crank_schedules_ticks_with_derived_task_id() {
     let results = w.svm.warp_to_slot(slot + 60);
     let ok = results.iter().filter(|r| r.is_ok()).count();
     let t1 = w.game().tick();
-    assert!(t1 > t0, "crank advanced the match: {t0} -> {t1} ({ok} successful crank runs of {})", results.len());
+    assert!(
+        t1 > t0,
+        "crank advanced the match: {t0} -> {t1} ({ok} successful crank runs of {})",
+        results.len()
+    );
     assert_eq!(ringside::task_id_for(MATCH_ID), ringside::task_id_for(MATCH_ID));
     assert_ne!(ringside::task_id_for(MATCH_ID), ringside::task_id_for(MATCH_ID + 1));
     assert!(ringside::task_id_for(MATCH_ID) > 0);
@@ -1058,7 +1455,15 @@ fn admin_paths_and_pause() {
     let (a, admin, spec) = (w.a.insecure_clone(), w.admin.insecure_clone(), w.spec.insecure_clone());
     let cfg = config_pda();
     // Only the admin can pause.
-    let p = |who: &Keypair, paused: bool| ix(instruction::Pause { paused }, accounts::AdminConfig { admin: pk(&who.pubkey()), config: pk(&cfg) });
+    let p = |who: &Keypair, paused: bool| {
+        ix(
+            instruction::Pause { paused },
+            accounts::AdminConfig {
+                admin: pk(&who.pubkey()),
+                config: pk(&cfg),
+            },
+        )
+    };
     assert!(w.tx(TransactionTarget::Base, &[&spec], vec![p(&spec, true)]).is_err());
     w.ok(TransactionTarget::Base, &[&admin], vec![p(&admin, true)], "pause");
     // Config is read on the ER (cloned from base): joins are rejected while paused.
@@ -1067,8 +1472,26 @@ fn admin_paths_and_pause() {
     assert!(r.is_err() && r.unwrap_err().contains("Custom(6009)"), "paused join rejected");
     w.ok(TransactionTarget::Base, &[&admin], vec![p(&admin, false)], "unpause");
     // Spread params update.
-    let sp = SpreadArgs { s_base: 30_000, s_vol_bps: 4_000, s_time: 10_000, k_skew: 20_000, exposure_cap_per_match: 50 * USDC, max_qty: 20 };
-    w.ok(TransactionTarget::Base, &[&admin], vec![ix(instruction::SetSpreadParams { args: sp }, accounts::AdminConfig { admin: pk(&admin.pubkey()), config: pk(&cfg) })], "set_spread_params");
+    let sp = SpreadArgs {
+        s_base: 30_000,
+        s_vol_bps: 4_000,
+        s_time: 10_000,
+        k_skew: 20_000,
+        exposure_cap_per_match: 50 * USDC,
+        max_qty: 20,
+    };
+    w.ok(
+        TransactionTarget::Base,
+        &[&admin],
+        vec![ix(
+            instruction::SetSpreadParams { args: sp },
+            accounts::AdminConfig {
+                admin: pk(&admin.pubkey()),
+                config: pk(&cfg),
+            },
+        )],
+        "set_spread_params",
+    );
     let data = w.account(TransactionTarget::Base, &cfg);
     let s_base = u64::from_le_bytes(data[8 + 128 + 16..8 + 128 + 24].try_into().unwrap());
     assert_eq!(s_base, 30_000);
@@ -1085,7 +1508,16 @@ fn spoofed_vrf_callback_is_rejected() {
     request_wave(&mut w);
     let fake = Keypair::new();
     w.svm.airdrop(&fake.pubkey(), LAMPORTS_PER_SOL).unwrap();
-    let spoof = ix(instruction::VrfCallback { randomness: [9; 32], wave: 1 }, accounts::VrfCallback { vrf_program_identity: pk(&fake.pubkey()), game: pk(&match_pda(MATCH_ID)) });
+    let spoof = ix(
+        instruction::VrfCallback {
+            randomness: [9; 32],
+            wave: 1,
+        },
+        accounts::VrfCallback {
+            vrf_program_identity: pk(&fake.pubkey()),
+            game: pk(&match_pda(MATCH_ID)),
+        },
+    );
     w.err(TransactionTarget::Ephemeral, &[&fake], vec![spoof], 6008, "spoofed callback");
     let _ = admin;
 }
@@ -1098,7 +1530,10 @@ fn draw_refunds_both_stakes() {
     w.ok(TransactionTarget::Ephemeral, &[&a], vec![ja], "join A");
     let jb = join_ix(&w, &b.pubkey(), &b.pubkey(), MATCH_ID);
     w.ok(TransactionTarget::Ephemeral, &[&b], vec![jb], "join B");
-    let (ab, bb) = (w.token(TransactionTarget::Ephemeral, &ata(&a.pubkey(), &w.mint)), w.token(TransactionTarget::Ephemeral, &ata(&b.pubkey(), &w.mint)));
+    let (ab, bb) = (
+        w.token(TransactionTarget::Ephemeral, &ata(&a.pubkey(), &w.mint)),
+        w.token(TransactionTarget::Ephemeral, &ata(&b.pubkey(), &w.mint)),
+    );
     let start = w.game().start_unix;
     // Nobody moves or fires: regulation ends level, sudden death ends level, draw.
     for _ in 0..1100 {

@@ -79,8 +79,7 @@ pub const EV_SHIELD_B: u32 = 1 << 15;
 
 /// Unit vectors for 16 directions (k·22.5°), Q16.16. Index 0 points +x, 4 points +y.
 pub const COS16: [i32; 16] = [
-    65536, 60547, 46341, 25080, 0, -25080, -46341, -60547, -65536, -60547, -46341, -25080, 0, 25080, 46341,
-    60547,
+    65536, 60547, 46341, 25080, 0, -25080, -46341, -60547, -65536, -60547, -46341, -25080, 0, 25080, 46341, 60547,
 ];
 
 #[inline]
@@ -285,7 +284,11 @@ pub fn spawn_wave(seed: &[u8; 32], wave_index: u16) -> [Powerup; N_POWERUP] {
         let kind = 1 + (splitmix64(&mut s) % 3) as u8;
         let x = 200 + (splitmix64(&mut s) % 1600) as i64;
         let y = 150 + (splitmix64(&mut s) % 900) as i64;
-        *p = Powerup { kind, x: (x * FP) as i32, y: (y * FP) as i32 };
+        *p = Powerup {
+            kind,
+            x: (x * FP) as i32,
+            y: (y * FP) as i32,
+        };
     }
     out
 }
@@ -374,7 +377,11 @@ pub fn step(s: &mut SimState, inputs: [u16; 2]) -> Events {
         let min = 2 * FIGHTER_R * (FP >> 8);
         if d2 < min * min {
             let d = ringside_fixed::isqrt_u64(d2 as u64) as i64;
-            let (nx, ny) = if d == 0 { (FP >> 8, 0) } else { (dx * (FP >> 8) / d, dy * (FP >> 8) / d) };
+            let (nx, ny) = if d == 0 {
+                (FP >> 8, 0)
+            } else {
+                (dx * (FP >> 8) / d, dy * (FP >> 8) / d)
+            };
             let push = (min - d + 1) / 2; // Q8.8
             let px = (nx * push) >> 8; // Q8.8
             let py = (ny * push) >> 8;
@@ -489,7 +496,15 @@ pub fn step(s: &mut SimState, inputs: [u16; 2]) -> Events {
 
     // 7. Outcome.
     let (ha, hb) = (s.fighters[0].hp, s.fighters[1].hp);
-    let higher = |a: i16, b: i16| if a > b { WINNER_A } else if b > a { WINNER_B } else { WINNER_DRAW };
+    let higher = |a: i16, b: i16| {
+        if a > b {
+            WINNER_A
+        } else if b > a {
+            WINNER_B
+        } else {
+            WINNER_DRAW
+        }
+    };
     if ha <= 0 || hb <= 0 {
         s.phase = PHASE_ENDED;
         s.winner = higher(ha, hb);
@@ -614,7 +629,10 @@ pub fn determinism_episode(episode: u64, max_ticks: usize, inputs: &mut [[u16; 2
         for c in sd.chunks_mut(8) {
             c.copy_from_slice(&splitmix64(&mut r).to_le_bytes());
         }
-        *ev = SeedEvent { apply_at_tick: t, seed: sd };
+        *ev = SeedEvent {
+            apply_at_tick: t,
+            seed: sd,
+        };
     }
     (SimState::new(DEFAULT_DT_MS, seed0), n, ns)
 }

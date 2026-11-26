@@ -71,7 +71,11 @@ fn tx(payer: &SigningKey, program: [u8; 32], accounts: &[([u8; 32], bool, bool)]
         ord.extend(keys.iter().filter(|e| e.1 == s && e.2 == w).cloned());
     }
     let idx = |k: &[u8; 32]| ord.iter().position(|e| &e.0 == k).unwrap() as u8;
-    let mut m = vec![ord.iter().filter(|e| e.1).count() as u8, ord.iter().filter(|e| e.1 && !e.2).count() as u8, ord.iter().filter(|e| !e.1 && !e.2).count() as u8];
+    let mut m = vec![
+        ord.iter().filter(|e| e.1).count() as u8,
+        ord.iter().filter(|e| e.1 && !e.2).count() as u8,
+        ord.iter().filter(|e| !e.1 && !e.2).count() as u8,
+    ];
     shortvec(ord.len(), &mut m);
     for e in &ord {
         m.extend_from_slice(&e.0);
@@ -93,7 +97,13 @@ fn tx(payer: &SigningKey, program: [u8; 32], accounts: &[([u8; 32], bool, bool)]
 }
 
 async fn rpc(c: &reqwest::Client, url: &str, method: &str, params: Value) -> Result<Value> {
-    let r: Value = c.post(url).json(&json!({"jsonrpc":"2.0","id":1,"method":method,"params":params})).send().await?.json().await?;
+    let r: Value = c
+        .post(url)
+        .json(&json!({"jsonrpc":"2.0","id":1,"method":method,"params":params}))
+        .send()
+        .await?
+        .json()
+        .await?;
     if let Some(e) = r.get("error") {
         return Err(anyhow!("{e}"));
     }
@@ -113,7 +123,10 @@ struct Stats {
 #[tokio::main]
 async fn main() -> Result<()> {
     let a: Vec<String> = std::env::args().collect();
-    let match_id: u64 = a.get(1).ok_or_else(|| anyhow!("usage: ringside-soak <match_id> <K> <M>"))?.parse()?;
+    let match_id: u64 = a
+        .get(1)
+        .ok_or_else(|| anyhow!("usage: ringside-soak <match_id> <K> <M>"))?
+        .parse()?;
     let k: usize = a.get(2).map(|s| s.parse().unwrap()).unwrap_or(16);
     let m: usize = a.get(3).map(|s| s.parse().unwrap()).unwrap_or(20);
     let er = std::env::var("ER_RPC").unwrap_or_else(|_| "http://127.0.0.1:7799".into());
@@ -139,8 +152,22 @@ async fn main() -> Result<()> {
             let me = key.verifying_key().to_bytes();
             let pos = pda(&[b"pos", &market, &me], &program);
             for j in 0..m {
-                let Ok(acc) = rpc(&c, &er, "getAccountInfo", json!([bs58::encode(market).into_string(), {"encoding":"base64"}])).await else { continue };
-                let Some(data) = acc["value"]["data"][0].as_str().and_then(|s| base64::engine::general_purpose::STANDARD.decode(s).ok()) else { continue };
+                let Ok(acc) = rpc(
+                    &c,
+                    &er,
+                    "getAccountInfo",
+                    json!([bs58::encode(market).into_string(), {"encoding":"base64"}]),
+                )
+                .await
+                else {
+                    continue;
+                };
+                let Some(data) = acc["value"]["data"][0]
+                    .as_str()
+                    .and_then(|s| base64::engine::general_purpose::STANDARD.decode(s).ok())
+                else {
+                    continue;
+                };
                 let u = |o: usize| u64::from_le_bytes(data[8 + o..8 + o + 8].try_into().unwrap());
                 let (tick, ask_a, ask_b) = (u(48), u(72), u(88));
                 let side_b = (i + j) % 2 == 1;
@@ -153,7 +180,18 @@ async fn main() -> Result<()> {
                 ix.extend_from_slice(&1u64.to_le_bytes());
                 ix.extend_from_slice(&limit.to_le_bytes());
                 ix.push(1); // record rejects (count them onchain)
-                let accounts = [(me, true, true), (me, false, false), (config, false, false), (game, false, false), (market, false, true), (pos, false, true), (ata(&me), false, true), (house, false, true), (d(TOKEN), false, false), (program, false, false)];
+                let accounts = [
+                    (me, true, true),
+                    (me, false, false),
+                    (config, false, false),
+                    (game, false, false),
+                    (market, false, true),
+                    (pos, false, true),
+                    (ata(&me), false, true),
+                    (house, false, true),
+                    (d(TOKEN), false, false),
+                    (program, false, false),
+                ];
                 let bh = match rpc(&c, &er, "getLatestBlockhash", json!([{"commitment":"confirmed"}])).await {
                     Ok(v) => d(v["value"]["blockhash"].as_str().unwrap_or_default()),
                     Err(_) => continue,
@@ -166,7 +204,9 @@ async fn main() -> Result<()> {
                     Err(e) => {
                         let mut s = stats.lock().await;
                         s.fail += 1;
-                        *s.reasons.entry(format!("send: {}", e.to_string().chars().take(60).collect::<String>())).or_default() += 1;
+                        *s.reasons
+                            .entry(format!("send: {}", e.to_string().chars().take(60).collect::<String>()))
+                            .or_default() += 1;
                         continue;
                     }
                 };
@@ -210,13 +250,26 @@ async fn main() -> Result<()> {
     let elapsed = start.elapsed().as_secs_f64();
     let mut s = stats.lock().await;
     for sig in s.sample_sigs.clone() {
-        if let Ok(t) = rpc(&c, &er, "getTransaction", json!([sig, {"encoding":"json","maxSupportedTransactionVersion":0}])).await {
+        if let Ok(t) = rpc(
+            &c,
+            &er,
+            "getTransaction",
+            json!([sig, {"encoding":"json","maxSupportedTransactionVersion":0}]),
+        )
+        .await
+        {
             if let Some(cu) = t["meta"]["computeUnitsConsumed"].as_u64() {
                 s.cu.push(cu);
             }
         }
     }
-    let acc = rpc(&c, &er, "getAccountInfo", json!([bs58::encode(market).into_string(), {"encoding":"base64"}])).await?;
+    let acc = rpc(
+        &c,
+        &er,
+        "getAccountInfo",
+        json!([bs58::encode(market).into_string(), {"encoding":"base64"}]),
+    )
+    .await?;
     let data = base64::engine::general_purpose::STANDARD.decode(acc["value"]["data"][0].as_str().unwrap_or_default())?;
     let u = |o: usize| u64::from_le_bytes(data[8 + o..8 + o + 8].try_into().unwrap());
     s.lat_ms.sort_by(|a, b| a.partial_cmp(b).unwrap());

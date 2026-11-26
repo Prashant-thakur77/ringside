@@ -26,7 +26,12 @@ pub struct SpreadParams {
 
 impl Default for SpreadParams {
     fn default() -> Self {
-        Self { s_base: 20_000, s_vol_bps: 5_000, s_time: 20_000, k_skew: 30_000 }
+        Self {
+            s_base: 20_000,
+            s_vol_bps: 5_000,
+            s_time: 20_000,
+            k_skew: 30_000,
+        }
     }
 }
 
@@ -78,7 +83,14 @@ pub fn quote(q: &QuoteInputs, sp: &SpreadParams) -> Quotes {
     let ask = (mid as i64 + half + skew).clamp((PRICE_MIN + PRICE_TICK) as i64, PRICE_MAX as i64) as u64;
     let bid = (mid as i64 - half + skew).clamp(PRICE_MIN as i64, (PRICE_MAX - PRICE_TICK) as i64) as u64;
     let bid = bid.min(ask - PRICE_TICK);
-    Quotes { mid, bid_a: bid, ask_a: ask, bid_b: PAYOUT - ask, ask_b: PAYOUT - bid, spread }
+    Quotes {
+        mid,
+        bid_a: bid,
+        ask_a: ask,
+        bid_b: PAYOUT - ask,
+        ask_b: PAYOUT - bid,
+        spread,
+    }
 }
 
 /// Stale-tick rule: a fill priced off `seen_tick` is rejected if the book has moved on by more
@@ -94,7 +106,15 @@ mod tests {
     use proptest::prelude::*;
 
     fn inputs(p: u32) -> QuoteInputs {
-        QuoteInputs { p, vol: 0, time_left_ms: 90_000, total_ms: 90_000, inv_a: 0, inv_b: 0, cap: 200 * PAYOUT }
+        QuoteInputs {
+            p,
+            vol: 0,
+            time_left_ms: 90_000,
+            total_ms: 90_000,
+            inv_a: 0,
+            inv_b: 0,
+            cap: 200 * PAYOUT,
+        }
     }
 
     #[test]

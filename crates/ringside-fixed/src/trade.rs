@@ -150,7 +150,12 @@ pub fn execute(
     nb.n_trades = nb.n_trades.checked_add(1).ok_or(TradeError::Math)?;
     *book = nb;
     *pos = np;
-    Ok(Fill { price, qty, cash, user_pays: dir == Dir::Buy })
+    Ok(Fill {
+        price,
+        qty,
+        cash,
+        user_pays: dir == Dir::Buy,
+    })
 }
 
 /// Match outcome for settlement.
@@ -185,7 +190,15 @@ mod tests {
 
     fn quotes(p: u32, book: &Book, cap: u64) -> Quotes {
         quote(
-            &QuoteInputs { p, vol: 0, time_left_ms: 60_000, total_ms: 90_000, inv_a: book.inv_a, inv_b: book.inv_b, cap },
+            &QuoteInputs {
+                p,
+                vol: 0,
+                time_left_ms: 60_000,
+                total_ms: 90_000,
+                inv_a: book.inv_a,
+                inv_b: book.inv_b,
+                cap,
+            },
             &SpreadParams::default(),
         )
     }
@@ -194,7 +207,10 @@ mod tests {
     fn buy_then_sell_round_trip_costs_the_spread() {
         let mut b = Book::default();
         let mut p = Pos::default();
-        let lim = Limits { cap: 1_000 * PAYOUT, max_qty: 100 };
+        let lim = Limits {
+            cap: 1_000 * PAYOUT,
+            max_qty: 100,
+        };
         let q = quotes(1 << 31, &b, lim.cap);
         execute(&mut b, &mut p, &q, Side::A, Dir::Buy, 10, PAYOUT, &lim).unwrap();
         assert_eq!(p.shares_a, 10);
@@ -208,13 +224,31 @@ mod tests {
     fn rejects() {
         let mut b = Book::default();
         let mut p = Pos::default();
-        let lim = Limits { cap: 5 * PAYOUT, max_qty: 20 };
+        let lim = Limits {
+            cap: 5 * PAYOUT,
+            max_qty: 20,
+        };
         let q = quotes(1 << 31, &b, lim.cap);
-        assert_eq!(execute(&mut b, &mut p, &q, Side::A, Dir::Buy, 0, PAYOUT, &lim), Err(TradeError::ZeroQty));
-        assert_eq!(execute(&mut b, &mut p, &q, Side::A, Dir::Buy, 21, PAYOUT, &lim), Err(TradeError::MaxQty));
-        assert_eq!(execute(&mut b, &mut p, &q, Side::A, Dir::Buy, 1, q.ask_a - 1, &lim), Err(TradeError::Slippage));
-        assert_eq!(execute(&mut b, &mut p, &q, Side::A, Dir::Sell, 1, 0, &lim), Err(TradeError::InsufficientShares));
-        assert_eq!(execute(&mut b, &mut p, &q, Side::A, Dir::Buy, 20, PAYOUT, &lim), Err(TradeError::Exposure));
+        assert_eq!(
+            execute(&mut b, &mut p, &q, Side::A, Dir::Buy, 0, PAYOUT, &lim),
+            Err(TradeError::ZeroQty)
+        );
+        assert_eq!(
+            execute(&mut b, &mut p, &q, Side::A, Dir::Buy, 21, PAYOUT, &lim),
+            Err(TradeError::MaxQty)
+        );
+        assert_eq!(
+            execute(&mut b, &mut p, &q, Side::A, Dir::Buy, 1, q.ask_a - 1, &lim),
+            Err(TradeError::Slippage)
+        );
+        assert_eq!(
+            execute(&mut b, &mut p, &q, Side::A, Dir::Sell, 1, 0, &lim),
+            Err(TradeError::InsufficientShares)
+        );
+        assert_eq!(
+            execute(&mut b, &mut p, &q, Side::A, Dir::Buy, 20, PAYOUT, &lim),
+            Err(TradeError::Exposure)
+        );
         assert_eq!(b, Book::default());
         assert_eq!(p, Pos::default());
     }
@@ -234,8 +268,13 @@ mod tests {
     }
 
     fn op() -> impl Strategy<Value = Op> {
-        (0usize..4, any::<bool>(), any::<bool>(), 1u64..30, any::<u32>())
-            .prop_map(|(user, side, buy, qty, p)| Op { user, side, buy, qty, p })
+        (0usize..4, any::<bool>(), any::<bool>(), 1u64..30, any::<u32>()).prop_map(|(user, side, buy, qty, p)| Op {
+            user,
+            side,
+            buy,
+            qty,
+            p,
+        })
     }
 
     proptest! {

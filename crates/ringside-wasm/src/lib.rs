@@ -68,7 +68,12 @@ pub fn state_json(state_bytes: &[u8]) -> Result<String, JsError> {
         first = false;
         o.push_str(&format!(
             "{{\"owner\":{},\"dmg\":{},\"x\":{},\"y\":{},\"vx\":{},\"vy\":{}}}",
-            p.owner, p.dmg, p.x as f64 / fp, p.y as f64 / fp, p.vx as f64 / fp, p.vy as f64 / fp
+            p.owner,
+            p.dmg,
+            p.x as f64 / fp,
+            p.y as f64 / fp,
+            p.vx as f64 / fp,
+            p.vy as f64 / fp
         ));
     }
     o.push_str("],\"powerups\":[");
@@ -78,7 +83,12 @@ pub fn state_json(state_bytes: &[u8]) -> Result<String, JsError> {
             o.push(',');
         }
         first = false;
-        o.push_str(&format!("{{\"kind\":{},\"x\":{},\"y\":{}}}", p.kind, p.x as f64 / fp, p.y as f64 / fp));
+        o.push_str(&format!(
+            "{{\"kind\":{},\"x\":{},\"y\":{}}}",
+            p.kind,
+            p.x as f64 / fp,
+            p.y as f64 / fp
+        ));
     }
     o.push_str("]}");
     Ok(o)
@@ -113,8 +123,21 @@ pub fn quotes(
     k_skew: u64,
 ) -> Vec<u64> {
     let q = quote(
-        &QuoteInputs { p, vol, time_left_ms, total_ms: sim::MATCH_MS as u64, inv_a, inv_b, cap },
-        &SpreadParams { s_base, s_vol_bps, s_time, k_skew },
+        &QuoteInputs {
+            p,
+            vol,
+            time_left_ms,
+            total_ms: sim::MATCH_MS as u64,
+            inv_a,
+            inv_b,
+            cap,
+        },
+        &SpreadParams {
+            s_base,
+            s_vol_bps,
+            s_time,
+            k_skew,
+        },
     );
     vec![q.mid, q.bid_a, q.ask_a, q.bid_b, q.ask_b, q.spread]
 }
@@ -137,7 +160,10 @@ fn parse_seeds(seed_events: &[u8]) -> Result<Vec<SeedEvent>, JsError> {
     }
     Ok(seed_events
         .chunks(36)
-        .map(|c| SeedEvent { apply_at_tick: u32::from_le_bytes(c[..4].try_into().unwrap()), seed: c[4..].try_into().unwrap() })
+        .map(|c| SeedEvent {
+            apply_at_tick: u32::from_le_bytes(c[..4].try_into().unwrap()),
+            seed: c[4..].try_into().unwrap(),
+        })
         .collect())
 }
 
@@ -167,7 +193,10 @@ pub fn replay_final_state(initial_state: &[u8], inputs: &[u16], seed_events: &[u
 #[wasm_bindgen(js_name = determinismEpisodeHash)]
 pub fn determinism_episode_hash(episode: u64) -> Vec<u8> {
     let mut inputs = vec![[0u16; 2]; 1100];
-    let mut seeds = [SeedEvent { apply_at_tick: 0, seed: [0; 32] }; 8];
+    let mut seeds = [SeedEvent {
+        apply_at_tick: 0,
+        seed: [0; 32],
+    }; 8];
     let (init, n, ns) = sim::determinism_episode(episode, 1100, &mut inputs, &mut seeds);
     sim::replay(init, &inputs[..n], &seeds[..ns], |_, _| {}).1.to_vec()
 }
@@ -181,7 +210,14 @@ pub fn aim_at(dx: f64, dy: f64) -> u8 {
 /// Packs an input.
 #[wasm_bindgen(js_name = encodeInput)]
 pub fn encode_input(mv: u8, fire: bool, dash: bool, shield: bool, aim: u8) -> u16 {
-    sim::Input { mv, fire, dash, shield, aim }.encode()
+    sim::Input {
+        mv,
+        fire,
+        dash,
+        shield,
+        aim,
+    }
+    .encode()
 }
 
 /// Default sigmoid LUT (1024 × u32), built with the integer exp.
@@ -217,5 +253,9 @@ pub fn observe(state_bytes: &[u8], me: u8) -> Result<Vec<f32>, JsError> {
 /// Discrete policy action (0..72) → input bits for fighter `me`.
 #[wasm_bindgen(js_name = actionToInput)]
 pub fn action_to_input(state_bytes: &[u8], me: u8, action: u32) -> Result<u16, JsError> {
-    Ok(ringside_agent::action_to_input(&state(state_bytes)?, (me & 1) as usize, action as usize))
+    Ok(ringside_agent::action_to_input(
+        &state(state_bytes)?,
+        (me & 1) as usize,
+        action as usize,
+    ))
 }

@@ -3,9 +3,9 @@
 //! The same code runs onchain (inside `tick`), in WASM (browser replay) and in Python
 //! (held-out evaluation of the exact onchain implementation).
 
-use crate::{mul, CALIB_LEN, LUT_LEN, ONE};
 #[cfg(feature = "std")]
 use crate::{calibrate, lut_sigmoid};
+use crate::{mul, CALIB_LEN, LUT_LEN, ONE};
 
 /// Number of model features.
 pub const N_FEATURES: usize = 16;

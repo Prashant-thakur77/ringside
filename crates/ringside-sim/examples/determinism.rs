@@ -9,7 +9,10 @@ fn main() {
     let out = args.get(2).cloned().unwrap_or_else(|| "native.txt".into());
     let mut f = std::io::BufWriter::new(std::fs::File::create(&out).unwrap());
     let mut inputs = vec![[0u16; 2]; 1100];
-    let mut seeds = [SeedEvent { apply_at_tick: 0, seed: [0; 32] }; 8];
+    let mut seeds = [SeedEvent {
+        apply_at_tick: 0,
+        seed: [0; 32],
+    }; 8];
     for e in 0..n {
         let (init, k, ns) = determinism_episode(e, 1100, &mut inputs, &mut seeds);
         let (_, h) = replay(init, &inputs[..k], &seeds[..ns], |_, _| {});

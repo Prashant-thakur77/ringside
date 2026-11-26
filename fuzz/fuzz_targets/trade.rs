@@ -30,13 +30,32 @@ struct Case {
 }
 
 fuzz_target!(|c: Case| {
-    let lim = Limits { cap: c.cap as u64 * 1_000, max_qty: c.max_qty as u64 };
-    let sp = SpreadParams { s_base: c.sp.0 as u64 % 500_000, s_vol_bps: c.sp.1 as u64, s_time: c.sp.2 as u64 % 500_000, k_skew: c.sp.3 as u64 % 500_000 };
+    let lim = Limits {
+        cap: c.cap as u64 * 1_000,
+        max_qty: c.max_qty as u64,
+    };
+    let sp = SpreadParams {
+        s_base: c.sp.0 as u64 % 500_000,
+        s_vol_bps: c.sp.1 as u64,
+        s_time: c.sp.2 as u64 % 500_000,
+        k_skew: c.sp.3 as u64 % 500_000,
+    };
     let mut book = Book::default();
     let mut pos = [Pos::default(); 8];
     let mut cash = [0i128; 8];
     for o in c.orders.iter().take(256) {
-        let q = quote(&QuoteInputs { p: o.p, vol: o.vol as u64, time_left_ms: o.time_left as u64, total_ms: 90_000, inv_a: book.inv_a, inv_b: book.inv_b, cap: lim.cap }, &sp);
+        let q = quote(
+            &QuoteInputs {
+                p: o.p,
+                vol: o.vol as u64,
+                time_left_ms: o.time_left as u64,
+                total_ms: 90_000,
+                inv_a: book.inv_a,
+                inv_b: book.inv_b,
+                cap: lim.cap,
+            },
+            &sp,
+        );
         assert!(q.bid_a < q.ask_a && q.bid_b < q.ask_b);
         for v in [q.bid_a, q.ask_a, q.bid_b, q.ask_b] {
             assert!((PRICE_MIN..=PRICE_MAX).contains(&v));

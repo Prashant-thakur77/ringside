@@ -1,0 +1,102 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with: { toolchain: 1.89.0, components: "rustfmt, clippy", targets: wasm32-unknown-unknown }
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --release --workspace --exclude ringside-py --exclude ringside
+      - run: cargo test --release --workspace --exclude ringside-py --exclude ringside
+      - run: cargo build --release -p ringside-sim --no-default-features --target wasm32-unknown-unknown
+
+  program:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with: { toolchain: 1.89.0 }
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: ". -> target\ntests/magicsvm -> target" }
+      - name: Solana CLI 3.1.9
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v3.1.9/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: Anchor 1.0.2
+        run: cargo install --git https://github.com/solana-foundation/anchor --tag v1.0.2 anchor-cli --locked
+      - run: anchor build --ignore-keys
+      - name: MagicSVM tests (ER lifecycle, VRF, crank, Magic Action, privacy)
+        run: cd tests/magicsvm && cargo +stable test --release
+
+  determinism:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with: { toolchain: 1.89.0, targets: wasm32-unknown-unknown }
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "24.10.0" }
+      - run: cargo install wasm-bindgen-cli --version 0.2.130 --locked
+      - run: ./scripts/build-wasm.sh
+      - run: python -m venv .venv && .venv/bin/pip install maturin numpy && cd crates/ringside-py && VIRTUAL_ENV=../../.venv PATH=../../.venv/bin:$PATH maturin develop --release
+      - name: 10,000 episodes, native = WASM = Python
+        run: ./tests/determinism/run.sh 10000
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with: { toolchain: 1.89.0, targets: wasm32-unknown-unknown }
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with: { node-version: "24.10.0" }
+      - uses: pnpm/action-setup@v4
+        with: { version: 10.12.1 }
+      - run: cargo install wasm-bindgen-cli --version 0.2.130 --locked
+      - run: ./scripts/build-wasm.sh
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -C packages/client test
+      - run: pnpm -r typecheck
+      - run: pnpm -C apps/web build
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with: { toolchain: 1.89.0 }
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m venv .venv && .venv/bin/pip install maturin numpy pandas scikit-learn lightgbm matplotlib pytest
+      - run: cd crates/ringside-py && VIRTUAL_ENV=../../.venv PATH=../../.venv/bin:$PATH maturin develop --release
+      - run: .venv/bin/python -m pytest -q tests/python
+      - name: Eval smoke test (report + docs render from committed data)
+        run: |
+          .venv/bin/python eval/make_report.py ${REPORT_ENV:-local}
+          .venv/bin/python scripts/render_docs.py
+
+  indexer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with: { components: rustfmt }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: "services/indexer -> target" }
+      - run: cd services/indexer && cargo fmt --check && cargo test --release

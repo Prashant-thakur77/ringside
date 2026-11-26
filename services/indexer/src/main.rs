@@ -79,7 +79,13 @@ impl Shared {
             }
         }
         let pk = pubkey_b58(&self.cfg.key);
-        let ch: Value = self.http.get(format!("{}/auth/challenge?pubkey={}", self.cfg.er_rpc, pk)).send().await?.json().await?;
+        let ch: Value = self
+            .http
+            .get(format!("{}/auth/challenge?pubkey={}", self.cfg.er_rpc, pk))
+            .send()
+            .await?
+            .json()
+            .await?;
         let challenge = ch["challenge"].as_str().ok_or_else(|| anyhow!("no challenge: {ch}"))?.to_string();
         let sig = self.cfg.key.sign(challenge.as_bytes());
         let login: Value = self
@@ -98,7 +104,14 @@ impl Shared {
     }
 
     async fn rpc(&self, url: &str, method: &str, params: Value) -> Result<Value> {
-        let r: Value = self.http.post(url).json(&json!({"jsonrpc":"2.0","id":1,"method":method,"params":params})).send().await?.json().await?;
+        let r: Value = self
+            .http
+            .post(url)
+            .json(&json!({"jsonrpc":"2.0","id":1,"method":method,"params":params}))
+            .send()
+            .await?
+            .json()
+            .await?;
         if let Some(e) = r.get("error") {
             return Err(anyhow!("{method}: {e}"));
         }
@@ -232,10 +245,23 @@ async fn retry_finalize(s: &S, match_id: u64) -> Result<String> {
     let (mp, mc) = (b58d(MAGIC_PROGRAM), b58d(MAGIC_CONTEXT));
     let fin = Ix {
         program,
-        accounts: vec![(payer, true, true), (game, false, true), (ml, false, true), (md, false, true), (record, false, false), (program, false, false), (mp, false, false), (mc, false, true)],
+        accounts: vec![
+            (payer, true, true),
+            (game, false, true),
+            (ml, false, true),
+            (md, false, true),
+            (record, false, false),
+            (program, false, false),
+            (mp, false, false),
+            (mc, false, true),
+        ],
         data: ix_data("finalize", match_id),
     };
-    let cm = Ix { program, accounts: vec![(payer, true, true), (game, false, true), (mp, false, false), (mc, false, true)], data: ix_data("commit_match", match_id) };
+    let cm = Ix {
+        program,
+        accounts: vec![(payer, true, true), (game, false, true), (mp, false, false), (mc, false, true)],
+        data: ix_data("commit_match", match_id),
+    };
     let bh = s.er("getLatestBlockhash", json!([{"commitment":"confirmed"}])).await?;
     let blockhash = b58d(bh["value"]["blockhash"].as_str().ok_or_else(|| anyhow!("no blockhash"))?);
     use base64::Engine;
@@ -249,25 +275,67 @@ async fn retry_finalize(s: &S, match_id: u64) -> Result<String> {
 async fn store_event(s: &S, sig: &str, ev: &Event, failed: bool) -> Result<()> {
     let ms = now_ms();
     match ev {
-        Event::Tick { match_key, tick, inputs, flags, fair_p, state_hash } => {
+        Event::Tick {
+            match_key,
+            tick,
+            inputs,
+            flags,
+            fair_p,
+            state_hash,
+        } => {
             sqlx::query("INSERT INTO ticks (match_key,tick,input_a,input_b,flags,fair_p,state_hash,signature,seen_ms) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO NOTHING")
                 .bind(match_key).bind(*tick as i32).bind(inputs[0] as i32).bind(inputs[1] as i32).bind(*flags as i64).bind(fair_p).bind(state_hash).bind(sig).bind(ms)
                 .execute(&s.db).await?;
-            sqlx::query("INSERT INTO hashes (match_key,tick,state_hash) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING").bind(match_key).bind(*tick as i32).bind(state_hash).execute(&s.db).await?;
+            sqlx::query("INSERT INTO hashes (match_key,tick,state_hash) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING")
+                .bind(match_key)
+                .bind(*tick as i32)
+                .bind(state_hash)
+                .execute(&s.db)
+                .await?;
         }
-        Event::Trade { market, trader, tick, game_tick, seen_tick, price, qty, side, dir, mode, .. } => {
+        Event::Trade {
+            market,
+            trader,
+            tick,
+            game_tick,
+            seen_tick,
+            price,
+            qty,
+            side,
+            dir,
+            mode,
+            ..
+        } => {
             sqlx::query("INSERT INTO trades (signature,market,mode,trader,tick,seen_tick,price,qty,side,dir,seen_ms,game_tick) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT DO NOTHING")
                 .bind(sig).bind(market).bind(*mode as i16).bind(trader).bind(*tick as i64).bind(*seen_tick as i64).bind(*price as i64).bind(*qty as i64).bind(*side as i16).bind(*dir as i16).bind(ms).bind(*game_tick as i64)
                 .execute(&s.db).await?;
         }
-        Event::Reject { market, trader, tick, seen_tick, reason, mode } => {
+        Event::Reject {
+            market,
+            trader,
+            tick,
+            seen_tick,
+            reason,
+            mode,
+        } => {
             sqlx::query("INSERT INTO rejections (signature,market,mode,trader,tick,seen_tick,reason,failed_tx,seen_ms) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO NOTHING")
                 .bind(sig).bind(market).bind(*mode as i16).bind(trader).bind(*tick as i64).bind(*seen_tick as i64).bind(*reason as i32).bind(failed).bind(ms)
                 .execute(&s.db).await?;
         }
-        Event::Seed { match_key, wave, apply_at_tick, seed } => {
+        Event::Seed {
+            match_key,
+            wave,
+            apply_at_tick,
+            seed,
+        } => {
             sqlx::query("INSERT INTO seeds (match_key,wave,apply_at_tick,seed,signature) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING")
-                .bind(match_key).bind(*wave as i32).bind(*apply_at_tick as i32).bind(seed).bind(sig).execute(&s.db).await?;
+                .bind(match_key)
+                .bind(*wave as i32)
+                .bind(*apply_at_tick as i32)
+                .bind(seed)
+                .bind(sig)
+                .execute(&s.db)
+                .await?;
         }
         Event::Settle { .. } => {}
     }
@@ -276,16 +344,35 @@ async fn store_event(s: &S, sig: &str, ev: &Event, failed: bool) -> Result<()> {
 
 /// Failed trade transactions (strict mode) carry no event: recover market/trader from the tx.
 async fn store_failed_trade(s: &S, sig: &str, logs: &[String]) -> Result<()> {
-    let code = logs.iter().find_map(|l| l.split("Error Number: ").nth(1)).and_then(|r| r.split('.').next()).and_then(|n| n.trim().parse::<i32>().ok());
+    let code = logs
+        .iter()
+        .find_map(|l| l.split("Error Number: ").nth(1))
+        .and_then(|r| r.split('.').next())
+        .and_then(|n| n.trim().parse::<i32>().ok());
     let Some(code) = code else { return Ok(()) };
     if !logs.iter().any(|l| l.contains("Instruction: Trade")) {
         return Ok(());
     }
-    let tx = s.er("getTransaction", json!([sig, {"encoding":"json","maxSupportedTransactionVersion":0,"commitment":"confirmed"}])).await?;
+    let tx = s
+        .er(
+            "getTransaction",
+            json!([sig, {"encoding":"json","maxSupportedTransactionVersion":0,"commitment":"confirmed"}]),
+        )
+        .await?;
     let keys = tx["transaction"]["message"]["accountKeys"].as_array().cloned().unwrap_or_default();
     let ix = &tx["transaction"]["message"]["instructions"][0];
-    let accts: Vec<usize> = ix["accounts"].as_array().map(|a| a.iter().filter_map(|x| x.as_u64().map(|v| v as usize)).collect()).unwrap_or_default();
-    let key = |i: usize| accts.get(i).and_then(|&k| keys.get(k)).and_then(|v| v.as_str()).unwrap_or_default().to_string();
+    let accts: Vec<usize> = ix["accounts"]
+        .as_array()
+        .map(|a| a.iter().filter_map(|x| x.as_u64().map(|v| v as usize)).collect())
+        .unwrap_or_default();
+    let key = |i: usize| {
+        accts
+            .get(i)
+            .and_then(|&k| keys.get(k))
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_string()
+    };
     let data = bs58::decode(ix["data"].as_str().unwrap_or_default()).into_vec().unwrap_or_default();
     let seen_tick = data.get(16..24).map(|b| u64::from_le_bytes(b.try_into().unwrap())).unwrap_or(0);
     let market = key(4);
@@ -316,10 +403,15 @@ async fn logs_loop(s: S) {
 
 async fn logs_once(s: &S) -> Result<()> {
     let url = s.er_url().await?;
-    let ws = if s.cfg.tee { url.replacen("http", "ws", 1) } else { url.replacen("http", "ws", 1).replace(":7799", ":7800") };
+    let ws = if s.cfg.tee {
+        url.replacen("http", "ws", 1)
+    } else {
+        url.replacen("http", "ws", 1).replace(":7799", ":7800")
+    };
     let (mut sock, _) = tokio_tungstenite::connect_async(ws.as_str()).await.context("ws connect")?;
     let sub = json!({"jsonrpc":"2.0","id":1,"method":"logsSubscribe","params":[{"mentions":[PROGRAM_ID]},{"commitment":"confirmed"}]});
-    sock.send(tokio_tungstenite::tungstenite::Message::Text(sub.to_string().into())).await?;
+    sock.send(tokio_tungstenite::tungstenite::Message::Text(sub.to_string().into()))
+        .await?;
     info!("subscribed to program logs");
     while let Some(msg) = sock.next().await {
         let msg = msg?;
@@ -334,7 +426,10 @@ async fn logs_once(s: &S) -> Result<()> {
         let v: Value = serde_json::from_str(&txt).unwrap_or(Value::Null);
         let val = &v["params"]["result"]["value"];
         let Some(sig) = val["signature"].as_str() else { continue };
-        let logs: Vec<String> = val["logs"].as_array().map(|a| a.iter().filter_map(|l| l.as_str().map(String::from)).collect()).unwrap_or_default();
+        let logs: Vec<String> = val["logs"]
+            .as_array()
+            .map(|a| a.iter().filter_map(|l| l.as_str().map(String::from)).collect())
+            .unwrap_or_default();
         let failed = !val["err"].is_null();
         if failed {
             let s2 = s.clone();
@@ -366,7 +461,13 @@ async fn poll_loop(s: S) {
         let t = now_ms();
         if t - last_discover > 2000 {
             last_discover = t;
-            match s.er("getProgramAccounts", json!([PROGRAM_ID, {"encoding":"base64","filters":[{"dataSize": MATCH_SIZE}]}])).await {
+            match s
+                .er(
+                    "getProgramAccounts",
+                    json!([PROGRAM_ID, {"encoding":"base64","filters":[{"dataSize": MATCH_SIZE}]}]),
+                )
+                .await
+            {
                 Ok(list) => {
                     known.clear();
                     for a in list.as_array().cloned().unwrap_or_default() {
@@ -393,7 +494,12 @@ async fn poll_loop(s: S) {
                 }
                 continue;
             };
-            let r = s.er("getMultipleAccounts", json!([[key, mv.market_live, mv.market_delayed], {"encoding":"base64"}])).await;
+            let r = s
+                .er(
+                    "getMultipleAccounts",
+                    json!([[key, mv.market_live, mv.market_delayed], {"encoding":"base64"}]),
+                )
+                .await;
             let Ok(r) = r else { continue };
             let vals = r["value"].as_array().cloned().unwrap_or_default();
             let m = vals.first().and_then(account_data).and_then(|d| decode_match(&d));
@@ -408,7 +514,8 @@ async fn poll_loop(s: S) {
                 }
                 if m.tick != mv.tick || m.status != mv.status {
                     let _ = upsert_match(&s, &key, &m).await;
-                    let _ = s.tx.send(json!({"type":"state","match_key":key,"match":m,"live":l,"delayed":d,"seen_ms":now_ms()}));
+                    let _ =
+                        s.tx.send(json!({"type":"state","match_key":key,"match":m,"live":l,"delayed":d,"seen_ms":now_ms()}));
                 }
                 s.live.write().await.insert(key.clone(), (m, l, d));
             }
@@ -447,7 +554,11 @@ async fn record_loop(s: S) {
                 .and_then(|v| account_data(&v["value"]))
                 .map(|d| d.get(8 + 32 + 32 + 72 + 1).copied() == Some(1))
                 .unwrap_or(false);
-            let _ = sqlx::query("UPDATE matches SET record_written=$2, record_checked_at=now() WHERE match_key=$1").bind(&key).bind(written).execute(&s.db).await;
+            let _ = sqlx::query("UPDATE matches SET record_written=$2, record_checked_at=now() WHERE match_key=$1")
+                .bind(&key)
+                .bind(written)
+                .execute(&s.db)
+                .await;
             if written {
                 info!("MatchRecord verified for {key}");
                 continue;
@@ -492,13 +603,28 @@ async fn matches(State(s): State<S>, Query(q): Query<HashMap<String, String>>) -
 }
 
 async fn key_for(s: &S, id: &str) -> Option<String> {
-    sqlx::query("SELECT match_key FROM matches WHERE match_id=$1").bind(id.parse::<i64>().ok()?).fetch_optional(&s.db).await.ok()?.map(|r| r.get(0))
+    sqlx::query("SELECT match_key FROM matches WHERE match_id=$1")
+        .bind(id.parse::<i64>().ok()?)
+        .fetch_optional(&s.db)
+        .await
+        .ok()?
+        .map(|r| r.get(0))
 }
 
 async fn replay(State(s): State<S>, Path(id): Path<String>) -> Json<Value> {
-    let Some(key) = key_for(&s, &id).await else { return Json(json!({"error":"unknown match"})) };
-    let ticks = sqlx::query("SELECT tick,input_a,input_b,state_hash,signature,fair_p,flags FROM ticks WHERE match_key=$1 ORDER BY tick").bind(&key).fetch_all(&s.db).await.unwrap_or_default();
-    let seeds = sqlx::query("SELECT wave,apply_at_tick,seed,signature FROM seeds WHERE match_key=$1 ORDER BY apply_at_tick").bind(&key).fetch_all(&s.db).await.unwrap_or_default();
+    let Some(key) = key_for(&s, &id).await else {
+        return Json(json!({"error":"unknown match"}));
+    };
+    let ticks = sqlx::query("SELECT tick,input_a,input_b,state_hash,signature,fair_p,flags FROM ticks WHERE match_key=$1 ORDER BY tick")
+        .bind(&key)
+        .fetch_all(&s.db)
+        .await
+        .unwrap_or_default();
+    let seeds = sqlx::query("SELECT wave,apply_at_tick,seed,signature FROM seeds WHERE match_key=$1 ORDER BY apply_at_tick")
+        .bind(&key)
+        .fetch_all(&s.db)
+        .await
+        .unwrap_or_default();
     let trades = sqlx::query("SELECT signature,mode,trader,tick,seen_tick,price,qty,side,dir FROM trades WHERE market IN (SELECT market_live FROM matches WHERE match_key=$1 UNION SELECT market_delayed FROM matches WHERE match_key=$1) ORDER BY tick")
         .bind(&key).fetch_all(&s.db).await.unwrap_or_default();
     let complete = ticks.iter().enumerate().all(|(i, r)| r.get::<i32, _>(0) == i as i32 + 1);
@@ -511,18 +637,25 @@ async fn replay(State(s): State<S>, Path(id): Path<String>) -> Json<Value> {
 }
 
 async fn state(State(s): State<S>, Path(id): Path<String>) -> Json<Value> {
-    let Some(key) = key_for(&s, &id).await else { return Json(json!({"error":"unknown match"})) };
+    let Some(key) = key_for(&s, &id).await else {
+        return Json(json!({"error":"unknown match"}));
+    };
     if let Some((m, l, d)) = s.live.read().await.get(&key) {
         return Json(json!({"match_key": key, "match": m, "live": l, "delayed": d}));
     }
     // Not cached (finished long ago): read it once.
     let r = s.er("getMultipleAccounts", json!([[key], {"encoding":"base64"}])).await.ok();
-    let m = r.and_then(|r| r["value"][0].clone().as_object().map(|_| r["value"][0].clone())).and_then(|v| account_data(&v)).and_then(|d| decode_match(&d));
+    let m = r
+        .and_then(|r| r["value"][0].clone().as_object().map(|_| r["value"][0].clone()))
+        .and_then(|v| account_data(&v))
+        .and_then(|d| decode_match(&d));
     Json(json!({"match_key": key, "match": m, "live": null, "delayed": null}))
 }
 
 async fn judge(State(s): State<S>, Path(id): Path<String>) -> Json<Value> {
-    let Some(key) = key_for(&s, &id).await else { return Json(json!({"error":"unknown match"})) };
+    let Some(key) = key_for(&s, &id).await else {
+        return Json(json!({"error":"unknown match"}));
+    };
     let courtsider = std::env::var("COURTSIDER").unwrap_or_default();
     let q = |mode: i16| {
         let s = s.clone();
@@ -540,7 +673,13 @@ async fn judge(State(s): State<S>, Path(id): Path<String>) -> Json<Value> {
             r.map(|r| json!({"fills": r.get::<i64,_>(0), "stale_fills_accepted": r.get::<i64,_>(1), "stale_rejections": r.get::<i64,_>(2), "reject_sig": r.get::<Option<String>,_>(3)})).unwrap_or(Value::Null)
         }
     };
-    let books = s.live.read().await.get(&key).map(|(_, l, d)| json!({"live": l, "delayed": d})).unwrap_or(Value::Null);
+    let books = s
+        .live
+        .read()
+        .await
+        .get(&key)
+        .map(|(_, l, d)| json!({"live": l, "delayed": d}))
+        .unwrap_or(Value::Null);
     Json(json!({"ringside": q(0).await, "tv_delay": q(1).await, "books": books}))
 }
 
@@ -575,7 +714,13 @@ struct LatencyRow {
 async fn post_latency(State(s): State<S>, Json(rows): Json<Vec<LatencyRow>>) -> Json<Value> {
     for r in &rows {
         let _ = sqlx::query("INSERT INTO latency (kind,ms,match_key,signature,host) VALUES ($1,$2,$3,$4,$5)")
-            .bind(&r.kind).bind(r.ms).bind(&r.match_key).bind(&r.signature).bind(&r.host).execute(&s.db).await;
+            .bind(&r.kind)
+            .bind(r.ms)
+            .bind(&r.match_key)
+            .bind(&r.signature)
+            .bind(&r.host)
+            .execute(&s.db)
+            .await;
     }
     Json(json!({"stored": rows.len()}))
 }
@@ -588,19 +733,45 @@ async fn sse(State(s): State<S>) -> Sse<impl futures::Stream<Item = Result<SseEv
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_subscriber::fmt().with_env_filter(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into())).init();
+    tracing_subscriber::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()))
+        .init();
     let env = std::env::var("RINGSIDE_ENV").unwrap_or_else(|_| "devnet".into());
     let local = env == "local";
     let cfg = Cfg {
-        base_rpc: std::env::var("SOLANA_RPC").unwrap_or_else(|_| if local { "http://127.0.0.1:8899".into() } else { "https://api.devnet.solana.com".into() }),
-        er_rpc: std::env::var("ER_RPC").unwrap_or_else(|_| if local { "http://127.0.0.1:7799".into() } else { "https://devnet-tee.magicblock.app".into() }),
+        base_rpc: std::env::var("SOLANA_RPC").unwrap_or_else(|_| {
+            if local {
+                "http://127.0.0.1:8899".into()
+            } else {
+                "https://api.devnet.solana.com".into()
+            }
+        }),
+        er_rpc: std::env::var("ER_RPC").unwrap_or_else(|_| {
+            if local {
+                "http://127.0.0.1:7799".into()
+            } else {
+                "https://devnet-tee.magicblock.app".into()
+            }
+        }),
         tee: !local,
-        key: Arc::new(load_key(&std::env::var("INDEXER_KEYPAIR").unwrap_or_else(|_| "keys/indexer.json".into()))?),
+        key: Arc::new(load_key(
+            &std::env::var("INDEXER_KEYPAIR").unwrap_or_else(|_| "keys/indexer.json".into()),
+        )?),
     };
-    let db = PgPoolOptions::new().max_connections(10).connect(&std::env::var("DATABASE_URL").unwrap_or_else(|_| "postgres://ringside:ringside@127.0.0.1:5434/ringside".into())).await?;
+    let db = PgPoolOptions::new()
+        .max_connections(10)
+        .connect(&std::env::var("DATABASE_URL").unwrap_or_else(|_| "postgres://ringside:ringside@127.0.0.1:5434/ringside".into()))
+        .await?;
     sqlx::migrate!("./migrations").run(&db).await?;
     let (tx, _) = broadcast::channel(4096);
-    let s: S = Arc::new(Shared { cfg, db, http: reqwest::Client::new(), tx, token: RwLock::new(None), live: RwLock::new(HashMap::new()) });
+    let s: S = Arc::new(Shared {
+        cfg,
+        db,
+        http: reqwest::Client::new(),
+        tx,
+        token: RwLock::new(None),
+        live: RwLock::new(HashMap::new()),
+    });
     info!("indexer for {env}: er {} base {}", s.cfg.er_rpc, s.cfg.base_rpc);
     tokio::spawn(logs_loop(s.clone()));
     tokio::spawn(poll_loop(s.clone()));

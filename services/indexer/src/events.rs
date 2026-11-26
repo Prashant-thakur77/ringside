@@ -48,11 +48,47 @@ impl<'a> R<'a> {
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Event {
-    Tick { match_key: String, tick: u64, inputs: [u16; 2], flags: u32, fair_p: f64, state_hash: String },
-    Trade { market: String, trader: String, tick: u64, game_tick: u64, seen_tick: u64, price: u64, qty: u64, side: u8, dir: u8, mode: u8, unix_ms: i64 },
-    Reject { market: String, trader: String, tick: u64, seen_tick: u64, reason: u32, mode: u8 },
-    Seed { match_key: String, wave: u16, apply_at_tick: u32, seed: String },
-    Settle { match_key: String, winner: u8, ticks: u64, final_hash: String },
+    Tick {
+        match_key: String,
+        tick: u64,
+        inputs: [u16; 2],
+        flags: u32,
+        fair_p: f64,
+        state_hash: String,
+    },
+    Trade {
+        market: String,
+        trader: String,
+        tick: u64,
+        game_tick: u64,
+        seen_tick: u64,
+        price: u64,
+        qty: u64,
+        side: u8,
+        dir: u8,
+        mode: u8,
+        unix_ms: i64,
+    },
+    Reject {
+        market: String,
+        trader: String,
+        tick: u64,
+        seen_tick: u64,
+        reason: u32,
+        mode: u8,
+    },
+    Seed {
+        match_key: String,
+        wave: u16,
+        apply_at_tick: u32,
+        seed: String,
+    },
+    Settle {
+        match_key: String,
+        winner: u8,
+        ticks: u64,
+        final_hash: String,
+    },
 }
 
 pub fn decode(data: &[u8]) -> Option<Event> {
@@ -84,13 +120,30 @@ pub fn decode(data: &[u8]) -> Option<Event> {
         });
     }
     if d == disc("event", "RejectEvent") {
-        return Some(Event::Reject { market: r.pk()?, trader: r.pk()?, tick: r.u64()?, seen_tick: r.u64()?, reason: r.u32()?, mode: r.u8()? });
+        return Some(Event::Reject {
+            market: r.pk()?,
+            trader: r.pk()?,
+            tick: r.u64()?,
+            seen_tick: r.u64()?,
+            reason: r.u32()?,
+            mode: r.u8()?,
+        });
     }
     if d == disc("event", "SeedEvent") {
-        return Some(Event::Seed { match_key: r.pk()?, wave: r.u16()?, apply_at_tick: r.u32()?, seed: r.h32()? });
+        return Some(Event::Seed {
+            match_key: r.pk()?,
+            wave: r.u16()?,
+            apply_at_tick: r.u32()?,
+            seed: r.h32()?,
+        });
     }
     if d == disc("event", "SettleEvent") {
-        return Some(Event::Settle { match_key: r.pk()?, winner: r.u8()?, ticks: r.u64()?, final_hash: r.h32()? });
+        return Some(Event::Settle {
+            match_key: r.pk()?,
+            winner: r.u8()?,
+            ticks: r.u64()?,
+            final_hash: r.h32()?,
+        });
     }
     None
 }

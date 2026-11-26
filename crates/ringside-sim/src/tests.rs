@@ -3,7 +3,14 @@ use crate::bots::{run_match, Bot, Policy};
 use proptest::prelude::*;
 
 fn inp(mv: u8, fire: bool, dash: bool, shield: bool, aim: u8) -> u16 {
-    Input { mv, fire, dash, shield, aim }.encode()
+    Input {
+        mv,
+        fire,
+        dash,
+        shield,
+        aim,
+    }
+    .encode()
 }
 
 fn units(v: i32) -> i64 {
@@ -34,7 +41,8 @@ fn aim_at_cardinals() {
 fn fighter_cannot_leave_arena() {
     let mut s = SimState::new(100, [0; 32]);
     for _ in 0..400 {
-        step(&mut s, [inp(5, false, true, false, 0), inp(1, false, true, false, 0)]); // A west, B east
+        step(&mut s, [inp(5, false, true, false, 0), inp(1, false, true, false, 0)]);
+        // A west, B east
     }
     assert_eq!(units(s.fighters[0].x), FIGHTER_R);
     assert_eq!(units(s.fighters[1].x), ARENA_W - FIGHTER_R);
@@ -123,7 +131,11 @@ fn shield_duration_and_cooldown() {
 }
 
 fn place_powerup(s: &mut SimState, kind: u8) {
-    s.powerups[0] = Powerup { kind, x: s.fighters[0].x, y: s.fighters[0].y };
+    s.powerups[0] = Powerup {
+        kind,
+        x: s.fighters[0].x,
+        y: s.fighters[0].y,
+    };
 }
 
 #[test]
@@ -247,7 +259,13 @@ fn sudden_death_first_hit_wins() {
 fn codec_roundtrip_and_size() {
     let mut s = SimState::new(100, [3; 32]);
     for t in 0..120 {
-        step(&mut s, [inp((t % 9) as u8, t % 3 == 0, t % 17 == 0, t % 23 == 0, (t % 16) as u8), inp(1, true, false, false, 8)]);
+        step(
+            &mut s,
+            [
+                inp((t % 9) as u8, t % 3 == 0, t % 17 == 0, t % 23 == 0, (t % 16) as u8),
+                inp(1, true, false, false, 8),
+            ],
+        );
     }
     let b = encode(&s);
     assert_eq!(b.len(), SIM_BYTES);
@@ -328,7 +346,12 @@ fn no_floats_or_hashmaps_in_sim() {
 fn every_policy_finishes_matches() {
     for (i, pa) in Policy::ALL.iter().enumerate() {
         for (j, pb) in Policy::ALL.iter().enumerate() {
-            let r = run_match(&mut Bot::new(*pa, 850, i as u64), &mut Bot::new(*pb, 850, 100 + j as u64), 42 + (i * 4 + j) as u64, 100);
+            let r = run_match(
+                &mut Bot::new(*pa, 850, i as u64),
+                &mut Bot::new(*pb, 850, 100 + j as u64),
+                42 + (i * 4 + j) as u64,
+                100,
+            );
             assert!(r.winner != WINNER_NONE);
             assert!(r.ticks <= 1000);
         }
@@ -340,7 +363,12 @@ fn policies_differ_in_strength() {
     let mut wins = 0;
     let n = 60;
     for m in 0..n {
-        let r = run_match(&mut Bot::new(Policy::Aggressive, 900, m), &mut Bot::new(Policy::Random, 900, 1000 + m), m, 100);
+        let r = run_match(
+            &mut Bot::new(Policy::Aggressive, 900, m),
+            &mut Bot::new(Policy::Random, 900, 1000 + m),
+            m,
+            100,
+        );
         if r.winner == WINNER_A {
             wins += 1;
         }

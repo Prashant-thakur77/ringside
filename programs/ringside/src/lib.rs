@@ -4,7 +4,6 @@
 //! is stamped with the tick it was priced on and stale fills are rejected onchain.
 
 use anchor_lang::prelude::*;
-use solana_sha256_hasher::hashv;
 use anchor_lang::solana_program::instruction::{AccountMeta, Instruction};
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer as SplTransfer};
 use ephemeral_rollups_sdk::access_control::instructions::{CreateEphemeralPermissionCpi, UpdateEphemeralPermissionCpi};
@@ -23,6 +22,7 @@ use ephemeral_rollups_sdk::vrf::types::SerializableAccountMeta;
 use ephemeral_rollups_sdk::{ActionArgs, ShortAccountMeta};
 use ringside_fixed::trade::{self as tm, Dir, Limits, Side, TradeError};
 use session_keys::{session_auth_or, Session, SessionError, SessionTokenV2};
+use solana_sha256_hasher::hashv;
 
 pub mod error;
 pub mod espl;
@@ -201,7 +201,10 @@ pub mod ringside {
         ctx.accounts.delegate_profile(
             &ctx.accounts.payer,
             &[PROFILE_SEED, ctx.accounts.wallet.key().as_ref()],
-            DelegateConfig { validator, ..Default::default() },
+            DelegateConfig {
+                validator,
+                ..Default::default()
+            },
         )?;
         Ok(())
     }
@@ -266,10 +269,15 @@ pub mod ringside {
     pub fn delegate_match(ctx: Context<DelegateMatch>, match_id: u64) -> Result<()> {
         let validator = ctx.remaining_accounts.first().map(|v| v.key());
         let id = match_id.to_le_bytes();
-        let cfg = || DelegateConfig { validator, ..Default::default() };
+        let cfg = || DelegateConfig {
+            validator,
+            ..Default::default()
+        };
         ctx.accounts.delegate_game(&ctx.accounts.payer, &[MATCH_SEED, &id], cfg())?;
-        ctx.accounts.delegate_market_live(&ctx.accounts.payer, &[MARKET_SEED, &id, &[MODE_LIVE]], cfg())?;
-        ctx.accounts.delegate_market_delayed(&ctx.accounts.payer, &[MARKET_SEED, &id, &[MODE_DELAYED]], cfg())?;
+        ctx.accounts
+            .delegate_market_live(&ctx.accounts.payer, &[MARKET_SEED, &id, &[MODE_LIVE]], cfg())?;
+        ctx.accounts
+            .delegate_market_delayed(&ctx.accounts.payer, &[MARKET_SEED, &id, &[MODE_DELAYED]], cfg())?;
         Ok(())
     }
 
@@ -314,7 +322,10 @@ pub mod ringside {
         ctx.accounts.delegate_position(
             &ctx.accounts.payer,
             &[POSITION_SEED, ctx.accounts.market.key().as_ref(), ctx.accounts.owner.key().as_ref()],
-            DelegateConfig { validator, ..Default::default() },
+            DelegateConfig {
+                validator,
+                ..Default::default()
+            },
         )?;
         Ok(())
     }
@@ -358,7 +369,10 @@ pub mod ringside {
             vault: ctx.accounts.ephemeral_vault.to_account_info(),
             magic_program: ctx.accounts.magic_program.to_account_info(),
             permission_program: ctx.accounts.permission_program.to_account_info(),
-            args: EphemeralMembersArgs { is_private: true, members: position_members(&p.owner, &ctx.accounts.config.key()) },
+            args: EphemeralMembersArgs {
+                is_private: true,
+                members: position_members(&p.owner, &ctx.accounts.config.key()),
+            },
         }
         .invoke_signed(&[&seeds])?;
         Ok(())
@@ -377,7 +391,13 @@ pub mod ringside {
             let mut g = ctx.accounts.game.load_mut()?;
             require!(g.status == ST_LOBBY, RingsideError::ErrClosed);
             require!(g.fighters[0] != player && g.fighters[1] != player, RingsideError::ErrMatchFull);
-            let slot = if g.joined & 1 == 0 { 0 } else if g.joined & 2 == 0 { 1 } else { return err!(RingsideError::ErrMatchFull) };
+            let slot = if g.joined & 1 == 0 {
+                0
+            } else if g.joined & 2 == 0 {
+                1
+            } else {
+                return err!(RingsideError::ErrMatchFull);
+            };
             if slot == 1 && g.opponent != Pubkey::default() {
                 require_keys_eq!(g.opponent, player, RingsideError::ErrMatchFull);
             }
@@ -417,7 +437,13 @@ pub mod ringside {
         let player = ctx.accounts.player.key();
         let mut g = ctx.accounts.game.load_mut()?;
         require!(g.status == ST_LIVE || g.status == ST_SUDDEN_DEATH, RingsideError::ErrClosed);
-        let i = if g.fighters[0] == player { 0 } else if g.fighters[1] == player { 1 } else { return err!(RingsideError::ErrNotFighter) };
+        let i = if g.fighters[0] == player {
+            0
+        } else if g.fighters[1] == player {
+            1
+        } else {
+            return err!(RingsideError::ErrNotFighter);
+        };
         let tick = u32::from_le_bytes(g.sim[0..4].try_into().unwrap());
         require!(seq > g.input_seq[i], RingsideError::ErrBadSeq);
         require!(g.input_tick[i] != tick, RingsideError::ErrBadSeq);
@@ -437,10 +463,17 @@ pub mod ringside {
             return Ok(()); // finished: no-op so the crank can run out harmlessly
         }
         require!(g.status == ST_LIVE || g.status == ST_SUDDEN_DEATH, RingsideError::ErrClosed);
-        require!(clock.slot >= g.last_tick_slot.saturating_add(cfg.min_slot_gap as u64), RingsideError::ErrTooEarly);
+        require!(
+            clock.slot >= g.last_tick_slot.saturating_add(cfg.min_slot_gap as u64),
+            RingsideError::ErrTooEarly
+        );
         let mut s = ringside_sim::decode(&g.sim).ok_or(RingsideError::ErrMath)?;
         // Wall-clock bound: game time can never run ahead of real time by more than one second.
-        let elapsed_ms = clock.unix_timestamp.saturating_sub(g.start_unix).saturating_add(1).saturating_mul(1000);
+        let elapsed_ms = clock
+            .unix_timestamp
+            .saturating_sub(g.start_unix)
+            .saturating_add(1)
+            .saturating_mul(1000);
         let next_game_ms = (s.tick as i64 + 1) * s.dt_ms as i64;
         require!(next_game_ms <= elapsed_ms, RingsideError::ErrTooEarly);
 
@@ -467,7 +500,14 @@ pub mod ringside {
             let p = pricing::model_p(&model.blob, &x)?;
             pricing::requote(&mut m, cfg, p, s.time_left_ms() as u64, tick, ev.has(ringside_sim::EV_LETHAL));
         }
-        emit!(TickEvent { match_key: ctx.accounts.game.key(), tick, inputs: s.last_inputs, flags: ev.flags, fair_p: m.fair_p, state_hash: g.state_hash });
+        emit!(TickEvent {
+            match_key: ctx.accounts.game.key(),
+            tick,
+            inputs: s.last_inputs,
+            flags: ev.flags,
+            fair_p: m.fair_p,
+            state_hash: g.state_hash
+        });
         Ok(())
     }
 
@@ -481,7 +521,13 @@ pub mod ringside {
                 return Ok(()); // already requested for this wave
             }
             g.vrf_requested_wave = wave;
-            let seed = hashv(&[&b"ringside-wave"[..], &match_id.to_le_bytes()[..], &wave.to_le_bytes()[..], &g.state_hash[..]]).to_bytes();
+            let seed = hashv(&[
+                &b"ringside-wave"[..],
+                &match_id.to_le_bytes()[..],
+                &wave.to_le_bytes()[..],
+                &g.state_hash[..],
+            ])
+            .to_bytes();
             (wave, seed)
         };
         let ix = create_request_randomness_ix_const(
@@ -491,7 +537,11 @@ pub mod ringside {
                 callback_program_id: crate::ID,
                 callback_discriminator: instruction::VrfCallback::DISCRIMINATOR.to_vec(),
                 caller_seed,
-                accounts_metas: Some(vec![SerializableAccountMeta { pubkey: ctx.accounts.game.key(), is_signer: false, is_writable: true }]),
+                accounts_metas: Some(vec![SerializableAccountMeta {
+                    pubkey: ctx.accounts.game.key(),
+                    is_signer: false,
+                    is_writable: true,
+                }]),
                 callback_args: Some(wave.to_le_bytes().to_vec()),
                 ..Default::default()
             },
@@ -513,7 +563,12 @@ pub mod ringside {
         g.vrf_fulfilled_wave = wave;
         g.n_vrf = g.n_vrf.saturating_add(1);
         let tick = u32::from_le_bytes(g.sim[0..4].try_into().unwrap());
-        emit!(SeedEvent { match_key: ctx.accounts.game.key(), wave, apply_at_tick: tick.wrapping_add(1), seed: randomness });
+        emit!(SeedEvent {
+            match_key: ctx.accounts.game.key(),
+            wave,
+            apply_at_tick: tick.wrapping_add(1),
+            seed: randomness
+        });
         Ok(())
     }
 
@@ -541,7 +596,11 @@ pub mod ringside {
         let (live, barred, game_tick) = {
             let g = ctx.accounts.game.load()?;
             let live = g.status == ST_LIVE || g.status == ST_SUDDEN_DEATH;
-            let barred = g.fighters.iter().chain(g.fighter_session_signers.iter()).any(|k| *k != Pubkey::default() && (*k == trader || *k == signer));
+            let barred = g
+                .fighters
+                .iter()
+                .chain(g.fighter_session_signers.iter())
+                .any(|k| *k != Pubkey::default() && (*k == trader || *k == signer));
             (live, barred, g.tick() as u64)
         };
         let mut m = ctx.accounts.market.load_mut()?;
@@ -563,21 +622,47 @@ pub mod ringside {
                     RingsideError::ErrStaleTick => m.n_rejected_stale += 1,
                     _ => m.n_rejected_other += 1,
                 }
-                emit!(RejectEvent { market: market_key, trader, tick: tick_now, seen_tick, reason: code(e), mode: m.mode });
+                emit!(RejectEvent {
+                    market: market_key,
+                    trader,
+                    tick: tick_now,
+                    seen_tick,
+                    reason: code(e),
+                    mode: m.mode
+                });
                 return Ok(());
             }
             return Err(e.into());
         }
 
-        let quotes = ringside_fixed::quote::Quotes { mid: m.mid, bid_a: m.bid_a, ask_a: m.ask_a, bid_b: m.bid_b, ask_b: m.ask_b, spread: m.spread };
+        let quotes = ringside_fixed::quote::Quotes {
+            mid: m.mid,
+            bid_a: m.bid_a,
+            ask_a: m.ask_a,
+            bid_b: m.bid_b,
+            ask_b: m.ask_b,
+            spread: m.spread,
+        };
         let mut book = pricing::book_of(&m);
         let pos_acc = &mut ctx.accounts.position;
         require_keys_eq!(pos_acc.owner, trader, RingsideError::ErrUnauthorized);
         let mut pos = pricing::pos_of(pos_acc);
         let side_m = if side == TradeSide::A { Side::A } else { Side::B };
         let dir_m = if dir == TradeDir::Buy { Dir::Buy } else { Dir::Sell };
-        let fill = tm::execute(&mut book, &mut pos, &quotes, side_m, dir_m, qty, limit_price, &Limits { cap: m.cap, max_qty: cfg.max_qty })
-            .map_err(trade_err)?;
+        let fill = tm::execute(
+            &mut book,
+            &mut pos,
+            &quotes,
+            side_m,
+            dir_m,
+            qty,
+            limit_price,
+            &Limits {
+                cap: m.cap,
+                max_qty: cfg.max_qty,
+            },
+        )
+        .map_err(trade_err)?;
         pricing::store_book(&mut m, &book);
         pos_acc.shares_a = pos.shares_a;
         pos_acc.shares_b = pos.shares_b;
@@ -698,7 +783,14 @@ pub mod ringside {
                     let (payout, f) = tm::fighter_payout(stake, cfg.fee_bps as u64).map_err(trade_err)?;
                     fee = f;
                     let (w, l) = if winner == ringside_sim::WINNER_A { (0, 1) } else { (1, 0) };
-                    pay(if w == 0 { &ctx.accounts.fighter_a_token } else { &ctx.accounts.fighter_b_token }, payout)?;
+                    pay(
+                        if w == 0 {
+                            &ctx.accounts.fighter_a_token
+                        } else {
+                            &ctx.accounts.fighter_b_token
+                        },
+                        payout,
+                    )?;
                     pay(&ctx.accounts.house_token, fee)?;
                     let profiles = [&mut ctx.accounts.profile_a, &mut ctx.accounts.profile_b];
                     let (rw, rl) = (profiles[w].elo, profiles[l].elo);
@@ -729,7 +821,12 @@ pub mod ringside {
             {
                 let mut g = ctx.accounts.game.load_mut()?;
                 g.status = new_status;
-                emit!(SettleEvent { match_key: game_key, winner: g.winner, ticks: u32::from_le_bytes(g.sim[0..4].try_into().unwrap()) as u64, final_hash: g.state_hash });
+                emit!(SettleEvent {
+                    match_key: game_key,
+                    winner: g.winner,
+                    ticks: u32::from_le_bytes(g.sim[0..4].try_into().unwrap()) as u64,
+                    final_hash: g.state_hash
+                });
             }
             for (loader, is_live) in [(&ctx.accounts.market_live, true), (&ctx.accounts.market_delayed, false)] {
                 let mut m = loader.load_mut()?;
@@ -740,7 +837,13 @@ pub mod ringside {
                 }
             }
         }
-        reveal_batch(ctx.remaining_accounts, &ctx.accounts.config.key(), &ctx.accounts.permission_program, &ctx.accounts.ephemeral_vault, &ctx.accounts.magic_program)
+        reveal_batch(
+            ctx.remaining_accounts,
+            &ctx.accounts.config.key(),
+            &ctx.accounts.permission_program,
+            &ctx.accounts.ephemeral_vault,
+            &ctx.accounts.magic_program,
+        )
     }
 
     /// Reveals more positions after settle, in batches of (position, permission) pairs.
@@ -748,7 +851,13 @@ pub mod ringside {
         let g = ctx.accounts.game.load()?;
         require!(g.status == ST_SETTLED || g.status == ST_DRAW, RingsideError::ErrNotSettled);
         drop(g);
-        reveal_batch(ctx.remaining_accounts, &ctx.accounts.config.key(), &ctx.accounts.permission_program, &ctx.accounts.ephemeral_vault, &ctx.accounts.magic_program)
+        reveal_batch(
+            ctx.remaining_accounts,
+            &ctx.accounts.config.key(),
+            &ctx.accounts.permission_program,
+            &ctx.accounts.ephemeral_vault,
+            &ctx.accounts.magic_program,
+        )
     }
 
     /// Pays a settled position: winning shares 1 USDC each, a draw refunds net cost.
@@ -826,7 +935,10 @@ pub mod ringside {
         let data = anchor_lang::InstructionData::data(&crate::instruction::WriteMatchRecord { args });
         let action = CallHandler {
             destination_program: crate::ID,
-            accounts: vec![ShortAccountMeta { pubkey: ctx.accounts.record.key().to_bytes().into(), is_writable: true }],
+            accounts: vec![ShortAccountMeta {
+                pubkey: ctx.accounts.record.key().to_bytes().into(),
+                is_writable: true,
+            }],
             args: ActionArgs::new(data),
             escrow_authority: ctx.accounts.payer.to_account_info(),
             compute_units: 120_000,
@@ -1020,8 +1132,14 @@ fn apply_config(c: &mut Config, a: &ConfigArgs) {
 
 fn position_members(owner: &Pubkey, house: &Pubkey) -> Vec<Member> {
     vec![
-        Member { flags: TX_LOGS_FLAG | TX_MESSAGE_FLAG | TX_BALANCES_FLAG, pubkey: *owner },
-        Member { flags: TX_LOGS_FLAG | TX_MESSAGE_FLAG | TX_BALANCES_FLAG, pubkey: *house },
+        Member {
+            flags: TX_LOGS_FLAG | TX_MESSAGE_FLAG | TX_BALANCES_FLAG,
+            pubkey: *owner,
+        },
+        Member {
+            flags: TX_LOGS_FLAG | TX_MESSAGE_FLAG | TX_BALANCES_FLAG,
+            pubkey: *house,
+        },
     ]
 }
 
@@ -1054,7 +1172,10 @@ fn reveal_batch<'info>(
             permission_program: permission_program.to_account_info(),
             authority: pos_info.clone(),
             authority_is_signer: false,
-            args: EphemeralMembersArgs { is_private: false, members: position_members(&pos.owner, house) },
+            args: EphemeralMembersArgs {
+                is_private: false,
+                members: position_members(&pos.owner, house),
+            },
         }
         .invoke_signed(&[&seeds])?;
         pos.revealed = true;

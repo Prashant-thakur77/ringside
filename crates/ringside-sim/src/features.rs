@@ -4,8 +4,8 @@
 //! P(A wins | swapped) ≈ 1 − P(A wins).
 
 use crate::{
-    dir16, SimState, ARENA_H, ARENA_W, DASH_CD_MS, FIRE_CD_MS, FP, HASTE_MS, MATCH_MS, N_POWERUP,
-    N_PROJ, OVERCHARGE_MS, PHASE_SUDDEN_DEATH, PU_MEDKIT,
+    dir16, SimState, ARENA_H, ARENA_W, DASH_CD_MS, FIRE_CD_MS, FP, HASTE_MS, MATCH_MS, N_POWERUP, N_PROJ, OVERCHARGE_MS,
+    PHASE_SUDDEN_DEATH, PU_MEDKIT,
 };
 use ringside_fixed::{from_ratio, isqrt_u64, ONE};
 

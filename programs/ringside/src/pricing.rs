@@ -9,7 +9,12 @@ use ringside_fixed::quote::{quote, QuoteInputs, SpreadParams, PAYOUT};
 use ringside_fixed::trade::{Book, Pos};
 
 pub fn spread_params(cfg: &Config) -> SpreadParams {
-    SpreadParams { s_base: cfg.s_base, s_vol_bps: cfg.s_vol_bps, s_time: cfg.s_time, k_skew: cfg.k_skew }
+    SpreadParams {
+        s_base: cfg.s_base,
+        s_vol_bps: cfg.s_vol_bps,
+        s_time: cfg.s_time,
+        k_skew: cfg.k_skew,
+    }
 }
 
 /// Model probability (×2^32) for a feature vector.
@@ -52,7 +57,13 @@ pub fn requote(m: &mut Market, cfg: &Config, p: u32, time_left_ms: u64, tick: u6
 }
 
 pub fn book_of(m: &Market) -> Book {
-    Book { inv_a: m.inv_a, inv_b: m.inv_b, house_cash: m.house_cash, volume: m.volume, n_trades: m.n_trades }
+    Book {
+        inv_a: m.inv_a,
+        inv_b: m.inv_b,
+        house_cash: m.house_cash,
+        volume: m.volume,
+        n_trades: m.n_trades,
+    }
 }
 
 pub fn store_book(m: &mut Market, b: &Book) {
@@ -69,5 +80,10 @@ pub fn store_book(m: &mut Market, b: &Book) {
 }
 
 pub fn pos_of(p: &crate::state::Position) -> Pos {
-    Pos { shares_a: p.shares_a, shares_b: p.shares_b, cost_basis: p.cost_basis, realized: p.realized }
+    Pos {
+        shares_a: p.shares_a,
+        shares_b: p.shares_b,
+        cost_basis: p.cost_basis,
+        realized: p.realized,
+    }
 }

@@ -49,7 +49,17 @@ pub fn init_ephemeral_ata<'info>(
         ],
         data: vec![0],
     };
-    invoke(&ix, &[eata.clone(), payer.clone(), owner.clone(), mint.clone(), system_program.clone(), espl.clone()])?;
+    invoke(
+        &ix,
+        &[
+            eata.clone(),
+            payer.clone(),
+            owner.clone(),
+            mint.clone(),
+            system_program.clone(),
+            espl.clone(),
+        ],
+    )?;
     Ok(())
 }
 

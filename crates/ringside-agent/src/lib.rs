@@ -47,7 +47,14 @@ pub fn action_to_input(s: &SimState, me: usize, action: usize) -> u16 {
     let o = s.fighters[1 - me];
     let dx = (o.x as i64 - f.x as i64) / FP + (o.vx as i64 / FP) * 4;
     let dy = (o.y as i64 - f.y as i64) / FP + (o.vy as i64 / FP) * 4;
-    Input { mv: (a % 9) as u8, fire: (a / 9) % 2 == 1, dash: (a / 18) % 2 == 1, shield: (a / 36) % 2 == 1, aim: sim::aim_at(dx, dy) }.encode()
+    Input {
+        mv: (a % 9) as u8,
+        fire: (a / 9) % 2 == 1,
+        dash: (a / 18) % 2 == 1,
+        shield: (a / 36) % 2 == 1,
+        aim: sim::aim_at(dx, dy),
+    }
+    .encode()
 }
 
 #[cfg(test)]

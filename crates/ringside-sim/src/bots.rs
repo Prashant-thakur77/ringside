@@ -3,9 +3,7 @@
 //! Deterministic given their RNG seed. Used as PPO opponents, as data-generation players and,
 //! through WASM, by the TypeScript fighter bots.
 
-use crate::{
-    aim_at, move_code_from_dir16, splitmix64, Input, SimState, FP, PU_MEDKIT, N_POWERUP, N_PROJ,
-};
+use crate::{aim_at, move_code_from_dir16, splitmix64, Input, SimState, FP, N_POWERUP, N_PROJ, PU_MEDKIT};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Policy {
@@ -49,7 +47,14 @@ pub struct Bot {
 
 impl Bot {
     pub fn new(policy: Policy, skill: u16, seed: u64) -> Self {
-        Self { policy, skill: skill.min(1000), rng: seed, last: Input::default(), strafe: 1, hold: 0 }
+        Self {
+            policy,
+            skill: skill.min(1000),
+            rng: seed,
+            last: Input::default(),
+            strafe: 1,
+            hold: 0,
+        }
     }
 
     fn roll(&mut self, permille: u64) -> bool {
@@ -72,7 +77,11 @@ impl Bot {
 
         // Aim: lead the target slightly by its velocity, plus noise that shrinks with skill.
         // Better bots lead more often and by more ticks; everyone has some aim noise.
-        let lead_ticks = if self.roll(self.skill as u64) { (self.skill / 200) as i64 } else { 0 };
+        let lead_ticks = if self.roll(self.skill as u64) {
+            (self.skill / 200) as i64
+        } else {
+            0
+        };
         let lead = aim_at(dx + (o.vx as i64 / FP) * lead_ticks, dy + (o.vy as i64 / FP) * lead_ticks);
         let noise_pm = 150 + (1000 - self.skill as u64) / 2;
         let mut aim = lead;
@@ -196,5 +205,9 @@ pub fn run_match(a: &mut Bot, b: &mut Bot, match_seed: u64, dt_ms: u16) -> Match
         let ib = b.act(&s, 1);
         crate::step(&mut s, [ia, ib]);
     }
-    MatchResult { winner: s.winner, ticks: s.tick, hp: [s.fighters[0].hp, s.fighters[1].hp] }
+    MatchResult {
+        winner: s.winner,
+        ticks: s.tick,
+        hp: [s.fighters[0].hp, s.fighters[1].hp],
+    }
 }

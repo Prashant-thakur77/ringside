@@ -91,11 +91,7 @@ pub fn ln(x: i64) -> Option<i64> {
     }
     let msb = 63 - x.leading_zeros() as i64; // position of the highest set bit
     let k = msb - 32;
-    let m: i128 = if k >= 0 {
-        (x as i128) >> k
-    } else {
-        (x as i128) << (-k)
-    };
+    let m: i128 = if k >= 0 { (x as i128) >> k } else { (x as i128) << (-k) };
     let one = ONE as i128;
     let t = ((m - one) << 32) / (m + one); // t in [0, 1/3)
     let t2 = (t * t) >> 32;
