@@ -61,7 +61,13 @@ def style(ax):
 
 
 def e1(env):
-    rows = [r for r in load(DATA / f"courtsider-{env}.jsonl", []) if r.get("pnlDelayed") is not None]
+    seen = set()
+    rows = []
+    for r in load(DATA / f"courtsider-{env}.jsonl", []):
+        if r.get("pnlDelayed") is None or r["id"] in seen:
+            continue  # one row per match
+        seen.add(r["id"])
+        rows.append(r)
     if not rows:
         return None
     delays = sorted({r["delayMs"] for r in rows})

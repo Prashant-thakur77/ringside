@@ -28,6 +28,10 @@ if (!runnerIdx) {
 }
 if (arenaOnly) {
   console.log("[arena] bots running for every match");
+  const arenaBots = ["spec-1", "spec-2", "spec-3", "spec-4", "courtsider"].map(ensureKeypair);
+  const top = () => refill(env, admin, arenaBots, 30_000_000n, 200_000_000n).catch(() => {});
+  await top();
+  setInterval(top, 60_000);
   await new Promise(() => {});
 }
 const fighterKeys = runnerIdx ? [`fighter-a-${runnerIdx}`, `fighter-b-${runnerIdx}`] : ["fighter-a", "fighter-b"];

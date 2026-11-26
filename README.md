@@ -2,7 +2,7 @@
 
 Ringside is an in-play betting exchange that can't be courtsided: the fight and the order book live in the same MagicBlock rollup, so every price is as fresh as the last punch.
 
-Same bot, same 89 held-out matches, 5 s TV delay: the courtsider made **+13.44** per match on the delayed book and **+0.62** on Ringside, where 1011 of its stale orders were rejected onchain and 52 filled. Measured on local MagicBlock stack (base validator + ER 1.1.1).
+Same bot, same 115 held-out matches, 5 s TV delay: the courtsider made **+13.42** per match on the delayed book and **+0.59** on Ringside, where 1420 of its stale orders were rejected onchain and 135 filled. Measured on local MagicBlock stack (base validator + ER 1.1.1).
 
 ![A live Ringside match: the odds line moves with every hit](docs/media/ringside.gif)
 
@@ -71,20 +71,20 @@ Each match has two books on the same fight. The Ringside book is priced inside `
 
 All numbers below come from `eval/results/results.json`, written by `eval/make_report.py`. Evaluation is on held-out data: matches the courtsider was never tuned on, model metrics on a held-out 15% split by match, PPO win rates on match seeds never used in training.
 
-### E1 · courtsiding A/B (94 matches)
+### E1 · courtsiding A/B (123 matches)
 
 ![Courtsider PnL per match, TV-delay books vs Ringside](eval/results/e1_courtsider_ab.png)
 
 | Book | Matches | Courtsider PnL / match | 95% CI | Stale fills accepted | House PnL / match |
 |---|---|---|---|---|---|
 | TV delay 0.5 s | 1 | +1.26 | +1.26 to +1.26 | 10 | +2.33 |
-| TV delay 1 s | PENDING | PENDING | PENDING to PENDING | PENDING | PENDING |
-| TV delay 2 s | 4 | +17.69 | +11.37 to +24.02 | 41 | -17.28 |
-| TV delay 5 s | 89 | +13.44 | +11.41 to +15.51 | 862 | -15.95 |
+| TV delay 1 s | 4 | +11.55 | -1.08 to +19.50 | 24 | -0.63 |
+| TV delay 2 s | 3 | +15.59 | +9.18 to +24.02 | 28 | -14.52 |
+| TV delay 5 s | 115 | +13.42 | +11.48 to +15.41 | 898 | -16.74 |
 | TV delay 8 s | PENDING | PENDING | PENDING to PENDING | PENDING | PENDING |
-| Ringside | 94 | +0.62 | +0.31 to +0.91 | 52 | +3.11 |
+| Ringside | 123 | +0.59 | +0.22 to +0.94 | 135 | +5.86 |
 
-On Ringside the courtsider sent 1181 orders stamped with the tick it saw on the delayed feed; 1011 were rejected with `ErrStaleTick`. It also traded at the live tick 833 times, where it pays the spread like everyone else.
+On Ringside the courtsider sent 1587 orders stamped with the tick it saw on the delayed feed; 1420 were rejected with `ErrStaleTick`. It also traded at the live tick 895 times, where it pays the spread like everyone else.
 
 ### E2 · is the price right? (29890 held-out matches, 2859074 rows)
 
@@ -125,7 +125,7 @@ The PPO fighter (141459456 steps of self-play against a league of past checkpoin
 - The distilled logistic that fits in a tick has held-out Brier 0.1736 against 0.1639 for the LightGBM teacher it was distilled from. We trade some accuracy for running inside the instruction.
 - In the last 20 seconds of regulation the onchain model's ECE is 0.0249, against 0.0034 overall: a linear model underfits the swingy end of a fight.
 - At a 0.5 s TV delay the courtsider's PnL per match is +1.26 (95% CI +1.26 to +1.26); the edge comes from the 2–8 s delays that real streams have.
-- On Ringside every stale order was rejected, but the courtsider's orders at the live tick still made +0.62 per match (95% CI +0.31 to +0.91): the model does not fully price the momentum right after a hit.
+- On Ringside every stale order was rejected, but the courtsider's orders at the live tick still made +0.59 per match (95% CI +0.22 to +0.94): the model does not fully price the momentum right after a hit.
 - Measured tick cadence is p50 100 ms but p99 140 ms: the 100 ms crank is a target, not a guarantee.
 
 Weakest case: Calibration is worst late in regulation. In the last 20 seconds of regulation the onchain model's ECE is 0.0249, against 0.0034 overall: a linear model underfits the swingy end of a fight.

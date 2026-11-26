@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-26 21:44 UTC",
+  "generated_at": "2026-11-26 21:59 UTC",
   "network": "local MagicBlock stack (base validator + ER 1.1.1)",
   "env": "local",
   "program_id": "4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej",
   "e1": {
     "heldout": true,
-    "n_matches": 94,
+    "n_matches": 123,
     "delays": [
       {
         "delay_ms": 500,
@@ -20,43 +20,55 @@
         "house_pnl_mean": 2.330879
       },
       {
-        "delay_ms": 2000,
+        "delay_ms": 1000,
         "n_matches": 4,
-        "pnl_mean": 17.694825,
+        "pnl_mean": 11.551389,
         "pnl_ci95": [
-          11.366230000000002,
+          -1.08382,
+          19.500301
+        ],
+        "fills": 24,
+        "stale_fills_accepted": 24,
+        "house_pnl_mean": -0.6328375000000004
+      },
+      {
+        "delay_ms": 2000,
+        "n_matches": 3,
+        "pnl_mean": 15.585293333333334,
+        "pnl_ci95": [
+          9.176664,
           24.02342
         ],
-        "fills": 41,
-        "stale_fills_accepted": 41,
-        "house_pnl_mean": -17.275420999999998
+        "fills": 28,
+        "stale_fills_accepted": 28,
+        "house_pnl_mean": -14.516274666666666
       },
       {
         "delay_ms": 5000,
-        "n_matches": 89,
-        "pnl_mean": 13.436425123595507,
+        "n_matches": 115,
+        "pnl_mean": 13.41798372173913,
         "pnl_ci95": [
-          11.410375903370786,
-          15.506200620224718
+          11.482482906086956,
+          15.407021191304349
         ],
-        "fills": 862,
-        "stale_fills_accepted": 862,
-        "house_pnl_mean": -15.951282449438203
+        "fills": 898,
+        "stale_fills_accepted": 898,
+        "house_pnl_mean": -16.741375
       }
     ],
     "ringside": {
-      "n_matches": 94,
-      "pnl_mean": 0.6169951382978722,
+      "n_matches": 123,
+      "pnl_mean": 0.5898400731707318,
       "pnl_ci95": [
-        0.31372340345744687,
-        0.9072574880319147
+        0.2162465245934959,
+        0.9402189806910568
       ],
-      "stale_attempts": 1181,
-      "stale_rejections": 1011,
-      "stale_fills_accepted": 52,
-      "fresh_fills": 833,
-      "transport_errors": 60,
-      "house_pnl_mean": 3.1149114680851056
+      "stale_attempts": 1587,
+      "stale_rejections": 1420,
+      "stale_fills_accepted": 135,
+      "fresh_fills": 895,
+      "transport_errors": 63,
+      "house_pnl_mean": 5.864130414634145
     }
   },
   "e2": {
@@ -470,12 +482,12 @@
   },
   "headline": {
     "delay_ms": 5000,
-    "n_matches": 89,
-    "courtsider_pnl_per_match_tv": 13.436425123595507,
-    "courtsider_pnl_per_match_ringside": 0.6169951382978722,
-    "stale_fills_accepted_tv": 862,
-    "stale_fills_accepted_ringside": 52,
-    "stale_rejections_ringside": 1011
+    "n_matches": 115,
+    "courtsider_pnl_per_match_tv": 13.41798372173913,
+    "courtsider_pnl_per_match_ringside": 0.5898400731707318,
+    "stale_fills_accepted_tv": 898,
+    "stale_fills_accepted_ringside": 135,
+    "stale_rejections_ringside": 1420
   },
   "negative": [
     {
@@ -495,8 +507,8 @@
     },
     {
       "title": "Fresh orders still find a small edge",
-      "value": 0.6169951382978722,
-      "detail": "On Ringside every stale order was rejected, but the courtsider's orders at the live tick still made +0.62 per match (95% CI +0.31 to +0.91): the model does not fully price the momentum right after a hit."
+      "value": 0.5898400731707318,
+      "detail": "On Ringside every stale order was rejected, but the courtsider's orders at the live tick still made +0.59 per match (95% CI +0.22 to +0.94): the model does not fully price the momentum right after a hit."
     },
     {
       "title": "Tick cadence has a tail",
