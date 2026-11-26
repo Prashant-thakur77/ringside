@@ -208,7 +208,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [x] P10.11 · docs/video.md script + shot list per plan §15
 - [ ] P10.12 · docs/submission.md paste-ready text for every form field + X post + builder-directory blurb
 - [ ] P10.13 · `scripts/check_consistency.py` verifies every number in README/site/video/submission equals results.json — exit 0
-- [ ] P10.14 · CI workflow (fmt, clippy, test, anchor build, wasm, web typecheck+build, Python smoke) — green on GitHub
+- [x] P10.14 · CI workflow (fmt, clippy, test, anchor build, wasm, web typecheck+build, Python smoke) — green on GitHub
 - [x] P10.15 · GitHub repo created and pushed (public) — URL
 - [ ] P10.16 · Final audit: zero hits for attribution strings and the base repo's original name in tree + git log
 - [ ] P10.17 · Secret scan of git history — zero hits
