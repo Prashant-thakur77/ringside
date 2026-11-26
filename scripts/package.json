@@ -3,14 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": { "typecheck": "tsc --noEmit" },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
-    "@ringside/client": "workspace:*",
     "@coral-xyz/anchor": "0.32.1",
-    "@solana/web3.js": "1.98.4",
-    "@solana/spl-token": "0.4.14",
     "@magicblock-labs/ephemeral-rollups-sdk": "0.18.0",
+    "@magicblock-labs/gum-sdk": "3.0.10",
+    "@ringside/client": "workspace:*",
+    "@solana/spl-token": "0.4.14",
+    "@solana/web3.js": "1.98.4",
+    "bn.js": "^5.2.5",
     "tsx": "^4.20.0"
   },
-  "devDependencies": { "@types/node": "^24.0.0", "typescript": "~5.8.3" }
+  "devDependencies": {
+    "@types/bn.js": "^5.2.0",
+    "@types/node": "^24.0.0",
+    "typescript": "~5.8.3"
+  }
 }

@@ -167,3 +167,8 @@ tv_delay {'fills': 20, 'stale_fills_accepted': 20, 'stale_rejections': 0}
 ## 2026-11-27 03:20 IST · Observability, containers
 - Indexer OpenTelemetry: tracing spans → OTel tracer → exporter into Postgres `latency`. `/stats` latency kinds after a match: indexer_store_event n=528 p50 4.6 ms; bots: trade n=230 p50 51.0 ms, submit_input n=8776 p50 9.4 ms, join_fight p50 70.5 ms, create_match p50 275 ms, delegate_match p50 418 ms (local stack).
 - Docker: `ringside-indexer` (95 MB) and `ringside-bots` images build. Compose uses host networking (this host has no free Docker address pools); `docker compose up -d indexer` → `ringside-postgres-1 Up (healthy)`, `ringside-indexer-1 Up (healthy)`, `/health` ok.
+
+## 2026-11-27 03:40 IST · End-to-end proof script (local run)
+- `scripts/e2e.ts` on the local ER, match 1795728504882 (PPO vs kiting, crank-driven, 75 s wall): fill 27CZyVh4…; stale order rejected `ErrStaleTick` (6000) 4gK3ChUn…; fighter trading own match rejected `ErrFighterBarred` (6001) 2WBbgFD2…; session key V2 created via the session-keys program (2K3QEQU9…), SPL approval on the ER, trade signed only by the session key accepted (4pCAZAkm…). Writes docs/links.json + docs/spike.md (devnet run pending).
+- Found and fixed: gum-react-sdk creates V1 session tokens (program needs V2; decisions.md); VRF re-request spam when no oracle (rate-limited per wave); spectator bots run dry over many matches (lobby refills test-dollar bots every 5 matches). Over the local runs the courtsider grew 100 → 691 test-dollars from the delayed books, so the devnet house vault is seeded much larger.
+- ONNX: `onnx.checker` ok (opset 17); onnxruntime-node vs torch argmax 64/64, max |logit diff| 1.14e-5.

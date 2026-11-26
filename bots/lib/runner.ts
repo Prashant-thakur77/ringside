@@ -90,7 +90,11 @@ export class MatchRunner {
     }
   }
 
-  async requestWave(id: bigint) {
+  private lastWaveRequest = new Map<number, number>();
+  async requestWave(id: bigint, wave = -1) {
+    const now = Date.now();
+    if (now - (this.lastWaveRequest.get(wave) ?? 0) < 5000) return; // at most one attempt per wave per 5 s
+    this.lastWaveRequest.set(wave, now);
     try {
       const er = await this.er(this.keeper);
       const r = await timed("request_wave", { match: matchPda(id).toBase58() }, async () => send(er, [await this.env.ix.requestWave(this.keeper.publicKey, id)], [this.keeper]));
@@ -153,7 +157,7 @@ export class MatchRunner {
           lastProgress = Date.now();
           this.opts.onTick?.(g);
           const wave = g.sim.readUInt16LE(SIM_WAVE);
-          if (g.vrfRequestedWave !== wave && wave < 7) void this.requestWave(id);
+          if (g.vrfRequestedWave !== wave && wave < 7) void this.requestWave(id, wave);
           const [ia, ib] = await Promise.all([this.brains[0].act(g.sim, 0), this.brains[1]?.act(g.sim, 1) ?? Promise.resolve(-1)]);
           void this.sendInput(id, 0, ia);
           if (ib >= 0) void this.sendInput(id, 1, ib);

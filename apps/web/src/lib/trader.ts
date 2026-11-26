@@ -6,11 +6,12 @@
 //  3. Session: a 2-hour session key scoped to Ringside, plus a capped token approval on the ER.
 //  4. Trade: signed by the session key, no wallet prompt.
 import { useWallet, useAnchorWallet } from "@solana/wallet-adapter-react";
-import { useSessionWallet } from "@magicblock-labs/gum-react-sdk";
+import { SessionTokenManager } from "@magicblock-labs/gum-sdk";
 import { createApproveInstruction, createAssociatedTokenAccountIdempotentInstruction, getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { Connection, PublicKey, Transaction, type TransactionInstruction } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, Transaction, type TransactionInstruction } from "@solana/web3.js";
+import BN from "bn.js";
 import { delegateSpl } from "@magicblock-labs/ephemeral-rollups-sdk";
-import { Ix, ringsideProgram, marketPda, positionPda, PROGRAM_ID, TeeSession, TEE_VALIDATOR, USDC_MINT } from "@ringside/client";
+import { Ix, ringsideProgram, marketPda, positionPda, PROGRAM_ID, SESSION_KEYS_PROGRAM, TeeSession, TEE_VALIDATOR, USDC_MINT } from "@ringside/client";
 import { createContext, createElement, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { ER_RPC, SOLANA_RPC } from "./config";
 
@@ -39,7 +40,7 @@ const codeOf = (e: unknown) => {
 function useTraderState() {
   const wallet = useWallet();
   const anchorWallet = useAnchorWallet();
-  const session = useSessionWallet();
+  const [session, setSession] = useState<{ kp: Keypair; token: PublicKey; validUntil: number } | null>(null);
   const base = useMemo(() => new Connection(SOLANA_RPC, "confirmed"), []);
   const ix = useMemo(() => new Ix(ringsideProgram(base), MINT), [base]);
   const tee = useRef<TeeSession | null>(null);
@@ -50,7 +51,11 @@ function useTraderState() {
   const [approved, setApproved] = useState(false);
 
   const pk = wallet.publicKey;
-  const step: Step = !pk ? "connect" : !er ? "pass" : !session.sessionToken || !approved ? (joined.size ? "session" : "fund") : "ready";
+  const step: Step = !pk ? "connect" : !er ? "pass" : !session || !approved ? (joined.size ? "session" : "fund") : "ready";
+  const signWithSession = async (t: Transaction) => {
+    t.partialSign(session!.kp);
+    return t;
+  };
 
   const sendWith = async (conn: Connection, ixs: TransactionInstruction[], feePayer: PublicKey, sign: (t: Transaction) => Promise<Transaction>) => {
     const t0 = performance.now();
@@ -126,25 +131,37 @@ function useTraderState() {
     (cap: bigint) =>
       run("Starting a 2-hour session", async () => {
         if (!pk || !wallet.signTransaction || !er || !anchorWallet) throw new Error("connect first");
-        let s = session;
-        if (!session.sessionToken) {
-          const created = await session.createSession(PROGRAM_ID, 10_000_000, Math.floor(Date.now() / 1000) + 2 * 3600);
-          if (created) s = created;
-        }
-        if (!s.publicKey) throw new Error("session key missing");
-        await sendWith(er, [createApproveInstruction(getAssociatedTokenAddressSync(MINT, pk), s.publicKey, pk, cap)], pk, wallet.signTransaction!);
+        // Session key V2 scoped to Ringside, valid 2 h, small SOL top-up for its fees.
+        const kp = Keypair.generate();
+        const validUntil = Math.floor(Date.now() / 1000) + 2 * 3600;
+        const token = PublicKey.findProgramAddressSync(
+          [Buffer.from("session_token_v2"), PROGRAM_ID.toBuffer(), kp.publicKey.toBuffer(), pk.toBuffer()],
+          SESSION_KEYS_PROGRAM,
+        )[0];
+        const mgr = new SessionTokenManager(anchorWallet, base);
+        const ix = await mgr.program.methods
+          .createSessionV2(true, new BN(validUntil), new BN(10_000_000))
+          .accounts({ sessionToken: token, sessionSigner: kp.publicKey, feePayer: pk, authority: pk, targetProgram: PROGRAM_ID } as never)
+          .instruction();
+        await sendWith(base, [ix], pk, async (t) => {
+          t.partialSign(kp);
+          return wallet.signTransaction!(t);
+        });
+        // The session key may move up to `cap` of the user's ER balance (SPL delegate allowance).
+        await sendWith(er, [createApproveInstruction(getAssociatedTokenAddressSync(MINT, pk), kp.publicKey, pk, cap)], pk, wallet.signTransaction!);
+        setSession({ kp, token, validUntil });
         setApproved(true);
       }),
-    [pk, wallet.signTransaction, er, anchorWallet, session],
+    [pk, wallet.signTransaction, er, anchorWallet, base],
   );
 
   const trade = useCallback(
     async (matchId: bigint, mode: number, seenTick: bigint, side: "A" | "B", dir: "buy" | "sell", qty: bigint, limit: bigint): Promise<TradeResult> => {
-      if (!pk || !er || !session.publicKey || !session.sessionToken || !session.signTransaction) throw new Error("not ready");
+      if (!pk || !er || !session) throw new Error("not ready");
       const t0 = performance.now();
       try {
-        const i = await ix.trade(session.publicKey, pk, matchId, mode, seenTick, side, dir, qty, limit, false, new PublicKey(session.sessionToken));
-        const r = await sendWith(er, [i], session.publicKey, (t) => session.signTransaction!(t));
+        const i = await ix.trade(session.kp.publicKey, pk, matchId, mode, seenTick, side, dir, qty, limit, false, session.token);
+        const r = await sendWith(er, [i], session.kp.publicKey, signWithSession);
         return { ok: true, sig: r.sig, ms: r.ms, seenTick, qty, side, price: limit };
       } catch (e) {
         return { ok: false, sig: (e as { sig?: string }).sig, ms: performance.now() - t0, code: codeOf(e), seenTick, qty, side };
@@ -157,27 +174,27 @@ function useTraderState() {
   const joinFight = useCallback(
     (matchId: bigint) =>
       run("Joining the fight", async () => {
-        if (!pk || !er || !session.publicKey || !session.sessionToken || !session.signTransaction) throw new Error("start a session first");
-        await sendWith(er, [await ix.joinFight(session.publicKey, pk, matchId, new PublicKey(session.sessionToken))], session.publicKey, (t) => session.signTransaction!(t));
+        if (!pk || !er || !session) throw new Error("start a session first");
+        await sendWith(er, [await ix.joinFight(session.kp.publicKey, pk, matchId, session.token)], session.kp.publicKey, signWithSession);
       }),
     [pk, er, session, ix],
   );
   const seq = useRef(0n);
   const sendInput = useCallback(
     async (matchId: bigint, bits: number) => {
-      if (!pk || !er || !session.publicKey || !session.sessionToken || !session.signTransaction) return;
+      if (!pk || !er || !session) return;
       seq.current += 1n;
-      const i = await ix.submitInput(session.publicKey, pk, matchId, seq.current, bits, new PublicKey(session.sessionToken));
+      const i = await ix.submitInput(session.kp.publicKey, pk, matchId, seq.current, bits, session.token);
       const tx = new Transaction().add(i);
       tx.recentBlockhash = (await er.getLatestBlockhash()).blockhash;
-      tx.feePayer = session.publicKey;
-      const signed = await session.signTransaction(tx);
+      tx.feePayer = session.kp.publicKey;
+      const signed = await signWithSession(tx);
       er.sendRawTransaction(signed.serialize(), { skipPreflight: true }).catch(() => {});
     },
     [pk, er, session, ix],
   );
 
-  return { step, busy, error, er, getPass, fund, fundAndJoin, startSession, trade, joinFight, sendInput, joined, pk, sessionKey: session.publicKey };
+  return { step, busy, error, er, getPass, fund, fundAndJoin, startSession, trade, joinFight, sendInput, joined, pk, sessionKey: session?.kp.publicKey ?? null };
 }
 
 type Trader = ReturnType<typeof useTraderState>;

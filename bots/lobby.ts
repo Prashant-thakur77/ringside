@@ -7,6 +7,7 @@ import { MatchRunner } from "./lib/runner.ts";
 import { startCourtsider } from "./courtsider.ts";
 import { startRelay } from "./delay-relay.ts";
 import { startSpectators } from "./spectators/run.ts";
+import { refill } from "./lib/refill.ts";
 
 const arg = (k: string, d: string) => {
   const i = process.argv.indexOf(`--${k}`);
@@ -23,7 +24,9 @@ await feed.start();
 const total = Number(arg("matches", "0")); // 0 = forever
 const delays = arg("delays", "5000").split(",").map(Number);
 const ai = await brainFor("ai");
+const botWallets = ["spec-1", "spec-2", "spec-3", "spec-4", "courtsider", "fighter-a", "fighter-b"].map(ensureKeypair);
 for (let n = 0; total === 0 || n < total; n++) {
+  if (n % 5 === 0) await refill(env, admin, botWallets);
   const opp = n % 3 === 0 ? ai : await brainFor(POLICIES[n % POLICIES.length]);
   const delay = delays[n % delays.length];
   const runner = new MatchRunner(env, admin, ensureKeypair("keeper"), [ensureKeypair("fighter-a"), ensureKeypair("fighter-b")], [ai, opp], {

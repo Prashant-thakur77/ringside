@@ -1,0 +1,15 @@
+{
+  "trade_fill": "local:27CZyVh4XZZJdS2pvK1m2kV3PGmKivt2F6ZHyNadFAwBHHguo4eT3vou32QotwKyP7oYAB53E1fs45HK6XX1xMyw",
+  "fighter_reject": "local:2WBbgFD2NdUnCgkHNgycamTNZBxkbmf75A1Tp8QkWBJDYJ9HaDxRwh9aYwxyhY8vr651Y84hSLz65e9NayeMmvfz",
+  "settle": "local:4xCSWDjFbkDqxt4zAquB95RwYg12ZnPbwTomkUgdBMW1efmETiN3DkzJPjqoWKvRXFNFdgv97A2uaNGYe9dWgzrA",
+  "finalize": "local:eMpmqpUC9SXRA6ruQbXqFjkk3kgQrkaTzx2sAJpL1gr8TtfRTXniqwLeMgHNwfkNaTtkUhyXEhSVTGvCWU8h4dg",
+  "program": "4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej",
+  "config": "Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK",
+  "model": "ATTNMp41xs7zeUxSdFMD3iBBhMp2QM8KMWxhoebZuEaF",
+  "match": "8Pei71BMgKVPFEdsKkxmZsVgvumPeZmvChdyE3Tpo95c",
+  "repo": "https://github.com/Prashant-thakur77/ringside",
+  "e2e_match_id": "1795728504882",
+  "e2e_env": "local",
+  "stale_reject": "local:4gK3ChUnZZhuZPfMYSdxdsTCyMFohVVFetwVT5Z5WCXPZfZAqrwqVw6yABPxkgmnb5bNYHs5koifDYJuVZkWNotC",
+  "session_trade": "local:4pCAZAkmQuP7Hdys9RMnm6tyhbTtcbL2jJHum1ps9v2bPdqrTTccjtvkAJnCMGv9tj6kRajTugtshJqTsTofhiwp"
+}
