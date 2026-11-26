@@ -9,6 +9,7 @@ import { MODE_DELAYED, MODE_LIVE, PAYOUT, positionPda, marketPda } from "@ringsi
 import { Env, ROOT, ensureKeypair, errorCode, loadKeypair, profile, send } from "@ringside/client/node";
 import { Feed, type TickFrame } from "./lib/feed.ts";
 import { joinPositions } from "./lib/positions.ts";
+import { timed } from "./lib/telemetry.ts";
 
 export interface CourtsiderStats {
   id: string;
@@ -70,7 +71,7 @@ export function startCourtsider(env: Env, feed: Feed, opts: { me?: Keypair; paye
     // 1. TV-delay book: priced off the late feed, so the stale quote fills.
     s.attemptsDelayed++;
     try {
-      const r = await send(er, [await env.ix.trade(me.publicKey, me.publicKey, f.id, MODE_DELAYED, tvTick, side, "buy", QTY, tvAsk, false)], [me], { skipPreflight: true });
+      const r = await timed("trade", { match: f.m.matchId.toString(), book: "tv_delay" }, async () => send(er, [await env.ix.trade(me.publicKey, me.publicKey, f.id, MODE_DELAYED, tvTick, side, "buy", QTY, tvAsk, false)], [me], { skipPreflight: true }));
       s.fillsDelayed++;
       if (BigInt(f.m.tick) > tvTick + 2n) s.staleFillsAccepted++;
       s.sigs.delayedFill ??= r.sig;
@@ -96,7 +97,7 @@ export function startCourtsider(env: Env, feed: Feed, opts: { me?: Keypair; paye
     s.attemptsLiveFresh++;
     try {
       const liveAsk = side === "A" ? f.live.askA : f.live.askB;
-      await send(er, [await env.ix.trade(me.publicKey, me.publicKey, f.id, MODE_LIVE, f.live.lastPricedTick, side, "buy", 1n, liveAsk + 5_000n, false)], [me], { skipPreflight: true });
+      await timed("trade", { match: f.m.matchId.toString(), book: "ringside" }, async () => send(er, [await env.ix.trade(me.publicKey, me.publicKey, f.id, MODE_LIVE, f.live.lastPricedTick, side, "buy", 1n, liveAsk + 5_000n, false)], [me], { skipPreflight: true }));
       s.fillsLiveFresh++;
     } catch {
       /* stale by the time it landed, or frozen */

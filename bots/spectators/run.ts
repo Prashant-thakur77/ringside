@@ -7,6 +7,7 @@ import { Feed } from "../lib/feed.ts";
 import { joinPositions } from "../lib/positions.ts";
 import { view } from "../lib/wasm.ts";
 import { STYLES } from "./styles.ts";
+import { timed } from "../lib/telemetry.ts";
 
 export const SPECTATORS: { key: string; style: keyof typeof STYLES }[] = [
   { key: "spec-1", style: "momentum" },
@@ -44,7 +45,9 @@ export function startSpectators(env: Env, feed: Feed, log = console.log) {
       if (!o) continue;
       const limit = o.side === "A" ? book.askA + 10_000n : book.askB + 10_000n;
       void env.er(b.kp).then(async (er) =>
-        send(er, [await env.ix.trade(b.kp.publicKey, b.kp.publicKey, f.id, mode, book.lastPricedTick, o.side, o.dir, o.qty, limit, false)], [b.kp], { skipPreflight: true }).catch((e) => {
+        timed("trade", { match: f.m.matchId.toString(), book: mode === MODE_LIVE ? "ringside" : "tv_delay" }, async () =>
+          send(er, [await env.ix.trade(b.kp.publicKey, b.kp.publicKey, f.id, mode, book.lastPricedTick, o.side, o.dir, o.qty, limit, false)], [b.kp], { skipPreflight: true }),
+        ).catch((e) => {
           const c = errorCode(e);
           if (c !== 6000 && c !== 6003 && c !== 6012 && c !== 6004) log(`${b.key} trade: ${c ?? String(e).split("\n")[0]}`);
         }),
