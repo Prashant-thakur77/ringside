@@ -1,0 +1,17 @@
+keys/
+.env*
+!.env.example
+target/
+node_modules/
+.anchor/
+eval/data/raw/
+.claude/
+.next/
+dist/
+pkg/
+__pycache__/
+*.pyc
+.venv/
+test-ledger/
+.vercel/
+*.log
