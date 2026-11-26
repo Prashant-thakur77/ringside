@@ -11,5 +11,6 @@
   "e2e_match_id": "1795729202459",
   "e2e_env": "local",
   "stale_reject": "local:5LL1F6LuXjT5EmhdQGSxCY5dThSg5PVxYShPA1DeLYQ3C3VJ45EJumLVbdadQM1bBgnHL2NRuxUBQFEFzGByMBBx",
-  "session_trade": "local:3UMqqVpREFLXRKzWSWuk8fXLdHrHDbKkV98Wmr5inNPuh4rWvNvUPvwpcfd2P1Q2aWGPqDuNmweqWBa7NarqfRBG"
+  "session_trade": "local:3UMqqVpREFLXRKzWSWuk8fXLdHrHDbKkV98Wmr5inNPuh4rWvNvUPvwpcfd2P1Q2aWGPqDuNmweqWBa7NarqfRBG",
+  "gif": "docs/media/ringside.gif"
 }

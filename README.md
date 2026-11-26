@@ -4,7 +4,7 @@ Ringside is an in-play betting exchange that can't be courtsided: the fight and 
 
 Same bot, same 89 held-out matches, 5 s TV delay: the courtsider made **+13.44** per match on the delayed book and **+0.62** on Ringside, where 1011 of its stale orders were rejected onchain and 52 filled. Measured on local MagicBlock stack (base validator + ER 1.1.1).
 
-![A live Ringside match: the odds line moves with every hit](PENDING)
+![A live Ringside match: the odds line moves with every hit](docs/media/ringside.gif)
 
 ## Try it
 
