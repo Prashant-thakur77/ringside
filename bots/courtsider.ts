@@ -20,6 +20,7 @@ export interface CourtsiderStats {
   attemptsLiveStale: number;
   rejectsLiveStale: number;
   fillsLiveStale: number;
+  transportErrors: number;
   attemptsLiveFresh: number;
   fillsLiveFresh: number;
   sigs: { delayedFill?: string; liveStaleReject?: string; liveStaleRejectRecorded?: string };
@@ -54,7 +55,7 @@ export function startCourtsider(env: Env, feed: Feed, opts: { me?: Keypair; paye
     const k = f.id.toString();
     const s =
       stats.get(k) ??
-      ({ id: k, delayMs: f.delayed.delayMs, attemptsDelayed: 0, fillsDelayed: 0, staleFillsAccepted: 0, attemptsLiveStale: 0, rejectsLiveStale: 0, fillsLiveStale: 0, attemptsLiveFresh: 0, fillsLiveFresh: 0, sigs: {} } as CourtsiderStats);
+      ({ id: k, delayMs: f.delayed.delayMs, attemptsDelayed: 0, fillsDelayed: 0, staleFillsAccepted: 0, attemptsLiveStale: 0, rejectsLiveStale: 0, fillsLiveStale: 0, transportErrors: 0, attemptsLiveFresh: 0, fillsLiveFresh: 0, sigs: {} } as CourtsiderStats);
     stats.set(k, s);
     if (f.m.status !== 1 && f.m.status !== 2) return;
     if ((lastShot.get(k) ?? -99) + COOLDOWN_TICKS > f.m.tick) return;
@@ -91,7 +92,7 @@ export function startCourtsider(env: Env, feed: Feed, opts: { me?: Keypair; paye
       if (c === 6000) {
         s.rejectsLiveStale++;
         s.sigs.liveStaleReject ??= (e as Error & { sig?: string }).sig;
-      } else if (c === null) s.fillsLiveStale++;
+      } else if (c === null) s.transportErrors++; // never reached the program: not a fill
     }
     // 3. Ringside book at the live tick: fills, but at the fair (already updated) price.
     s.attemptsLiveFresh++;

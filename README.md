@@ -2,7 +2,7 @@
 
 Ringside is an in-play betting exchange that can't be courtsided: the fight and the order book live in the same MagicBlock rollup, so every price is as fresh as the last punch.
 
-Same bot, same 20 held-out matches, 5 s TV delay: the courtsider made **+7.95** per match on the delayed book and **-0.04** on Ringside, where 251 of its stale orders were rejected onchain and 32 filled. Measured on local MagicBlock stack (base validator + ER 1.1.1).
+Same bot, same 71 held-out matches, 5 s TV delay: the courtsider made **+12.46** per match on the delayed book and **+0.38** on Ringside, where 835 of its stale orders were rejected onchain and 4 filled. Measured on local MagicBlock stack (base validator + ER 1.1.1).
 
 ![A live Ringside match: the odds line moves with every hit](PENDING)
 
@@ -12,18 +12,18 @@ Same bot, same 20 held-out matches, 5 s TV delay: the courtsider made **+7.95** 
 |---|---|
 | Live app | PENDING |
 | Video | PENDING |
-| Program (devnet) | [`4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej`](PENDING) |
-| Fee vault (house eATA owner: Config PDA) | [`Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK`](PENDING) |
-| Model params, v1 | [account](PENDING) |
+| Program (devnet) | [`4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej`](4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej) |
+| Fee vault (house eATA owner: Config PDA) | [`Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK`](Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK) |
+| Model params, v1 | [account](ATTNMp41xs7zeUxSdFMD3iBBhMp2QM8KMWxhoebZuEaF) |
 
 Onchain proof from one live match on devnet-tee:
 
 | Event | Transaction |
 |---|---|
 | VRF power-up wave (callback) | PENDING |
-| Stale order rejected (`ErrStaleTick`) | PENDING |
-| Fighter trading their own match rejected (`ErrFighterBarred`) | PENDING |
-| Settlement and reveal of positions | PENDING |
+| Stale order rejected (`ErrStaleTick`) | local:4gK3ChUnZZhuZPfMYSdxdsTCyMFohVVFetwVT5Z5WCXPZfZAqrwqVw6yABPxkgmnb5bNYHs5koifDYJuVZkWNotC |
+| Fighter trading their own match rejected (`ErrFighterBarred`) | local:2WBbgFD2NdUnCgkHNgycamTNZBxkbmf75A1Tp8QkWBJDYJ9HaDxRwh9aYwxyhY8vr651Y84hSLz65e9NayeMmvfz |
+| Settlement and reveal of positions | local:4xCSWDjFbkDqxt4zAquB95RwYg12ZnPbwTomkUgdBMW1efmETiN3DkzJPjqoWKvRXFNFdgv97A2uaNGYe9dWgzrA |
 | Commit to Solana | PENDING |
 | MatchRecord written by the Magic Action | PENDING |
 
@@ -71,18 +71,18 @@ Each match has two books on the same fight. The Ringside book is priced inside `
 
 All numbers below come from `eval/results/results.json`, written by `eval/make_report.py`. Evaluation is on held-out data: matches the courtsider was never tuned on, model metrics on a held-out 15% split by match, PPO win rates on match seeds never used in training.
 
-### E1 · courtsiding A/B (23 matches)
+### E1 · courtsiding A/B (76 matches)
 
 ![Courtsider PnL per match, TV-delay books vs Ringside](eval/results/e1_courtsider_ab.png)
 
 | Book | Matches | Courtsider PnL / match | 95% CI | Stale fills accepted | House PnL / match |
 |---|---|---|---|---|---|
 | TV delay 0.5 s | 1 | +1.26 | +1.26 to +1.26 | 10 | +2.33 |
-| TV delay 2 s | 2 | +11.37 | +9.18 to +13.56 | 28 | -9.00 |
-| TV delay 5 s | 20 | +7.95 | +4.28 to +11.71 | 208 | -8.39 |
-| Ringside | 23 | -0.04 | -0.78 to +0.61 | 32 | +8.37 |
+| TV delay 2 s | 4 | +17.69 | +11.37 to +24.02 | 41 | -17.28 |
+| TV delay 5 s | 71 | +12.46 | +10.37 to +14.61 | 738 | -14.31 |
+| Ringside | 76 | +0.38 | +0.04 to +0.69 | 4 | +2.92 |
 
-On Ringside the courtsider sent 367 orders stamped with the tick it saw on the delayed feed; 251 were rejected with `ErrStaleTick`. It also traded at the live tick 227 times, where it pays the spread like everyone else.
+On Ringside the courtsider sent 969 orders stamped with the tick it saw on the delayed feed; 835 were rejected with `ErrStaleTick`. It also traded at the live tick 704 times, where it pays the spread like everyone else.
 
 ### E2 · is the price right? (29890 held-out matches, 2859074 rows)
 
@@ -100,11 +100,11 @@ The onchain integer model differs from the float student by 0.0031 in probabilit
 
 ### E3 · latency, measured
 
-Tick cadence p50 100 ms, p95 121 ms, p99 138 ms over 2961 ticks. Quote age at fill p50 0 ms, p95 0 ms. Trade submit to confirm p50 PENDING ms (p95 PENDING ms). Host: local machine; rollup: http://127.0.0.1:7799. A broadcast stream runs 5–8 s behind.
+Tick cadence p50 100 ms, p95 124 ms, p99 140 ms over 7998 ticks. Quote age at fill p50 0 ms, p95 100 ms. Trade submit to confirm p50 22 ms (p95 26419 ms). Host: local machine; rollup: http://127.0.0.1:7799. A broadcast stream runs 5–8 s behind.
 
 ### E4 · soak
 
-16 bots × 40 trades: 100.0% succeeded, confirm p50 17 ms and p99 18 ms. Peak house exposure 0.73 against a cap of 60. Compute: 35897 CU per tick at p50 (sim step, hash, features, model, quotes), 24682 CU per trade.
+16 bots × 40 trades: 100.0% succeeded, confirm p50 17 ms and p99 18 ms. Peak house exposure 0.73 against a cap of 60. Compute: 38619 CU per tick at p50 (sim step, hash, features, model, quotes), 24682 CU per trade.
 
 ### E5 · sealed until the bell
 
@@ -123,7 +123,8 @@ The PPO fighter (141459456 steps of self-play against a league of past checkpoin
 - The distilled logistic that fits in a tick has held-out Brier 0.1736 against 0.1639 for the LightGBM teacher it was distilled from. We trade some accuracy for running inside the instruction.
 - In the last 20 seconds of regulation the onchain model's ECE is 0.0249, against 0.0034 overall: a linear model underfits the swingy end of a fight.
 - At a 0.5 s TV delay the courtsider's PnL per match is +1.26 (95% CI +1.26 to +1.26); the edge comes from the 2–8 s delays that real streams have.
-- Measured tick cadence is p50 100 ms but p99 138 ms: the 100 ms crank is a target, not a guarantee.
+- On Ringside every stale order was rejected, but the courtsider's orders at the live tick still made +0.38 per match (95% CI +0.04 to +0.69): the model does not fully price the momentum right after a hit.
+- Measured tick cadence is p50 100 ms but p99 140 ms: the 100 ms crank is a target, not a guarantee.
 
 Weakest case: Calibration is worst late in regulation. In the last 20 seconds of regulation the onchain model's ECE is 0.0249, against 0.0034 overall: a linear model underfits the swingy end of a fight.
 

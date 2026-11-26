@@ -78,6 +78,7 @@ def e1(env):
         "n_matches": len(rows), "pnl_mean": float(np.mean(pl)), "pnl_ci95": boot_ci(pl),
         "stale_attempts": int(sum(r["attemptsLiveStale"] for r in rows)), "stale_rejections": int(sum(min(r["rejectsLiveStale"], r["attemptsLiveStale"]) for r in rows)),
         "stale_fills_accepted": int(sum(r["fillsLiveStale"] for r in rows)), "fresh_fills": int(sum(r["fillsLiveFresh"] for r in rows)),
+        "transport_errors": int(sum(r.get("transportErrors", 0) for r in rows)),
         "house_pnl_mean": float(np.mean([r["housePnlLive"] for r in rows])),
     }
     # chart
@@ -159,6 +160,11 @@ def negatives(r):
         d0 = r["e1"]["delays"][0]
         neg.append({"title": f"A short delay barely pays the courtsider", "value": d0["pnl_mean"],
                     "detail": f"At a {d0['delay_ms'] / 1000:g} s TV delay the courtsider's PnL per match is {d0['pnl_mean']:+.2f} (95% CI {d0['pnl_ci95'][0]:+.2f} to {d0['pnl_ci95'][1]:+.2f}); the edge comes from the 2–8 s delays that real streams have."})
+    if r.get("e1"):
+        rs = r["e1"]["ringside"]
+        if rs["pnl_ci95"][0] is not None and rs["pnl_ci95"][0] > 0:
+            neg.append({"title": "Fresh orders still find a small edge", "value": rs["pnl_mean"],
+                        "detail": f"On Ringside every stale order was rejected, but the courtsider's orders at the live tick still made {rs['pnl_mean']:+.2f} per match (95% CI {rs['pnl_ci95'][0]:+.2f} to {rs['pnl_ci95'][1]:+.2f}): the model does not fully price the momentum right after a hit."})
     if r.get("e3") and r["e3"]["tick_cadence_ms"].get("p99"):
         c = r["e3"]["tick_cadence_ms"]
         neg.append({"title": "Tick cadence has a tail", "value": c["p99"], "detail": f"Measured tick cadence is p50 {c['p50']:.0f} ms but p99 {c['p99']:.0f} ms: the 100 ms crank is a target, not a guarantee."})

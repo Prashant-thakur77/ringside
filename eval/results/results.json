@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-26 21:05 UTC",
+  "generated_at": "2026-11-26 21:33 UTC",
   "network": "local MagicBlock stack (base validator + ER 1.1.1)",
   "env": "local",
   "program_id": "4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej",
   "e1": {
     "heldout": true,
-    "n_matches": 23,
+    "n_matches": 76,
     "delays": [
       {
         "delay_ms": 500,
@@ -21,41 +21,42 @@
       },
       {
         "delay_ms": 2000,
-        "n_matches": 2,
-        "pnl_mean": 11.366230000000002,
+        "n_matches": 4,
+        "pnl_mean": 17.694825,
         "pnl_ci95": [
-          9.176664,
-          13.555796
+          11.366230000000002,
+          24.02342
         ],
-        "fills": 28,
-        "stale_fills_accepted": 28,
-        "house_pnl_mean": -8.997982
+        "fills": 41,
+        "stale_fills_accepted": 41,
+        "house_pnl_mean": -17.275420999999998
       },
       {
         "delay_ms": 5000,
-        "n_matches": 20,
-        "pnl_mean": 7.952994599999999,
+        "n_matches": 71,
+        "pnl_mean": 12.460984732394365,
         "pnl_ci95": [
-          4.281443749999999,
-          11.707526295000003
+          10.3707228943662,
+          14.609281070422535
         ],
-        "fills": 208,
-        "stale_fills_accepted": 208,
-        "house_pnl_mean": -8.3878925
+        "fills": 738,
+        "stale_fills_accepted": 738,
+        "house_pnl_mean": -14.306832732394364
       }
     ],
     "ringside": {
-      "n_matches": 23,
-      "pnl_mean": -0.038301043478260834,
+      "n_matches": 76,
+      "pnl_mean": 0.3829085394736842,
       "pnl_ci95": [
-        -0.7762438771739132,
-        0.6076900434782608
+        0.044728814802631585,
+        0.6902035766447366
       ],
-      "stale_attempts": 367,
-      "stale_rejections": 251,
-      "stale_fills_accepted": 32,
-      "fresh_fills": 227,
-      "house_pnl_mean": 8.370244217391305
+      "stale_attempts": 969,
+      "stale_rejections": 835,
+      "stale_fills_accepted": 4,
+      "fresh_fills": 704,
+      "transport_errors": 60,
+      "house_pnl_mean": 2.9237352631578943
     }
   },
   "e2": {
@@ -202,48 +203,68 @@
   },
   "e3": {
     "tick_cadence_ms": {
-      "n": 2961,
+      "n": 7998,
       "p50": 100.0,
-      "p95": 121.0,
-      "p99": 138.0
+      "p95": 124.0,
+      "p99": 140.0
     },
     "quote_age_at_fill_ms": {
-      "n": 1733,
+      "n": 3227,
       "p50": 0.0,
-      "p95": 0.0
+      "p95": 100.0
     },
     "submit_confirm_ms": {
       "create_match": {
-        "p50": 242.890339,
-        "p95": 442.70027439999996,
-        "n": 19
+        "p50": 287.911327,
+        "p95": 445.95629749999995,
+        "n": 63
       },
       "delegate_match": {
-        "p50": 418.135877,
-        "p95": 433.93082499999997,
-        "n": 19
+        "p50": 417.507319,
+        "p95": 434.1562581,
+        "n": 63
+      },
+      "indexer_backfill_failed_trade": {
+        "p50": 0.0068365000000000006,
+        "p95": 2.79220625,
+        "n": 3336
+      },
+      "indexer_retry_finalize": {
+        "p50": 7.6299209999999995,
+        "p95": 89.35819689999997,
+        "n": 374
+      },
+      "indexer_store_event": {
+        "p50": 4.6944075,
+        "p95": 8.938966049999994,
+        "n": 4832
       },
       "join_fight": {
-        "p50": 64.97862549999999,
-        "p95": 26275.976307750003,
-        "n": 36
+        "p50": 70.544823,
+        "p95": 25906.0203225,
+        "n": 123
       },
       "request_wave": {
-        "p50": 12.444821,
-        "p95": 42.97725729999998,
-        "n": 27
+        "p50": 8.379832,
+        "p95": 14.878612649999997,
+        "n": 1634
       },
       "submit_input": {
-        "p50": 9.061506,
-        "p95": 49.1179254,
-        "n": 4833
+        "p50": 10.222379,
+        "p95": 49.6388342,
+        "n": 13549
+      },
+      "trade": {
+        "p50": 21.54944,
+        "p95": 26418.689556,
+        "n": 431
       }
     },
     "counts": {
-      "matches": 23,
-      "rejections": 625,
-      "ticks": 2979,
-      "trades": 2082
+      "matches": 71,
+      "rejections": 1399,
+      "ticks": 8060,
+      "trades": 4259
     },
     "host_region": "local machine",
     "er_endpoint": "http://127.0.0.1:7799"
@@ -263,9 +284,9 @@
     "max_exposure_usdc": 0.727998,
     "cap_usdc": 60.0,
     "cu": {
-      "tick_p50": 35897,
-      "tick_p99": 39851,
-      "tick_max": 40828,
+      "tick_p50": 38619,
+      "tick_p99": 42573,
+      "tick_max": 43550,
       "trade": 24682
     }
   },
@@ -291,12 +312,12 @@
   },
   "headline": {
     "delay_ms": 5000,
-    "n_matches": 20,
-    "courtsider_pnl_per_match_tv": 7.952994599999999,
-    "courtsider_pnl_per_match_ringside": -0.038301043478260834,
-    "stale_fills_accepted_tv": 208,
-    "stale_fills_accepted_ringside": 32,
-    "stale_rejections_ringside": 251
+    "n_matches": 71,
+    "courtsider_pnl_per_match_tv": 12.460984732394365,
+    "courtsider_pnl_per_match_ringside": 0.3829085394736842,
+    "stale_fills_accepted_tv": 738,
+    "stale_fills_accepted_ringside": 4,
+    "stale_rejections_ringside": 835
   },
   "negative": [
     {
@@ -315,9 +336,14 @@
       "detail": "At a 0.5 s TV delay the courtsider's PnL per match is +1.26 (95% CI +1.26 to +1.26); the edge comes from the 2\u20138 s delays that real streams have."
     },
     {
+      "title": "Fresh orders still find a small edge",
+      "value": 0.3829085394736842,
+      "detail": "On Ringside every stale order was rejected, but the courtsider's orders at the live tick still made +0.38 per match (95% CI +0.04 to +0.69): the model does not fully price the momentum right after a hit."
+    },
+    {
       "title": "Tick cadence has a tail",
-      "value": 138.0,
-      "detail": "Measured tick cadence is p50 100 ms but p99 138 ms: the 100 ms crank is a target, not a guarantee."
+      "value": 140.0,
+      "detail": "Measured tick cadence is p50 100 ms but p99 140 ms: the 100 ms crank is a target, not a guarantee."
     }
   ],
   "weakest_case": {
