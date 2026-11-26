@@ -379,3 +379,15 @@ proptest! {
         prop_assert_eq!(run(), run());
     }
 }
+
+#[test]
+fn codec_offsets_used_by_the_program() {
+    let mut s = SimState::new(100, [0; 32]);
+    s.wave_index = 0xBEEF;
+    s.vrf_seed = [0xAB; 32];
+    s.tick = 0x01020304;
+    let b = encode(&s);
+    assert_eq!(u32::from_le_bytes(b[0..4].try_into().unwrap()), 0x01020304);
+    assert_eq!(u16::from_le_bytes(b[14..16].try_into().unwrap()), 0xBEEF, "wave_index at 14");
+    assert_eq!(&b[20..52], &[0xAB; 32], "vrf_seed at 20");
+}

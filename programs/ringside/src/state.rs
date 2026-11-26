@@ -117,6 +117,13 @@ pub struct Match {
     pub sim: [u8; SIM_BYTES],
 }
 
+impl Match {
+    /// Current sim tick (first 4 bytes of the canonical sim encoding).
+    pub fn tick(&self) -> u32 {
+        u32::from_le_bytes([self.sim[0], self.sim[1], self.sim[2], self.sim[3]])
+    }
+}
+
 /// One order book for one match.
 #[account(zero_copy)]
 #[repr(C)]
@@ -271,6 +278,7 @@ pub struct RejectEvent {
 pub struct TickEvent {
     pub match_key: Pubkey,
     pub tick: u64,
+    pub inputs: [u16; 2],
     pub flags: u32,
     pub fair_p: i64,
     pub state_hash: [u8; 32],

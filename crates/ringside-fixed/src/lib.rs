@@ -132,6 +132,7 @@ pub const LUT_MIN: i64 = -16 * ONE;
 /// log2 of LUT steps per unit of z (32 steps per unit → step 1/32).
 pub const LUT_SHIFT: u32 = 5;
 
+#[cfg(feature = "std")]
 /// Builds the 1024-entry sigmoid LUT: entry i = sigmoid(−16 + i/32) as a u32 probability ×2^32.
 pub fn build_sigmoid_lut() -> [u32; LUT_LEN] {
     let mut lut = [0u32; LUT_LEN];

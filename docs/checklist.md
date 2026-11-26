@@ -48,69 +48,69 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 
 ## Phase 2 — Program accounts, delegation, match lifecycle
 
-- [ ] P2.01 · Anchor workspace + `programs/ringside` with `#[ephemeral]` before `#[program]` — `anchor build` exit 0
-- [ ] P2.02 · `Config` account (admin, usdc_mint, fee_bps=100, tick_ms, stale_ticks_max=2, house_vault, spread_params, exposure_cap_per_match, paused) — size ≤ 10,240 test
-- [ ] P2.03 · `ModelParams` account `["model", version]` (means/scales, weights[16], bias, LUT[1024], calib[64], metrics hash) — size test ~4.5 KB
-- [ ] P2.04 · `Profile` account `["profile", wallet]` — size test
-- [ ] P2.05 · `Match` account `["match", match_id]` with SimState, input_buffer, vrf_seed, wave_index, state_hash, last_tick_unix_ms — size ≤ 10,240 test
-- [ ] P2.06 · `Market` account `["market", match_id]` — size test
-- [ ] P2.07 · `Position` account `["pos", match_id, wallet]` — size test
-- [ ] P2.08 · `MatchRecord` account `["record", match_id]` — size test
-- [ ] P2.09 · All 12 errors defined: ErrStaleTick, ErrFighterBarred, ErrSlippage, ErrExposure, ErrClosed, ErrNotFighter, ErrBadSeq, ErrTooEarly, ErrBadQueue, ErrPaused, ErrMath, ErrAlreadySettled — IDL lists all 12
-- [ ] P2.10 · `initialize_config` — local test creates Config with expected fields
-- [ ] P2.11 · `set_model_params(version, chunk)` chunked writes — local test uploads 4.5 KB blob in chunks and reads it back byte-identical
-- [ ] P2.12 · `create_profile` + `delegate_profile` (TEE validator) — local test: owner == delegation program after delegate
-- [ ] P2.13 · `create_match(match_id, stake, opponent?)` creates Match + Market + escrow eATA, pre-funds Match PDA, delegates all to TEE — local test
-- [ ] P2.14 · `join_fight` with `#[session_auth_or]`: stake moves player eATA → escrow, records session signers; second join → Live + VRF request — local ER test
-- [ ] P2.15 · `submit_input(seq, input_bits)`: fighters only, monotonic seq, 1 per tick — local ER tests incl. ErrNotFighter and ErrBadSeq
-- [ ] P2.16 · `tick`: time gate (ErrTooEarly), status gate, sim step, hash chain via sha256 syscall — local ER test: tick advances and hash changes; early tick rejected
-- [ ] P2.17 · `tick` idempotent and permissionless (no signer) — test: any account can call; double-call in same window rejected
-- [ ] P2.18 · Admin: `pause` (ErrPaused on trade/join), `set_spread_params`, `topup_house_vault`, `withdraw_fees` — local tests
-- [ ] P2.19 · Anchor TS test harness on local validator + local ER — `anchor test` runs the suite
+- [x] P2.01 · Anchor workspace + `programs/ringside` with `#[ephemeral]` before `#[program]` — `anchor build` exit 0
+- [x] P2.02 · `Config` account (admin, usdc_mint, fee_bps=100, tick_ms, stale_ticks_max=2, house_vault, spread_params, exposure_cap_per_match, paused) — size ≤ 10,240 test
+- [x] P2.03 · `ModelParams` account `["model", version]` (means/scales, weights[16], bias, LUT[1024], calib[64], metrics hash) — size test ~4.5 KB
+- [x] P2.04 · `Profile` account `["profile", wallet]` — size test
+- [x] P2.05 · `Match` account `["match", match_id]` with SimState, input_buffer, vrf_seed, wave_index, state_hash, last_tick_unix_ms — size ≤ 10,240 test
+- [x] P2.06 · `Market` account `["market", match_id]` — size test
+- [x] P2.07 · `Position` account `["pos", match_id, wallet]` — size test
+- [x] P2.08 · `MatchRecord` account `["record", match_id]` — size test
+- [x] P2.09 · All 12 errors defined: ErrStaleTick, ErrFighterBarred, ErrSlippage, ErrExposure, ErrClosed, ErrNotFighter, ErrBadSeq, ErrTooEarly, ErrBadQueue, ErrPaused, ErrMath, ErrAlreadySettled — IDL lists all 12
+- [x] P2.10 · `initialize_config` — local test creates Config with expected fields
+- [x] P2.11 · `set_model_params(version, chunk)` chunked writes — local test uploads 4.5 KB blob in chunks and reads it back byte-identical
+- [x] P2.12 · `create_profile` + `delegate_profile` (TEE validator) — local test: owner == delegation program after delegate
+- [x] P2.13 · `create_match(match_id, stake, opponent?)` creates Match + Market + escrow eATA, pre-funds Match PDA, delegates all to TEE — local test
+- [x] P2.14 · `join_fight` with `#[session_auth_or]`: stake moves player eATA → escrow, records session signers; second join → Live + VRF request — local ER test
+- [x] P2.15 · `submit_input(seq, input_bits)`: fighters only, monotonic seq, 1 per tick — local ER tests incl. ErrNotFighter and ErrBadSeq
+- [x] P2.16 · `tick`: time gate (ErrTooEarly), status gate, sim step, hash chain via sha256 syscall — local ER test: tick advances and hash changes; early tick rejected
+- [x] P2.17 · `tick` idempotent and permissionless (no signer) — test: any account can call; double-call in same window rejected
+- [x] P2.18 · Admin: `pause` (ErrPaused on trade/join), `set_spread_params`, `topup_house_vault`, `withdraw_fees` — local tests
+- [x] P2.19 · Program test harness (MagicSVM per the current docs, see decisions.md) — `anchor test` runs `tests/magicsvm`
 
 ## Phase 3 — Market and pricing
 
-- [ ] P3.01 · Features computed onchain from SimState via ringside-sim — unit test equals native features
-- [ ] P3.02 · Onchain model: z = Σwx+b, LUT sigmoid, isotonic calibration — test vs Python integer reference
-- [ ] P3.03 · Features + model < 60k CU — measured CU in local tick logs
-- [ ] P3.04 · Quotes: spread s = s_base + s_vol·|Δp 10 ticks| + s_time·(1 − t/90); skew k·(inv_a − inv_b)/cap; clamp [0.01, 0.99]; B mirrors A — unit tests
-- [ ] P3.05 · Tick writes `fair_p`, quotes and `last_priced_tick` in the same instruction (Live market) — local ER test
-- [ ] P3.06 · Freeze quotes for 2 ticks after a lethal-hit event — unit + local test
-- [ ] P3.07 · `trade(seen_tick, side, dir, qty, limit_price)` fill vs house at ask/bid, USDC user eATA ↔ house vault eATA — local ER test
-- [ ] P3.08 · ErrFighterBarred for signer or session authority ∈ fighters/session signers — local ER test
-- [ ] P3.09 · ErrStaleTick when last_priced_tick − seen_tick > stale_ticks_max — local ER test
-- [ ] P3.10 · ErrSlippage when price worse than limit — local ER test
-- [ ] P3.11 · ErrExposure when house liability would exceed cap; per-trade max qty — local ER test
-- [ ] P3.12 · ErrClosed when market not Live — local ER test
-- [ ] P3.13 · `TradeEvent {tick, seen_tick, price, qty, side}` emitted — test parses event
-- [ ] P3.14 · Market counters: volume, n_trades, n_rejected_stale, n_rejected_fighter, fee_accrued — local test (rejections are counted via a separate counting path since failed txs roll back; see decisions)
-- [ ] P3.15 · `Market.mode = Delayed{delay_ms}` + `relay_delayed_state` signed by relay authority — local test; non-relay signer rejected
-- [ ] P3.16 · Trade math module shared by program and tests (pure fns) — unit tests
-- [ ] P3.17 · proptest: Σ USDC conserved across trades — green
-- [ ] P3.18 · proptest: house liability ≤ cap; price ∈ [0.01, 0.99]; bid < ask — green
+- [x] P3.01 · Features computed onchain from SimState via ringside-sim — unit test equals native features
+- [x] P3.02 · Onchain model: z = Σwx+b, LUT sigmoid, isotonic calibration — test vs Python integer reference
+- [x] P3.03 · Features + model < 60k CU — measured CU in local tick logs
+- [x] P3.04 · Quotes: spread s = s_base + s_vol·|Δp 10 ticks| + s_time·(1 − t/90); skew k·(inv_a − inv_b)/cap; clamp [0.01, 0.99]; B mirrors A — unit tests
+- [x] P3.05 · Tick writes `fair_p`, quotes and `last_priced_tick` in the same instruction (Live market) — local ER test
+- [x] P3.06 · Freeze quotes for 2 ticks after a lethal-hit event — unit + local test
+- [x] P3.07 · `trade(seen_tick, side, dir, qty, limit_price)` fill vs house at ask/bid, USDC user eATA ↔ house vault eATA — local ER test
+- [x] P3.08 · ErrFighterBarred for signer or session authority ∈ fighters/session signers — local ER test
+- [x] P3.09 · ErrStaleTick when last_priced_tick − seen_tick > stale_ticks_max — local ER test
+- [x] P3.10 · ErrSlippage when price worse than limit — local ER test
+- [x] P3.11 · ErrExposure when house liability would exceed cap; per-trade max qty — local ER test
+- [x] P3.12 · ErrClosed when market not Live — local ER test
+- [x] P3.13 · `TradeEvent {tick, seen_tick, price, qty, side}` emitted — test parses event
+- [x] P3.14 · Market counters: volume, n_trades, n_rejected_stale, n_rejected_fighter, fee_accrued — local test (rejections are counted via a separate counting path since failed txs roll back; see decisions)
+- [x] P3.15 · `Market.mode = Delayed{delay_ms}` + `relay_delayed_state` signed by relay authority — local test; non-relay signer rejected
+- [x] P3.16 · Trade math module shared by program and tests (pure fns) — unit tests
+- [x] P3.17 · proptest: Σ USDC conserved across trades — green
+- [x] P3.18 · proptest: house liability ≤ cap; price ∈ [0.01, 0.99]; bid < ask — green
 - [ ] P3.19 · cargo-fuzz target for trade math — `cargo fuzz run trade -- -runs=100000` with no crash
 
 ## Phase 4 — PER positions, settlement, finalize, crank
 
-- [ ] P4.01 · `join_position` creates + delegates Position to TEE — local/devnet test
+- [x] P4.01 · `join_position` creates + delegates Position to TEE — local/devnet test
 - [ ] P4.02 · Ephemeral permission created on ER for Position with members [owner (TX_LOGS|TX_MESSAGE|TX_BALANCES), program authority], private — devnet test
 - [ ] P4.03 · Private read: owner (token) can read Position; non-member cannot — devnet script
-- [ ] P4.04 · `settle`: pays winner 2×stake − fee from escrow, marks Settled, ErrAlreadySettled on repeat — local ER test
-- [ ] P4.05 · Draw path: stakes refunded, positions refunded at cost — local ER test
+- [x] P4.04 · `settle`: pays winner 2×stake − fee from escrow, marks Settled, ErrAlreadySettled on repeat — local ER test
+- [x] P4.05 · Draw path: stakes refunded, positions refunded at cost — local ER test
 - [ ] P4.06 · Reveal: settle flips Position permissions to public (`UpdateEphemeralPermissionCpi { is_private: false }`), authority kept in member list — devnet read after settle succeeds
-- [ ] P4.07 · `claim`: pays winning shares 1 USDC each from house vault, idempotent — local ER test
+- [x] P4.07 · `claim`: pays winning shares 1 USDC each from house vault, idempotent — local ER test
 - [ ] P4.08 · `finalize`: MagicIntentBundleBuilder commit [match, market] + post-commit action `write_match_record` — devnet MatchRecord exists on L1
-- [ ] P4.09 · `write_match_record` L1 handler validates injected escrow signer — test rejects wrong signer
+- [x] P4.09 · `write_match_record` L1 handler validates injected escrow signer — test rejects wrong signer
 - [ ] P4.10 · Cleanup crank: commit + undelegate Positions in batches — devnet tx
-- [ ] P4.11 · `schedule_tick(match_id, task_id, interval_ms, iterations)` CPI ScheduleTask with task_id = hash(program_id ‖ match_id), no signer accounts in scheduled ix — local/devnet test cadence
+- [x] P4.11 · `schedule_tick(match_id, task_id, interval_ms, iterations)` CPI ScheduleTask with task_id = hash(program_id ‖ match_id), no signer accounts in scheduled ix — local/devnet test cadence
 - [ ] P4.12 · Terminal tick schedules settle (crank) — devnet trace shows settle after Closed
 
 ## Phase 5 — VRF waves
 
 - [ ] P5.01 · `request_wave_randomness` with `#[vrf]` on the ephemeral queue (or Switch B base-queue seed) — devnet tx
 - [ ] P5.02 · `vrf_callback` with `#[vrf_callback]`, writes vrf_seed, wave_index+1, validates queue (ErrBadQueue) — devnet callback tx
-- [ ] P5.03 · One request per wave (15 s), never per tick — local test counts requests over 90 s
-- [ ] P5.04 · Tick spawns power-ups from vrf_seed + wave_index; pending VRF handled — test
+- [x] P5.03 · One request per wave (15 s), never per tick — local test counts requests over 90 s
+- [x] P5.04 · Tick spawns power-ups from vrf_seed + wave_index; pending VRF handled — test
 
 ## Phase 6 — ML
 

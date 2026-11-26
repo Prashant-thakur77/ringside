@@ -3,7 +3,9 @@
 //! The same code runs onchain (inside `tick`), in WASM (browser replay) and in Python
 //! (held-out evaluation of the exact onchain implementation).
 
-use crate::{calibrate, lut_sigmoid, mul, CALIB_LEN, LUT_LEN, ONE};
+use crate::{mul, CALIB_LEN, LUT_LEN, ONE};
+#[cfg(feature = "std")]
+use crate::{calibrate, lut_sigmoid};
 
 /// Number of model features.
 pub const N_FEATURES: usize = 16;
@@ -23,6 +25,7 @@ pub struct ModelParams {
     pub calib: [u32; CALIB_LEN],
 }
 
+#[cfg(feature = "std")]
 impl Default for ModelParams {
     fn default() -> Self {
         let mut calib = [0u32; CALIB_LEN];
@@ -47,6 +50,7 @@ pub enum ModelError {
     BadLength,
 }
 
+#[cfg(feature = "std")]
 impl ModelParams {
     /// Linear score z (Q32.32), clamped to ±16.
     pub fn score(&self, x: &[i64; N_FEATURES]) -> Result<i64, ModelError> {

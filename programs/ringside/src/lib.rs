@@ -4,7 +4,7 @@
 //! is stamped with the tick it was priced on and stale fills are rejected onchain.
 
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::hash::hashv;
+use solana_sha256_hasher::hashv;
 use anchor_lang::solana_program::instruction::{AccountMeta, Instruction};
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer as SplTransfer};
 use ephemeral_rollups_sdk::access_control::instructions::{CreateEphemeralPermissionCpi, UpdateEphemeralPermissionCpi};
@@ -37,6 +37,9 @@ declare_id!("4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej");
 
 /// Requester identity for scoped VRF (compile-time constant, SDK 0.18).
 pub const VRF_IDENTITY: Pubkey = program_identity_pubkey(&crate::ID);
+/// Scoped identity the VRF program signs callbacks with, computed at compile time.
+pub const VRF_CALLBACK_IDENTITY: Pubkey =
+    Pubkey::new_from_array(ephemeral_rollups_sdk::vrf::consts::scoped_vrf_identity_const(&crate::ID).0);
 /// Escrow index used by `ActionArgs::new` for post-commit actions.
 pub const ACTION_ESCROW_INDEX: u8 = 255;
 /// Lamports pre-funded into a Position PDA for its ephemeral permission account (2 members).
@@ -45,16 +48,18 @@ pub fn permission_rent() -> u64 {
 }
 /// Offset of `vrf_seed` inside the canonical sim encoding.
 pub const SIM_SEED_OFFSET: usize = 4 + 4 + 2 + 1 + 1 + 2 + 2 + 4;
+/// Offset of `wave_index` (u16) inside the canonical sim encoding.
+pub const SIM_WAVE_OFFSET: usize = 4 + 4 + 2 + 1 + 1 + 2;
 
 /// Unique crank task id per match: first 8 bytes of sha256(program_id ‖ match_id), positive.
 pub fn task_id_for(match_id: u64) -> i64 {
-    let h = hashv(&[crate::ID.as_ref(), &match_id.to_le_bytes()]).to_bytes();
+    let h = hashv(&[crate::ID.as_ref(), &match_id.to_le_bytes()[..]]).to_bytes();
     (u64::from_le_bytes(h[..8].try_into().unwrap()) & (i64::MAX as u64)) as i64
 }
 
 /// Hash-chain link with the sha256 syscall (bit-identical to `ringside_sim::hash_link`).
 pub fn chain(prev: &[u8; 32], tick: u64, state: &[u8]) -> [u8; 32] {
-    hashv(&[prev, &tick.to_le_bytes(), state]).to_bytes()
+    hashv(&[prev.as_ref(), &tick.to_le_bytes()[..], state]).to_bytes()
 }
 
 fn config_seeds(bump: &[u8; 1]) -> [&[u8]; 2] {
@@ -462,7 +467,7 @@ pub mod ringside {
             let p = pricing::model_p(&model.blob, &x)?;
             pricing::requote(&mut m, cfg, p, s.time_left_ms() as u64, tick, ev.has(ringside_sim::EV_LETHAL));
         }
-        emit!(TickEvent { match_key: ctx.accounts.game.key(), tick, flags: ev.flags, fair_p: m.fair_p, state_hash: g.state_hash });
+        emit!(TickEvent { match_key: ctx.accounts.game.key(), tick, inputs: s.last_inputs, flags: ev.flags, fair_p: m.fair_p, state_hash: g.state_hash });
         Ok(())
     }
 
@@ -471,12 +476,12 @@ pub mod ringside {
         let (wave, caller_seed) = {
             let mut g = ctx.accounts.game.load_mut()?;
             require!(g.status == ST_LIVE || g.status == ST_SUDDEN_DEATH, RingsideError::ErrClosed);
-            let wave = u16::from_le_bytes(g.sim[16..18].try_into().unwrap());
+            let wave = u16::from_le_bytes(g.sim[SIM_WAVE_OFFSET..SIM_WAVE_OFFSET + 2].try_into().unwrap());
             if g.vrf_requested_wave == wave {
                 return Ok(()); // already requested for this wave
             }
             g.vrf_requested_wave = wave;
-            let seed = hashv(&[b"ringside-wave", &match_id.to_le_bytes(), &wave.to_le_bytes(), &g.state_hash]).to_bytes();
+            let seed = hashv(&[&b"ringside-wave"[..], &match_id.to_le_bytes()[..], &wave.to_le_bytes()[..], &g.state_hash[..]]).to_bytes();
             (wave, seed)
         };
         let ix = create_request_randomness_ix_const(
@@ -498,9 +503,7 @@ pub mod ringside {
 
     /// VRF fulfilment: writes the wave seed into the sim state. Bound to the pending request
     /// and idempotent.
-    pub fn vrf_callback(ctx: Context<VrfCallback>, randomness: [u8; 32], wave_le: Vec<u8>) -> Result<()> {
-        require!(wave_le.len() == 2, RingsideError::ErrBadQueue);
-        let wave = u16::from_le_bytes([wave_le[0], wave_le[1]]);
+    pub fn vrf_callback(ctx: Context<VrfCallback>, randomness: [u8; 32], wave: u16) -> Result<()> {
         let mut g = ctx.accounts.game.load_mut()?;
         require!(g.vrf_requested_wave == wave, RingsideError::ErrBadQueue);
         if g.vrf_fulfilled_wave == wave {
@@ -788,15 +791,14 @@ pub mod ringside {
     }
 
     /// Commits the final match and book state to Solana and schedules the MatchRecord receipt
-    /// as a post-commit Magic Action. Idempotent.
+    /// as a post-commit Magic Action. `finalized` counts attempts.
     pub fn finalize(ctx: Context<Finalize>, match_id: u64) -> Result<()> {
         let args = {
             let mut g = ctx.accounts.game.load_mut()?;
             require!(g.status == ST_SETTLED || g.status == ST_DRAW, RingsideError::ErrNotSettled);
-            if g.finalized == 1 {
-                return Ok(());
-            }
-            g.finalized = 1;
+            // Re-running is allowed: Magic Actions are not atomic with the commit, so the indexer
+            // calls finalize again if the MatchRecord did not land. The L1 handler is idempotent.
+            g.finalized = g.finalized.saturating_add(1);
             let ml = ctx.accounts.market_live.load()?;
             let md = ctx.accounts.market_delayed.load()?;
             let pnl = |m: &Market| -> i64 {
@@ -872,7 +874,7 @@ pub mod ringside {
     /// until the fight ends). The task id is derived from hash(program_id ‖ match_id) and the
     /// scheduled instructions carry no signer accounts.
     #[allow(deprecated)]
-    pub fn schedule_tick(ctx: Context<ScheduleTick>, match_id: u64, interval_ms: i64, iterations: i64) -> Result<()> {
+    pub fn schedule_tick<'info>(ctx: Context<'info, ScheduleTick<'info>>, match_id: u64, interval_ms: i64, iterations: i64) -> Result<()> {
         let a = &ctx.accounts;
         let tick_ix = Instruction {
             program_id: crate::ID,
@@ -1346,9 +1348,14 @@ pub struct RequestWave<'info> {
     pub oracle_queue: UncheckedAccount<'info>,
 }
 
+/// The scoped VRF identity must sign. Declared here (instead of letting `#[vrf_callback]` inject
+/// it) so the address is the compile-time constant `VRF_CALLBACK_IDENTITY`: the injected constraint evaluates
+/// the PDA derivation at runtime and exhausts the callback's compute budget. Same check, same key.
 #[vrf_callback]
 #[derive(Accounts)]
 pub struct VrfCallback<'info> {
+    #[account(address = VRF_CALLBACK_IDENTITY @ RingsideError::ErrBadQueue)]
+    pub vrf_program_identity: Signer<'info>,
     #[account(mut)]
     pub game: AccountLoader<'info, Match>,
 }

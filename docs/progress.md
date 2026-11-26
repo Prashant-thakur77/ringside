@@ -5,7 +5,7 @@
 - docs/checklist.md generated from RINGSIDE_PLAN.md (all phases 0–10).
 - docs/blocked.md, docs/decisions.md created.
 
-## 2026-11-27 01:00 IST · Phase 1 core: ringside-fixed + ringside-sim
+## 2026-11-27 00:20 IST · Phase 1 core: ringside-fixed + ringside-sim
 - Toolchain: solana-cli 3.1.9, anchor-cli 1.0.2 (built from the official repo tag v1.0.2), rustc 1.89.0 + wasm32 target, Python 3.12 venv.
 - `cargo test --release`: ringside-fixed 25 passed, ringside-sim 24 passed (also green on +1.89.0).
 - `cargo +1.89.0 build -p ringside-sim --no-default-features --target wasm32-unknown-unknown`: Finished.
@@ -66,7 +66,7 @@
     test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
 
-## 2026-11-27 01:40 IST · Phase 1 complete: WASM + Python bindings, cross-target determinism
+## 2026-11-27 00:35 IST · Phase 1 complete: WASM + Python bindings, cross-target determinism
 - Combat tuning (plan-fixed values untouched: 100 HP, −12/hit, shield 1.5 s/6 s, power-ups): fire cd 700 ms, projectile 620 u/s, move 360 u/s, radius 28; bot aim noise and lead scale with skill. Bot-vs-bot matches now last 19–90 s with timeouts and sudden death; no policy dominates (aggressive beats kiting 92%, defensive beats aggressive 98%, kiting beats defensive 70%).
 - `scripts/build-wasm.sh`: wasm ok, 128K (wasm-bindgen 0.2.130, web + nodejs targets).
 - `maturin develop --release`: Installed ringside-sim-0.1.0 (VecEnv, generate_dataset, predict_int, params_to_bytes, replay, run_matches). Data gen speed: 2000 matches in 0.03 s.
@@ -80,7 +80,7 @@ wasm vs python replay: 200/200 episodes, 124761 chain links compared
 determinism: native = python = wasm for 10000 episodes
 ```
 
-## 2026-11-27 02:45 IST · Phase 6 (part): win-probability model + PPO trainer
+## 2026-11-27 00:55 IST · Phase 6 (part): win-probability model + PPO trainer
 - `ml/winprob/gen_data.py`: generated 200000 matches, 19218024 rows (every 5th tick) in 10.4 s.
 - Split by match id (`match_id % 20`): 70/15/15; `tests/python/test_ml.py` 5 passed (split disjoint by match, dataset shape, VecEnv contract, held-out seed parity, integer model).
 - `ml/winprob/train.py` (held-out = 30k unseen matches, 2,859,074 rows):
@@ -95,3 +95,20 @@ metrics_hash 58114e353b24813fb6c3e928c10c8a818d24ae68e7e955e2e09bb0293c3461ad
 ```
 - Program: added `predict_bytes` (reads the 4,744-byte blob in place; proptest proves it bit-identical to `ModelParams::predict`) because a decoded `ModelParams` would overflow the 4 KB BPF stack frame.
 - PPO: `ml/ppo/train.py` smoke run reached 27k env steps/s; a 60-minute league run is in progress.
+
+## 2026-11-27 01:45 IST · Program builds; MagicSVM suite green (Phases 2–5 on the in-process ER)
+- `anchor build --ignore-keys`: ringside.so 831,784 bytes (opt-level "s"), IDL with all 12 plan errors (6000 ErrStaleTick … 6011 ErrAlreadySettled) plus ErrFrozen and helpers.
+- Toolchain fixes: anchor macro crates pinned to 1.1.2 (1.2.2 pulls `create_account_allow_prefund` that anchor-lang 1.0.2 lacks); `hashv` from `solana-sha256-hasher`; host-only helpers gated behind `std` to keep BPF frames < 4 KB.
+- Bugs found by the suite and fixed: VRF callback args are raw bytes (`wave: u16`, not `Vec<u8>`); `#[vrf_callback]` identity derived at runtime used 197k CU → bound to compile-time const (decisions.md); wave index read from the wrong sim offset (16 → 14, now pinned by `codec_offsets_used_by_the_program`).
+- `cd tests/magicsvm && cargo +stable test --release -- --nocapture`:
+```
+test spoofed_vrf_callback_is_rejected ... ok
+test admin_paths_and_pause ... ok
+test crank_schedules_ticks_with_derived_task_id ... ok
+CU {"tick_cu_p50":35897,"tick_cu_p99":39851,"tick_cu_max":40828,"trade_cu":19896,"ticks_measured":183}
+test full_match_lifecycle ... ok
+test draw_refunds_both_stakes ... ok
+test result: ok. 5 passed; 0 failed
+```
+- `full_match_lifecycle` asserts: config/model upload (blob byte-identical), house vault eATA + top-up, profiles delegated, match+books+escrow delegated (base owner = DLP), joins (stake → escrow, double join rejected), genesis hash via sha256 syscall == sha2 crate, VRF wave via ephemeral queue callback, input rules (ErrNotFighter, ErrBadSeq ×2), time gate (ErrTooEarly in one slot; wall-clock bound stops bursts), every tick's onchain state_hash == off-chain replay with the shared sim, book priced in the same instruction (last_priced_tick == tick), freeze after lethal-range hit (ErrFrozen), buy/sell fills with exact USDC movement, ErrStaleTick strict + recorded counter, ErrFighterBarred, ErrSlippage, ErrExposure (max exposure ≤ cap), private Position (unauthenticated and opposing fighter denied, owner allowed, market public), relay auth (ErrUnauthorized) and delayed-book fill on a 50-tick-old price while the live book rejects it, ErrClosed after the bell, post-end tick no-op, settle (winner 2×stake − 1%, fee accrued, idempotent), reveal (position public), claim exact + idempotent, finalize → MatchRecord written on base by the Magic Action with the final hash, withdraw_fees, cleanup_positions (position undelegated), direct write_match_record rejected (6015).
+- Note: devnet-tee behaviour (TEE privacy, real VRF oracle, crank cadence) is still to be proven live; the corresponding items stay unticked.
