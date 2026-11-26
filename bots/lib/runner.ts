@@ -97,7 +97,7 @@ export class MatchRunner {
     this.lastWaveRequest.set(wave, now);
     try {
       const er = await this.er(this.keeper);
-      const r = await timed("request_wave", { match: matchPda(id).toBase58() }, async () => send(er, [await this.env.ix.requestWave(this.keeper.publicKey, id)], [this.keeper]));
+      const r = await timed("request_wave", { match: matchPda(id).toBase58() }, async () => send(er, [await this.env.ix.requestWave(this.keeper.publicKey, id, this.env.p.vrfQueue)], [this.keeper]));
       this.sigs.vrf_request ??= r.sig;
       this.log(`vrf requested ${r.sig}`);
     } catch (e) {
@@ -224,7 +224,9 @@ export class MatchRunner {
   async finalizeWithRetry(id: bigint, attempts = Number(process.env.FINALIZE_ATTEMPTS ?? 3)): Promise<boolean> {
     const er = await this.er(this.admin);
     for (let a = 0; a < attempts; a++) {
-      const r = await send(er, [await this.env.ix.finalize(this.admin.publicKey, id), await this.env.ix.commitMatch(this.admin.publicKey, id)], [this.admin]);
+      const r = await send(er, [await this.env.ix.finalize(this.admin.publicKey, id)], [this.admin]);
+      // One intent per transaction so the commit signature can be traced.
+      this.sigs.commit_match ??= (await send(er, [await this.env.ix.commitMatch(this.admin.publicKey, id)], [this.admin]).catch(() => ({ sig: "" }))).sig;
       this.sigs[a ? `finalize_retry_${a}` : "finalize"] = r.sig;
       for (let i = 0; i < Number(process.env.RECORD_WAIT_S ?? 40); i++) {
         const rec = await this.env.base.getAccountInfo(recordPda(id));

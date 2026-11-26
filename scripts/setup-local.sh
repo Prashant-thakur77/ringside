@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
 ./scripts/stop-local.sh
 rm -rf .local-stack keys/state-local.json
-./scripts/local-stack.sh
+./scripts/local-stack${STACK_VERSION:+-$STACK_VERSION}.sh
 RPC=http://127.0.0.1:8899
 for k in admin keeper relay; do solana -u $RPC airdrop 100 "$(solana-keygen pubkey keys/$k.json)" >/dev/null; done
 # eSPL rent PDA (funded by the operator on devnet).

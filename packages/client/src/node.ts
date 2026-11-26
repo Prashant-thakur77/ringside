@@ -24,6 +24,7 @@ export interface Profile {
   validator: PublicKey;
   mint: PublicKey;
   modelVersion: number;
+  vrfQueue: PublicKey;
   explorer: (sig: string, er?: boolean) => string;
 }
 
@@ -66,6 +67,7 @@ export function profile(name = process.env.RINGSIDE_ENV ?? "devnet"): Profile {
       validator: new PublicKey(process.env.ER_VALIDATOR ?? "mAGicPQYBMvcYveUZA5F5UNNwyHvfYh5xkLS2Fr1mev"),
       mint: new PublicKey(st.mint ?? process.env.USDC_MINT ?? "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"),
       modelVersion: Number(st.modelVersion ?? 1),
+      vrfQueue: new PublicKey(process.env.VRF_QUEUE ?? "Sc9MJUngNbQXSXGP3F67KvKwVnhaYn6kcioxXNVowYT"),
       explorer: (sig) => `local:${sig}`,
     };
   }
@@ -77,6 +79,7 @@ export function profile(name = process.env.RINGSIDE_ENV ?? "devnet"): Profile {
     validator: new PublicKey(process.env.TEE_VALIDATOR ?? "MTEWGuqxUpYZGFJQcp8tLN7x5v9BSeoFHYWQQ3n3xzo"),
     mint: new PublicKey(st.mint ?? process.env.USDC_MINT ?? "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"),
     modelVersion: Number(st.modelVersion ?? 1),
+    vrfQueue: new PublicKey(process.env.VRF_QUEUE ?? "5hBR571xnXppuCPveTrctfTU7tJLSN94nq7kv7FRK5Tc"),
     explorer: (sig, er) =>
       er
         ? `https://explorer.solana.com/tx/${sig}?cluster=custom&customUrl=${encodeURIComponent("https://devnet-tee.magicblock.app")}`

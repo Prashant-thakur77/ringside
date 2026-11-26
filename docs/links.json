@@ -1,15 +1,15 @@
 {
-  "trade_fill": "local:27CZyVh4XZZJdS2pvK1m2kV3PGmKivt2F6ZHyNadFAwBHHguo4eT3vou32QotwKyP7oYAB53E1fs45HK6XX1xMyw",
-  "fighter_reject": "local:2WBbgFD2NdUnCgkHNgycamTNZBxkbmf75A1Tp8QkWBJDYJ9HaDxRwh9aYwxyhY8vr651Y84hSLz65e9NayeMmvfz",
-  "settle": "local:4xCSWDjFbkDqxt4zAquB95RwYg12ZnPbwTomkUgdBMW1efmETiN3DkzJPjqoWKvRXFNFdgv97A2uaNGYe9dWgzrA",
-  "finalize": "local:eMpmqpUC9SXRA6ruQbXqFjkk3kgQrkaTzx2sAJpL1gr8TtfRTXniqwLeMgHNwfkNaTtkUhyXEhSVTGvCWU8h4dg",
+  "trade_fill": "local:X6ovYLpWbvxqCtXxbmbZLWjr3pbhbuabeHXuNm2L892XrsQFbNG79gEznLbA2GA7mYFJvwRMcaWuqWTwqi1p2uV",
+  "fighter_reject": "local:5JfMdmMj7MNvp6vGWUuWFNb5QVDQRcHUBGJAuf1zy1GviBg59N97KQVJPGDFTVuAkxiMCTnt4oVBo7zrYv1aqack",
+  "settle": "local:38ZshAWEKazf7fc3F8wUmCfgtKkJ77ADFN5Jth4RCq8amwb9QH3HT2Li4DSNWgtkPuJBHjyX1PAjdcCi8EnfLPMi",
+  "finalize": "local:4NVPwQN3cuSEBSsWBVvXck4SymJ5hWPz7QGCtR2urMcV6aQhbJVmSJbzLqgPkjyum8bVtvg5YZtYqMi8Jp6bYaXz",
   "program": "4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej",
   "config": "Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK",
   "model": "ATTNMp41xs7zeUxSdFMD3iBBhMp2QM8KMWxhoebZuEaF",
-  "match": "8Pei71BMgKVPFEdsKkxmZsVgvumPeZmvChdyE3Tpo95c",
+  "match": "4jFT1t9XLPfJ9HnqPd39wxhHfHe4SpxEHZXV2jc97DRp",
   "repo": "https://github.com/Prashant-thakur77/ringside",
-  "e2e_match_id": "1795728504882",
+  "e2e_match_id": "1795729202459",
   "e2e_env": "local",
-  "stale_reject": "local:4gK3ChUnZZhuZPfMYSdxdsTCyMFohVVFetwVT5Z5WCXPZfZAqrwqVw6yABPxkgmnb5bNYHs5koifDYJuVZkWNotC",
-  "session_trade": "local:4pCAZAkmQuP7Hdys9RMnm6tyhbTtcbL2jJHum1ps9v2bPdqrTTccjtvkAJnCMGv9tj6kRajTugtshJqTsTofhiwp"
+  "stale_reject": "local:5LL1F6LuXjT5EmhdQGSxCY5dThSg5PVxYShPA1DeLYQ3C3VJ45EJumLVbdadQM1bBgnHL2NRuxUBQFEFzGByMBBx",
+  "session_trade": "local:3UMqqVpREFLXRKzWSWuk8fXLdHrHDbKkV98Wmr5inNPuh4rWvNvUPvwpcfd2P1Q2aWGPqDuNmweqWBa7NarqfRBG"
 }
