@@ -5,7 +5,6 @@ target/
 node_modules/
 .anchor/
 eval/data/raw/
-.claude/
 .next/
 dist/
 pkg/
