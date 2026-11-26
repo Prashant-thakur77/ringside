@@ -17,8 +17,16 @@ impl SpanExporter for PgExporter {
         let pool = self.0.clone();
         Box::pin(async move {
             for s in batch {
-                let ms = s.end_time.duration_since(s.start_time).map(|d| d.as_secs_f64() * 1000.0).unwrap_or(0.0);
-                let _ = sqlx::query("INSERT INTO latency (kind, ms, host) VALUES ($1, $2, 'indexer')").bind(s.name.to_string()).bind(ms).execute(&pool).await;
+                let ms = s
+                    .end_time
+                    .duration_since(s.start_time)
+                    .map(|d| d.as_secs_f64() * 1000.0)
+                    .unwrap_or(0.0);
+                let _ = sqlx::query("INSERT INTO latency (kind, ms, host) VALUES ($1, $2, 'indexer')")
+                    .bind(s.name.to_string())
+                    .bind(ms)
+                    .execute(&pool)
+                    .await;
             }
             Ok(())
         })
@@ -26,7 +34,9 @@ impl SpanExporter for PgExporter {
 }
 
 pub fn init(db: PgPool) {
-    let provider = TracerProvider::builder().with_batch_exporter(PgExporter(db), opentelemetry_sdk::runtime::Tokio).build();
+    let provider = TracerProvider::builder()
+        .with_batch_exporter(PgExporter(db), opentelemetry_sdk::runtime::Tokio)
+        .build();
     let tracer = provider.tracer("ringside-indexer");
     opentelemetry::global::set_tracer_provider(provider);
     tracing_subscriber::registry()

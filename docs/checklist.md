@@ -165,11 +165,11 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [ ] P8.13 · Trade panel Buy A / Buy B / Sell with amount; shows seen_tick, fill tick, price, latency — devnet trade from UI
 - [ ] P8.14 · Private position view + reveal + payout animation + explorer links — devnet
 - [x] P8.15 · QR code for phone spectator flow (qrcode.react) — QR opens /m/<id> on phone
-- [ ] P8.16 · Judge mode: dual-book courtsiding panel with live counters (PnL, stale fills accepted, rejections, tx links) from indexer SSE — renders live
+- [x] P8.16 · Judge mode: dual-book courtsiding panel with live counters (PnL, stale fills accepted, rejections, tx links) from indexer SSE — renders live
 - [x] P8.17 · `/replay/[id]`: WASM re-sim, scrub timeline, odds curve, tx links, Verify ✓ hash chain vs onchain — Verified ✓ on a devnet match
-- [ ] P8.18 · `/proof`: A/B chart, calibration plot, latency histograms, privacy test, soak stats from results.json + indexer — renders
+- [x] P8.18 · `/proof`: A/B chart, calibration plot, latency histograms, privacy test, soak stats from results.json + indexer — renders
 - [x] P8.19 · `/docs`: architecture diagram + how it works — renders
-- [ ] P8.20 · Mobile layout for spectator flow — phone viewport screenshot
+- [x] P8.20 · Mobile layout for spectator flow — phone viewport screenshot
 - [x] P8.21 · Web typecheck + lint + build green — `pnpm typecheck && pnpm build`
 
 ## Phase 9 — Devnet deploy and experiments
@@ -197,15 +197,15 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 
 - [ ] P10.01 · README §1 pitch + headline number + 10 s GIF
 - [ ] P10.02 · README §2 live link, video, program IDs, explorer links (VRF callback, stale reject, fighter-bar reject, settlement, commit, MatchRecord)
-- [ ] P10.03 · README §3 problem with sources
-- [ ] P10.04 · README §4 architecture diagram + why everything is on the TEE validator
-- [ ] P10.05 · README §5 MagicBlock usage table with what breaks without each primitive
+- [x] P10.03 · README §3 problem with sources
+- [x] P10.04 · README §4 architecture diagram + why everything is on the TEE validator
+- [x] P10.05 · README §5 MagicBlock usage table with what breaks without each primitive
 - [ ] P10.06 · README §6 results E1–E7 + negative result + weakest case, held-out stated
-- [ ] P10.07 · README §7 reproduce: one command per experiment
-- [ ] P10.08 · README §8 closest projects paragraph
-- [ ] P10.09 · README §9 run locally / deploy
-- [ ] P10.10 · `/docs` page diagram matches README
-- [ ] P10.11 · docs/video.md script + shot list per plan §15
+- [x] P10.07 · README §7 reproduce: one command per experiment
+- [x] P10.08 · README §8 closest projects paragraph
+- [x] P10.09 · README §9 run locally / deploy
+- [x] P10.10 · `/docs` page diagram matches README
+- [x] P10.11 · docs/video.md script + shot list per plan §15
 - [ ] P10.12 · docs/submission.md paste-ready text for every form field + X post + builder-directory blurb
 - [ ] P10.13 · `scripts/check_consistency.py` verifies every number in README/site/video/submission equals results.json — exit 0
 - [ ] P10.14 · CI workflow (fmt, clippy, test, anchor build, wasm, web typecheck+build, Python smoke) — green on GitHub
