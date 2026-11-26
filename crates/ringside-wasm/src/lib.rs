@@ -205,3 +205,17 @@ impl ScriptedBot {
         Ok(self.0.act(&state(state_bytes)?, (me & 1) as usize))
     }
 }
+
+/// Policy observation (22 floats) for fighter `me`, identical to training.
+#[wasm_bindgen]
+pub fn observe(state_bytes: &[u8], me: u8) -> Result<Vec<f32>, JsError> {
+    let mut out = vec![0f32; ringside_agent::OBS_DIM];
+    ringside_agent::observe(&state(state_bytes)?, (me & 1) as usize, &mut out);
+    Ok(out)
+}
+
+/// Discrete policy action (0..72) → input bits for fighter `me`.
+#[wasm_bindgen(js_name = actionToInput)]
+pub fn action_to_input(state_bytes: &[u8], me: u8, action: u32) -> Result<u16, JsError> {
+    Ok(ringside_agent::action_to_input(&state(state_bytes)?, (me & 1) as usize, action as usize))
+}

@@ -126,9 +126,9 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [x] P6.10 · Model params blob + metrics hash — blob file + sha256
 - [ ] P6.11 · `scripts/upload-model.ts` writes ModelParams on devnet — account readback matches blob
 - [x] P6.12 · PyO3 gym env with 10 Hz decisions, obs = 16 features + relative positions, action = 9 moves × fire × dash × shield — env test
-- [ ] P6.13 · PPO training (`ml/ppo/train.py`) self-play league + scripted opponents — training log + checkpoints
+- [x] P6.13 · PPO training (`ml/ppo/train.py`) self-play league + scripted opponents — training log + checkpoints
 - [ ] P6.14 · Export PPO to ONNX — `onnx.checker` passes; onnxruntime-node inference test
-- [ ] P6.15 · PPO win rate vs each scripted bot on held-out seeds — JSON
+- [x] P6.15 · PPO win rate vs each scripted bot on held-out seeds — JSON
 
 ## Phase 7 — Indexer, bots, soak
 
@@ -143,7 +143,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [ ] P7.09 · `bots/spectators/*.ts` momentum, contrarian, noise, Kelly-sized — devnet trades
 - [ ] P7.10 · `bots/courtsider.ts` trades both books on lag > spread — devnet fills and rejects
 - [ ] P7.11 · `bots/delay-relay.ts` posts features to Delayed market after delay_ms (0.5–8 s) — devnet relay txs
-- [ ] P7.12 · `bots/keeper.ts` time-gated tick fallback — runs against devnet
+- [x] P7.12 · `bots/keeper.ts` time-gated tick fallback — runs against devnet
 - [ ] P7.13 · Lobby runner keeps matches going 24/7 (create → fight → settle → finalize → repeat) — runs ≥ 3 consecutive matches
 - [ ] P7.14 · `bots/soak` Rust tokio swarm K spectators × M trades with latency histograms — run output
 - [ ] P7.15 · docker-compose.yml runs postgres + indexer + bots — `docker compose up` healthy

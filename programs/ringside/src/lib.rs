@@ -835,12 +835,30 @@ pub mod ringside {
             ctx.accounts.magic_context.to_account_info(),
             ctx.accounts.magic_program.to_account_info(),
         )
-        .commit(&[
-            ctx.accounts.game.to_account_info(),
-            ctx.accounts.market_live.to_account_info(),
-            ctx.accounts.market_delayed.to_account_info(),
-        ])
+        // A commit of the 1,232-byte match plus an action does not fit one committor transaction,
+        // so the receipt action rides on the live book's commit and the match is committed in its
+        // own intent (`commit_match`, sent in the same transaction by the finalizer). The delayed
+        // book is committed by `cleanup_positions`. The record args carry both books' numbers
+        // and the final hash.
+        .commit(&[ctx.accounts.market_live.to_account_info()])
         .add_post_commit_actions([action])
+        .build_and_invoke()?;
+        Ok(())
+    }
+
+    /// Commits the final match state (sim, hash chain head, result) to Solana. Permissionless
+    /// after settlement; used by the finalizer right after `finalize`.
+    pub fn commit_match(ctx: Context<CommitMatch>, _match_id: u64) -> Result<()> {
+        {
+            let g = ctx.accounts.game.load()?;
+            require!(g.status == ST_SETTLED || g.status == ST_DRAW, RingsideError::ErrNotSettled);
+        }
+        MagicIntentBundleBuilder::new(
+            ctx.accounts.payer.to_account_info(),
+            ctx.accounts.magic_context.to_account_info(),
+            ctx.accounts.magic_program.to_account_info(),
+        )
+        .commit(&[ctx.accounts.game.to_account_info()])
         .build_and_invoke()?;
         Ok(())
     }
@@ -853,6 +871,10 @@ pub mod ringside {
         }
         let mut batch = Vec::with_capacity(ctx.remaining_accounts.len());
         for acc in ctx.remaining_accounts.iter() {
+            if *acc.key == ctx.accounts.market_delayed.key() {
+                batch.push(acc.clone()); // the delayed book's final state, committed here
+                continue;
+            }
             let p: Account<Position> = Account::try_from(acc)?;
             require!(p.settled, RingsideError::ErrNotSettled);
             batch.push(acc.clone());
@@ -1488,11 +1510,24 @@ pub struct Finalize<'info> {
 #[commit]
 #[derive(Accounts)]
 #[instruction(match_id: u64)]
+pub struct CommitMatch<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    #[account(mut, seeds = [MATCH_SEED, &match_id.to_le_bytes()], bump)]
+    pub game: AccountLoader<'info, Match>,
+}
+
+#[commit]
+#[derive(Accounts)]
+#[instruction(match_id: u64)]
 pub struct Cleanup<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     #[account(seeds = [MATCH_SEED, &match_id.to_le_bytes()], bump)]
     pub game: AccountLoader<'info, Match>,
+    /// CHECK: the delayed book PDA (may be passed in the batch to commit it).
+    #[account(seeds = [MARKET_SEED, &match_id.to_le_bytes(), &[MODE_DELAYED]], bump)]
+    pub market_delayed: UncheckedAccount<'info>,
 }
 
 #[derive(Accounts)]

@@ -365,10 +365,13 @@ export class Ix {
       })
       .instruction();
   }
+  commitMatch(payer: PublicKey, id: bigint) {
+    return this.program.methods.commitMatch(new BN(id.toString())).accountsStrict({ payer, game: matchPda(id), magicProgram: MAGIC_PROGRAM, magicContext: MAGIC_CONTEXT }).instruction();
+  }
   cleanupPositions(payer: PublicKey, id: bigint, positions: PublicKey[]) {
     return this.program.methods
       .cleanupPositions(new BN(id.toString()))
-      .accountsStrict({ payer, game: matchPda(id), magicProgram: MAGIC_PROGRAM, magicContext: MAGIC_CONTEXT })
+      .accountsStrict({ payer, game: matchPda(id), marketDelayed: marketPda(id, MODE_DELAYED), magicProgram: MAGIC_PROGRAM, magicContext: MAGIC_CONTEXT })
       .remainingAccounts(positions.map((p) => ({ pubkey: p, isSigner: false, isWritable: true })))
       .instruction();
   }

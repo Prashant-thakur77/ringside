@@ -975,9 +975,10 @@ fn full_match_lifecycle() {
     assert_eq!(w.token(TransactionTarget::Ephemeral, &ata(&admin.pubkey(), &mint)), admin_before + fee);
     let mut cl = ix(
         instruction::CleanupPositions { _match_id: MATCH_ID },
-        accounts::Cleanup { payer: pk(&admin.pubkey()), game: pk(&match_pda(MATCH_ID)), magic_program: MAGIC_PROGRAM_ID, magic_context: pk(&ad(&MAGIC_CONTEXT_ID)) },
+        accounts::Cleanup { payer: pk(&admin.pubkey()), game: pk(&match_pda(MATCH_ID)), market_delayed: pk(&market_pda(MATCH_ID, MODE_DELAYED)), magic_program: MAGIC_PROGRAM_ID, magic_context: pk(&ad(&MAGIC_CONTEXT_ID)) },
     );
     cl.accounts.push(AccountMeta::new(pos_live, false));
+    cl.accounts.push(AccountMeta::new(market_pda(MATCH_ID, MODE_DELAYED), false));
     w.ok(TransactionTarget::Ephemeral, &[&admin], vec![cl], "cleanup_positions");
     let slot = w.er_clock().slot;
     let _ = w.svm.warp_to_slot(slot + 2);

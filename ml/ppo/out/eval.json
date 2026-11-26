@@ -1,0 +1,33 @@
+{
+  "steps": 141459456,
+  "updates": 8634,
+  "minutes": 60.070813548564914,
+  "heldout_vs_scripted": {
+    "aggressive": {
+      "win_rate": 1.0,
+      "loss_rate": 0.0,
+      "draw_rate": 0.0,
+      "episodes": 300
+    },
+    "kiting": {
+      "win_rate": 1.0,
+      "loss_rate": 0.0,
+      "draw_rate": 0.0,
+      "episodes": 300
+    },
+    "defensive": {
+      "win_rate": 0.9966666666666667,
+      "loss_rate": 0.0033333333333333335,
+      "draw_rate": 0.0,
+      "episodes": 300
+    },
+    "random": {
+      "win_rate": 1.0,
+      "loss_rate": 0.0,
+      "draw_rate": 0.0,
+      "episodes": 300
+    }
+  },
+  "obs_dim": 22,
+  "n_actions": 72
+}

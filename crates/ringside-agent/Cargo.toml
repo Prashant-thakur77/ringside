@@ -1,0 +1,10 @@
+[package]
+name = "ringside-agent"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Observation and action encoding for Ringside fighters (shared by PPO training and the ONNX bots)"
+
+[dependencies]
+ringside-sim = { path = "../ringside-sim" }
+ringside-fixed = { path = "../ringside-fixed" }

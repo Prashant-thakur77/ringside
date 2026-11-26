@@ -112,3 +112,15 @@ test result: ok. 5 passed; 0 failed
 ```
 - `full_match_lifecycle` asserts: config/model upload (blob byte-identical), house vault eATA + top-up, profiles delegated, match+books+escrow delegated (base owner = DLP), joins (stake → escrow, double join rejected), genesis hash via sha256 syscall == sha2 crate, VRF wave via ephemeral queue callback, input rules (ErrNotFighter, ErrBadSeq ×2), time gate (ErrTooEarly in one slot; wall-clock bound stops bursts), every tick's onchain state_hash == off-chain replay with the shared sim, book priced in the same instruction (last_priced_tick == tick), freeze after lethal-range hit (ErrFrozen), buy/sell fills with exact USDC movement, ErrStaleTick strict + recorded counter, ErrFighterBarred, ErrSlippage, ErrExposure (max exposure ≤ cap), private Position (unauthenticated and opposing fighter denied, owner allowed, market public), relay auth (ErrUnauthorized) and delayed-book fill on a 50-tick-old price while the live book rejects it, ErrClosed after the bell, post-end tick no-op, settle (winner 2×stake − 1%, fee accrued, idempotent), reveal (position public), claim exact + idempotent, finalize → MatchRecord written on base by the Magic Action with the final hash, withdraw_fees, cleanup_positions (position undelegated), direct write_match_record rejected (6015).
 - Note: devnet-tee behaviour (TEE privacy, real VRF oracle, crank cadence) is still to be proven live; the corresponding items stay unticked.
+
+## 2026-11-27 03:05 IST · TS client, setup scripts, local stack, match runner, PPO done
+- Local stack (`scripts/setup-local.sh`): base validator with MagicBlock program dumps + Ringside (upgradeable), ER 1.1.1 in Docker. Setup output:
+```
+[local] config initialized Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK
+[local] model readback matches blob ATTNMp41xs7zeUxSdFMD3iBBhMp2QM8KMWxhoebZuEaF metrics hash 58114e35…
+[local] house vault on ER: … balance 500000000
+[local] fighter-a / fighter-b / spec-1..4 / courtsider funded via eSPL delegateSpl
+```
+- `bots/run-match.ts` on the local ER: create + delegate → joins → VRF request → `schedule_tick` crank (ticks advanced by the ER scheduler; keeper fallback not needed locally) → inputs from brains → crank-run settle → finalize. Runs: scripted aggressive vs random, winner A at tick 290; PPO (ONNX) vs defensive, winner A at tick 116; PPO vs kiting, winner A at tick 96.
+- PPO (`ml/ppo/out/eval.json`, 141,459,456 steps, 60 min): held-out (odd seeds) greedy win rate vs aggressive 1.0, kiting 1.0, defensive 0.9967, random 1.0 (300 episodes each).
+- Bugs fixed on the way: house/escrow canonical ATAs must exist on base for the ER projection; finalize commit split (decisions.md).

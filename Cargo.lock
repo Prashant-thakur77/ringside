@@ -2279,6 +2279,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ringside-agent"
+version = "0.1.0"
+dependencies = [
+ "ringside-fixed",
+ "ringside-sim",
+]
+
+[[package]]
 name = "ringside-fixed"
 version = "0.1.0"
 dependencies = [
@@ -2292,6 +2300,7 @@ dependencies = [
  "numpy",
  "pyo3",
  "rayon",
+ "ringside-agent",
  "ringside-fixed",
  "ringside-sim",
 ]
@@ -2309,6 +2318,7 @@ dependencies = [
 name = "ringside-wasm"
 version = "0.1.0"
 dependencies = [
+ "ringside-agent",
  "ringside-fixed",
  "ringside-sim",
  "wasm-bindgen",

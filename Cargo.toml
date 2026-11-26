@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/ringside-fixed",
     "crates/ringside-sim",
+    "crates/ringside-agent",
     "crates/ringside-wasm",
     "crates/ringside-py",
     "programs/ringside",

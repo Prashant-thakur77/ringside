@@ -12,3 +12,4 @@ crate-type = ["cdylib", "rlib"]
 ringside-sim = { path = "../ringside-sim" }
 ringside-fixed = { path = "../ringside-fixed" }
 wasm-bindgen = "0.2"
+ringside-agent = { path = "../ringside-agent" }

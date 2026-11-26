@@ -140,6 +140,70 @@ export type Ringside = {
           }
         },
         {
+          "name": "marketDelayed"
+        },
+        {
+          "name": "magicProgram",
+          "address": "Magic11111111111111111111111111111111111111"
+        },
+        {
+          "name": "magicContext",
+          "writable": true,
+          "address": "MagicContext1111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "matchId",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "commitMatch",
+      "docs": [
+        "Commits the final match state (sim, hash chain head, result) to Solana. Permissionless",
+        "after settlement; used by the finalizer right after `finalize`."
+      ],
+      "discriminator": [
+        175,
+        146,
+        74,
+        234,
+        39,
+        25,
+        248,
+        114
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "matchId"
+              }
+            ]
+          }
+        },
+        {
           "name": "magicProgram",
           "address": "Magic11111111111111111111111111111111111111"
         },
