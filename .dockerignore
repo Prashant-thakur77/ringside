@@ -1,0 +1,9 @@
+target
+**/target
+**/node_modules
+.venv
+eval/data/raw
+keys
+.local-stack
+apps/web/.next
+.design-refs

@@ -137,7 +137,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [x] P7.03 · Indexer measures tick cadence, quote age at fill, submit→confirm latency — rows in `latency`
 - [x] P7.04 · Indexer axum REST (matches, match detail, replay inputs, stats) + SSE stream — curl returns JSON
 - [x] P7.05 · Indexer verifies MatchRecord on L1 after finalize and retries — log shows check
-- [ ] P7.06 · OpenTelemetry spans in bots and indexer — spans exported
+- [x] P7.06 · OpenTelemetry spans in bots and indexer — spans exported
 - [x] P7.07 · Shared TS client lib (PDAs, IDL, connections, TEE auth with token-only, auto-refresh) — unit test for token URL
 - [ ] P7.08 · `bots/fighters/ai.ts` ONNX fighter plays matches 24/7, labeled AI — devnet match played
 - [x] P7.09 · `bots/spectators/*.ts` momentum, contrarian, noise, Kelly-sized — devnet trades
@@ -146,7 +146,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [x] P7.12 · `bots/keeper.ts` time-gated tick fallback — runs against devnet
 - [x] P7.13 · Lobby runner keeps matches going 24/7 (create → fight → settle → finalize → repeat) — runs ≥ 3 consecutive matches
 - [x] P7.14 · `bots/soak` Rust tokio swarm K spectators × M trades with latency histograms — run output
-- [ ] P7.15 · docker-compose.yml runs postgres + indexer + bots — `docker compose up` healthy
+- [x] P7.15 · docker-compose.yml runs postgres + indexer + bots — `docker compose up` healthy
 
 ## Phase 8 — Web
 

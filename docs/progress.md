@@ -163,3 +163,7 @@ tv_delay {'fills': 20, 'stale_fills_accepted': 20, 'stale_rejections': 0}
 - `/leaderboard` (indexer, Profiles read from the ER): fighter-a elo 1285 (24/34), fighter-b 1115 (10/34).
 - README / docs/submission.md / docs/video.md are rendered from templates by `scripts/render_docs.py`; `scripts/check_consistency.py` re-renders and diffs, rejects literal measured numbers and checks the site's results.json copy. Remaining failures are only devnet values (links, E5) still PENDING.
 - CI: `.github/workflows/ci.yml` (rust fmt/clippy/test, anchor build + MagicSVM, determinism 10,000, web typecheck/build, python smoke, indexer).
+
+## 2026-11-27 03:20 IST · Observability, containers
+- Indexer OpenTelemetry: tracing spans → OTel tracer → exporter into Postgres `latency`. `/stats` latency kinds after a match: indexer_store_event n=528 p50 4.6 ms; bots: trade n=230 p50 51.0 ms, submit_input n=8776 p50 9.4 ms, join_fight p50 70.5 ms, create_match p50 275 ms, delegate_match p50 418 ms (local stack).
+- Docker: `ringside-indexer` (95 MB) and `ringside-bots` images build. Compose uses host networking (this host has no free Docker address pools); `docker compose up -d indexer` → `ringside-postgres-1 Up (healthy)`, `ringside-indexer-1 Up (healthy)`, `/health` ok.

@@ -1,40 +1,55 @@
-# Postgres + indexer + bots. Keys and deployment state are mounted read-only from ./keys.
+# Postgres + indexer + bots on host networking (no compose network needed).
+# Keys and deployment state are mounted from ./keys.
 services:
   postgres:
     image: postgres:16
+    network_mode: host
+    command: ["postgres", "-p", "5435"]
     environment:
       POSTGRES_USER: ringside
       POSTGRES_PASSWORD: ringside
       POSTGRES_DB: ringside
-    ports: ["5434:5432"]
     volumes: ["pg:/var/lib/postgresql/data"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ringside"]
+      test: ["CMD-SHELL", "pg_isready -U ringside -p 5435"]
       interval: 5s
       retries: 20
 
   indexer:
     build: { context: ., dockerfile: services/indexer/Dockerfile }
+    network_mode: host
     depends_on: { postgres: { condition: service_healthy } }
     environment:
-      DATABASE_URL: postgres://ringside:ringside@postgres:5432/ringside
+      DATABASE_URL: postgres://ringside:ringside@127.0.0.1:5435/ringside
       RINGSIDE_ENV: ${RINGSIDE_ENV:-devnet}
-      SOLANA_RPC: ${SOLANA_RPC:-https://api.devnet.solana.com}
-      ER_RPC: ${ER_RPC:-https://devnet-tee.magicblock.app}
       INDEXER_KEYPAIR: /keys/indexer.json
       PORT: "8787"
     volumes: ["./keys:/keys:ro"]
-    ports: ["8787:8787"]
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8787' || exit 1"]
+      interval: 5s
+      retries: 20
     restart: unless-stopped
 
   bots:
     build: { context: ., dockerfile: bots/Dockerfile }
-    depends_on: [indexer]
+    network_mode: host
+    depends_on: { indexer: { condition: service_healthy } }
     environment:
       RINGSIDE_ENV: ${RINGSIDE_ENV:-devnet}
-      INDEXER_URL: http://indexer:8787
+      INDEXER_URL: http://127.0.0.1:8787
     volumes: ["./keys:/app/keys"]
-    command: ["npx", "tsx", "bots/lobby.ts"]
+    restart: unless-stopped
+
+  matchmaker:
+    build: { context: ., dockerfile: bots/Dockerfile }
+    network_mode: host
+    depends_on: { indexer: { condition: service_healthy } }
+    environment:
+      RINGSIDE_ENV: ${RINGSIDE_ENV:-devnet}
+      MATCHMAKER_PORT: "8788"
+    volumes: ["./keys:/app/keys"]
+    command: ["npx", "tsx", "bots/matchmaker.ts"]
     restart: unless-stopped
 
 volumes:

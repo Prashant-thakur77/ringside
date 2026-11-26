@@ -4,6 +4,7 @@
 //! REST + SSE for the web app.
 
 mod events;
+mod otel;
 
 use anyhow::{anyhow, Context, Result};
 use axum::extract::{Path, Query, State};
@@ -234,6 +235,7 @@ fn ix_data(name: &str, match_id: u64) -> Vec<u8> {
     d
 }
 
+#[tracing::instrument(name = "indexer_retry_finalize", skip_all)]
 async fn retry_finalize(s: &S, match_id: u64) -> Result<String> {
     let program = b58d(PROGRAM_ID);
     let id = match_id.to_le_bytes();
@@ -272,6 +274,7 @@ async fn retry_finalize(s: &S, match_id: u64) -> Result<String> {
 
 // ─────────────────────────── ingestion ───────────────────────────
 
+#[tracing::instrument(name = "indexer_store_event", skip_all)]
 async fn store_event(s: &S, sig: &str, ev: &Event, failed: bool) -> Result<()> {
     let ms = now_ms();
     match ev {
@@ -343,6 +346,7 @@ async fn store_event(s: &S, sig: &str, ev: &Event, failed: bool) -> Result<()> {
 }
 
 /// Failed trade transactions (strict mode) carry no event: recover market/trader from the tx.
+#[tracing::instrument(name = "indexer_backfill_failed_trade", skip_all)]
 async fn store_failed_trade(s: &S, sig: &str, logs: &[String]) -> Result<()> {
     let code = logs
         .iter()
@@ -757,9 +761,6 @@ async fn sse(State(s): State<S>) -> Sse<impl futures::Stream<Item = Result<SseEv
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_subscriber::fmt()
-        .with_env_filter(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()))
-        .init();
     let env = std::env::var("RINGSIDE_ENV").unwrap_or_else(|_| "devnet".into());
     let local = env == "local";
     let cfg = Cfg {
@@ -787,6 +788,7 @@ async fn main() -> Result<()> {
         .connect(&std::env::var("DATABASE_URL").unwrap_or_else(|_| "postgres://ringside:ringside@127.0.0.1:5434/ringside".into()))
         .await?;
     sqlx::migrate!("./migrations").run(&db).await?;
+    otel::init(db.clone());
     let (tx, _) = broadcast::channel(4096);
     let s: S = Arc::new(Shared {
         cfg,
