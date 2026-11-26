@@ -127,7 +127,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [ ] P6.11 · `scripts/upload-model.ts` writes ModelParams on devnet — account readback matches blob
 - [x] P6.12 · PyO3 gym env with 10 Hz decisions, obs = 16 features + relative positions, action = 9 moves × fire × dash × shield — env test
 - [x] P6.13 · PPO training (`ml/ppo/train.py`) self-play league + scripted opponents — training log + checkpoints
-- [ ] P6.14 · Export PPO to ONNX — `onnx.checker` passes; onnxruntime-node inference test
+- [x] P6.14 · Export PPO to ONNX — `onnx.checker` passes; onnxruntime-node inference test
 - [x] P6.15 · PPO win rate vs each scripted bot on held-out seeds — JSON
 
 ## Phase 7 — Indexer, bots, soak
@@ -184,12 +184,12 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [ ] P9.08 · Bots running 24/7 on a host (lobby, spectators, courtsider, relay) — process status
 - [ ] P9.09 · Web deployed to Vercel — URL loads on desktop and phone
 - [ ] P9.10 · E1 courtsiding A/B ≥ 50 held-out matches at 0.5/1/2/5/8 s, bootstrap 95% CI — results.json section
-- [ ] P9.11 · E2 calibration held-out — results.json section + PNG
+- [x] P9.11 · E2 calibration held-out — results.json section + PNG
 - [ ] P9.12 · E3 latency on devnet (tick cadence p50/p95/p99, quote age, submit→confirm) with host region stated — results.json section
 - [ ] P9.13 · E4 soak K×M (success rate, rejects by reason, max exposure vs cap, CU per tick/trade) — results.json section
 - [ ] P9.14 · E5 privacy leak test (non-member, unauthenticated, opposing fighter → denied; after reveal → readable; plain-ER baseline readable) — results.json section
 - [ ] P9.15 · E6 replay determinism K/K WASM + Python vs onchain — results.json section
-- [ ] P9.16 · E7 PPO vs scripted held-out — results.json section
+- [x] P9.16 · E7 PPO vs scripted held-out — results.json section
 - [ ] P9.17 · Negative result + weakest case — results.json section
 - [x] P9.18 · `eval/make_report.py` writes results.json + all charts — one command regenerates
 
@@ -209,7 +209,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [ ] P10.12 · docs/submission.md paste-ready text for every form field + X post + builder-directory blurb
 - [ ] P10.13 · `scripts/check_consistency.py` verifies every number in README/site/video/submission equals results.json — exit 0
 - [ ] P10.14 · CI workflow (fmt, clippy, test, anchor build, wasm, web typecheck+build, Python smoke) — green on GitHub
-- [ ] P10.15 · GitHub repo created and pushed (public) — URL
+- [x] P10.15 · GitHub repo created and pushed (public) — URL
 - [ ] P10.16 · Final audit: zero hits for attribution strings and the base repo's original name in tree + git log
 - [ ] P10.17 · Secret scan of git history — zero hits
 - [ ] P10.18 · Every explorer link in README/submission resolves — link-check script output
