@@ -114,7 +114,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 
 ## Phase 6 — ML
 
-- [ ] P6.01 · Scripted bots aggressive / kiting / defensive / random in Rust sim policy + `bots/fighters/scripted.ts` — tests: each runs a full match
+- [x] P6.01 · Scripted bots aggressive / kiting / defensive / random in Rust sim policy + `bots/fighters/scripted.ts` — tests: each runs a full match
 - [x] P6.02 · Data gen: ≥ 200,000 simulated matches, mixed pairings, random seeds, every 5th tick → (features, winner) — row counts printed
 - [x] P6.03 · Split by match 70/15/15 — test asserts no match id in two splits
 - [x] P6.04 · LightGBM teacher trained — val metrics printed
@@ -140,11 +140,11 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [ ] P7.06 · OpenTelemetry spans in bots and indexer — spans exported
 - [x] P7.07 · Shared TS client lib (PDAs, IDL, connections, TEE auth with token-only, auto-refresh) — unit test for token URL
 - [ ] P7.08 · `bots/fighters/ai.ts` ONNX fighter plays matches 24/7, labeled AI — devnet match played
-- [ ] P7.09 · `bots/spectators/*.ts` momentum, contrarian, noise, Kelly-sized — devnet trades
-- [ ] P7.10 · `bots/courtsider.ts` trades both books on lag > spread — devnet fills and rejects
-- [ ] P7.11 · `bots/delay-relay.ts` posts features to Delayed market after delay_ms (0.5–8 s) — devnet relay txs
+- [x] P7.09 · `bots/spectators/*.ts` momentum, contrarian, noise, Kelly-sized — devnet trades
+- [x] P7.10 · `bots/courtsider.ts` trades both books on lag > spread — devnet fills and rejects
+- [x] P7.11 · `bots/delay-relay.ts` posts features to Delayed market after delay_ms (0.5–8 s) — devnet relay txs
 - [x] P7.12 · `bots/keeper.ts` time-gated tick fallback — runs against devnet
-- [ ] P7.13 · Lobby runner keeps matches going 24/7 (create → fight → settle → finalize → repeat) — runs ≥ 3 consecutive matches
+- [x] P7.13 · Lobby runner keeps matches going 24/7 (create → fight → settle → finalize → repeat) — runs ≥ 3 consecutive matches
 - [ ] P7.14 · `bots/soak` Rust tokio swarm K spectators × M trades with latency histograms — run output
 - [ ] P7.15 · docker-compose.yml runs postgres + indexer + bots — `docker compose up` healthy
 

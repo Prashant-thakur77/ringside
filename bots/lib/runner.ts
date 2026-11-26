@@ -215,12 +215,12 @@ export class MatchRunner {
   }
 
   /** Magic Actions are not atomic with the commit: verify the MatchRecord landed, retry if not. */
-  async finalizeWithRetry(id: bigint, attempts = 3): Promise<boolean> {
+  async finalizeWithRetry(id: bigint, attempts = Number(process.env.FINALIZE_ATTEMPTS ?? 3)): Promise<boolean> {
     const er = await this.er(this.admin);
     for (let a = 0; a < attempts; a++) {
       const r = await send(er, [await this.env.ix.finalize(this.admin.publicKey, id), await this.env.ix.commitMatch(this.admin.publicKey, id)], [this.admin]);
       this.sigs[a ? `finalize_retry_${a}` : "finalize"] = r.sig;
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < Number(process.env.RECORD_WAIT_S ?? 40); i++) {
         const rec = await this.env.base.getAccountInfo(recordPda(id));
         if (rec && rec.data[8 + 32 + 32 + 8 * 9 + 1] === 1) return true;
         await sleep(1000);

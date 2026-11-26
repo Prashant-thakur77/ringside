@@ -124,3 +124,15 @@ test result: ok. 5 passed; 0 failed
 - `bots/run-match.ts` on the local ER: create + delegate → joins → VRF request → `schedule_tick` crank (ticks advanced by the ER scheduler; keeper fallback not needed locally) → inputs from brains → crank-run settle → finalize. Runs: scripted aggressive vs random, winner A at tick 290; PPO (ONNX) vs defensive, winner A at tick 116; PPO vs kiting, winner A at tick 96.
 - PPO (`ml/ppo/out/eval.json`, 141,459,456 steps, 60 min): held-out (odd seeds) greedy win rate vs aggressive 1.0, kiting 1.0, defensive 0.9967, random 1.0 (300 episodes each).
 - Bugs fixed on the way: house/escrow canonical ATAs must exist on base for the ER projection; finalize commit split (decisions.md).
+
+## 2026-11-27 03:20 IST · Bot fleet on the local ER
+- `bots/lobby.ts --matches 3 --delays 5000,500,2000` (local stack): relay + 4 spectators + courtsider running against back-to-back AI matches:
+```
+courtsider …083978: delayed pnl -3.59 (11 fills, 11 stale accepted) · ringside pnl -1.82 (11 stale rejected, 10 fresh fills)
+[lobby] match …083978 (AI · PPO vs AI · PPO, delay 5000 ms): winner 2 at tick 121, crank
+courtsider …132836: delayed pnl 1.26 (10 fills, 10 stale accepted) · ringside pnl -0.18 (11 stale rejected, 11 fresh fills)
+[lobby] match …132836 (AI · PPO vs Scripted · kiting, delay 500 ms): winner 1 at tick 89, crank
+courtsider …173049: delayed pnl 13.56 (13 fills, 13 stale accepted) · ringside pnl 1.51 (13 stale rejected, 12 fresh fills)
+[lobby] match …173049 (AI · PPO vs Scripted · defensive, delay 2000 ms): winner 1 at tick 96, crank
+```
+- Scripted fighters (P6.01) run from the Rust policies through WASM (`bots/lib/brains.ts`), identical to training opponents.
