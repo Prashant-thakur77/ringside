@@ -152,3 +152,8 @@ tv_delay {'fills': 20, 'stale_fills_accepted': 20, 'stale_rejections': 0}
 - Direction chosen via award-site-design (style tiles in .design/tiles, sheet reviewed): "Slate & Ticket" — slate chalkboard for live surfaces, ticket stock + stamps for records, /proof and /docs. DESIGN.md written.
 - `pnpm build` (Next 15.5.6): routes / (118 kB), /m/[id] (476 kB), /replay/[id], /proof, /docs; `pnpm typecheck` clean.
 - Against the local stack + indexer: lobby renders live card + results and measured tick cadence (p50 100 ms · p95 102 ms over 675 ticks); match page shows Pixi arena, split-flap prices, odds line with dashed TV-delay book, trade ticket onboarding, QR; replay page re-simulated in WASM and printed "VERIFIED ✓ 91 TICKS" against the onchain hashes.
+
+## 2026-11-27 02:45 IST · Full suite, fuzz, soak
+- Full suite: workspace 54 passed · MagicSVM 5 passed · determinism 10000/10000 native = python = wasm · python 5 passed · client 3 passed · indexer 2 passed · `pnpm -r typecheck` 0 errors.
+- `cargo +nightly fuzz run trade -- -runs=200000`: `Done 200000 runs in 6 second(s)`, no invariant violation (USDC conserved, shares = inventory, loss ≤ cap, prices in [0.01, 0.99], bid < ask, settlement = liability).
+- Soak (local ER, `bots/soak`, 16 bots × 40 trades): 640/640 succeeded, submit→confirm p50 16.5 ms / p95 17.4 / p99 18.1, trade CU p50 24,682, max exposure 0.73 of cap 60. First run exposed duplicate-signature collisions (identical order bytes); orders now carry unique limit bytes.

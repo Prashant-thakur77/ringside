@@ -88,7 +88,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [x] P3.16 · Trade math module shared by program and tests (pure fns) — unit tests
 - [x] P3.17 · proptest: Σ USDC conserved across trades — green
 - [x] P3.18 · proptest: house liability ≤ cap; price ∈ [0.01, 0.99]; bid < ask — green
-- [ ] P3.19 · cargo-fuzz target for trade math — `cargo fuzz run trade -- -runs=100000` with no crash
+- [x] P3.19 · cargo-fuzz target for trade math — `cargo fuzz run trade -- -runs=100000` with no crash
 
 ## Phase 4 — PER positions, settlement, finalize, crank
 
@@ -145,7 +145,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [x] P7.11 · `bots/delay-relay.ts` posts features to Delayed market after delay_ms (0.5–8 s) — devnet relay txs
 - [x] P7.12 · `bots/keeper.ts` time-gated tick fallback — runs against devnet
 - [x] P7.13 · Lobby runner keeps matches going 24/7 (create → fight → settle → finalize → repeat) — runs ≥ 3 consecutive matches
-- [ ] P7.14 · `bots/soak` Rust tokio swarm K spectators × M trades with latency histograms — run output
+- [x] P7.14 · `bots/soak` Rust tokio swarm K spectators × M trades with latency histograms — run output
 - [ ] P7.15 · docker-compose.yml runs postgres + indexer + bots — `docker compose up` healthy
 
 ## Phase 8 — Web
@@ -191,7 +191,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [ ] P9.15 · E6 replay determinism K/K WASM + Python vs onchain — results.json section
 - [ ] P9.16 · E7 PPO vs scripted held-out — results.json section
 - [ ] P9.17 · Negative result + weakest case — results.json section
-- [ ] P9.18 · `eval/make_report.py` writes results.json + all charts — one command regenerates
+- [x] P9.18 · `eval/make_report.py` writes results.json + all charts — one command regenerates
 
 ## Phase 10 — Docs, submission, final pass
 

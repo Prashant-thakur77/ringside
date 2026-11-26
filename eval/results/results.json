@@ -1,0 +1,327 @@
+{
+  "generated_at": "2026-11-26 21:05 UTC",
+  "network": "local MagicBlock stack (base validator + ER 1.1.1)",
+  "env": "local",
+  "program_id": "4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej",
+  "e1": {
+    "heldout": true,
+    "n_matches": 23,
+    "delays": [
+      {
+        "delay_ms": 500,
+        "n_matches": 1,
+        "pnl_mean": 1.25694,
+        "pnl_ci95": [
+          1.25694,
+          1.25694
+        ],
+        "fills": 10,
+        "stale_fills_accepted": 10,
+        "house_pnl_mean": 2.330879
+      },
+      {
+        "delay_ms": 2000,
+        "n_matches": 2,
+        "pnl_mean": 11.366230000000002,
+        "pnl_ci95": [
+          9.176664,
+          13.555796
+        ],
+        "fills": 28,
+        "stale_fills_accepted": 28,
+        "house_pnl_mean": -8.997982
+      },
+      {
+        "delay_ms": 5000,
+        "n_matches": 20,
+        "pnl_mean": 7.952994599999999,
+        "pnl_ci95": [
+          4.281443749999999,
+          11.707526295000003
+        ],
+        "fills": 208,
+        "stale_fills_accepted": 208,
+        "house_pnl_mean": -8.3878925
+      }
+    ],
+    "ringside": {
+      "n_matches": 23,
+      "pnl_mean": -0.038301043478260834,
+      "pnl_ci95": [
+        -0.7762438771739132,
+        0.6076900434782608
+      ],
+      "stale_attempts": 367,
+      "stale_rejections": 251,
+      "stale_fills_accepted": 32,
+      "fresh_fills": 227,
+      "house_pnl_mean": 8.370244217391305
+    }
+  },
+  "e2": {
+    "heldout": true,
+    "n_test_matches": 29890,
+    "n_test_rows": 2859074,
+    "n_matches_total": 200000,
+    "models": {
+      "coin_flip": {
+        "brier": 0.25,
+        "log_loss": 0.6931471805599454,
+        "ece": 0.0002752542495727539,
+        "n": 2859074
+      },
+      "hp_ratio": {
+        "brier": 0.19248053764174253,
+        "log_loss": 0.5652909253497623,
+        "ece": 0.10073623572664167,
+        "n": 2859074
+      },
+      "lightgbm_float": {
+        "brier": 0.16392400534836443,
+        "log_loss": 0.4876124162516081,
+        "ece": 0.0073049937199234916,
+        "n": 2859074
+      },
+      "logistic_float": {
+        "brier": 0.17353918290945733,
+        "log_loss": 0.5126709679354694,
+        "ece": 0.0038006226247735337,
+        "n": 2859074
+      },
+      "logistic_onchain_integer": {
+        "brier": 0.17355301512716953,
+        "log_loss": 0.5127206195936799,
+        "ece": 0.0034291392391486517,
+        "n": 2859074
+      }
+    },
+    "onchain_vs_float_gap": {
+      "mean": 0.0030504007638166644,
+      "p99": 0.013479795974999716,
+      "max": 0.018315969403067678
+    },
+    "buckets": {
+      "sudden_death": {
+        "coin_flip": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "ece": 0.0091666579246521,
+          "n": 1200
+        },
+        "hp_ratio": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599453,
+          "ece": 0.0091666579246521,
+          "n": 1200
+        },
+        "lightgbm_float": {
+          "brier": 0.24270775511639736,
+          "log_loss": 0.6784441063389053,
+          "ece": 0.027576197813768955,
+          "n": 1200
+        },
+        "logistic_float": {
+          "brier": 0.2579265893648583,
+          "log_loss": 0.7109762224613848,
+          "ece": 0.062241684360528064,
+          "n": 1200
+        },
+        "logistic_onchain_integer": {
+          "brier": 0.25782965043978523,
+          "log_loss": 0.7108204450022569,
+          "ece": 0.06055811969252926,
+          "n": 1200
+        }
+      },
+      "last_20s_regulation": {
+        "coin_flip": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599452,
+          "ece": 0.0007203817367553711,
+          "n": 240150
+        },
+        "hp_ratio": {
+          "brier": 0.13536516468745874,
+          "log_loss": 0.4337465953616438,
+          "ece": 0.18503465802677682,
+          "n": 240150
+        },
+        "lightgbm_float": {
+          "brier": 0.0859451337412807,
+          "log_loss": 0.2723029455255223,
+          "ece": 0.005055144373955715,
+          "n": 240150
+        },
+        "logistic_float": {
+          "brier": 0.09315141805065438,
+          "log_loss": 0.2996631905008505,
+          "ece": 0.02462727843892679,
+          "n": 240150
+        },
+        "logistic_onchain_integer": {
+          "brier": 0.09311554985812674,
+          "log_loss": 0.29991677848391113,
+          "ece": 0.02489637752552794,
+          "n": 240150
+        }
+      },
+      "first_30s": {
+        "coin_flip": {
+          "brier": 0.25,
+          "log_loss": 0.6931471805599452,
+          "ece": 0.00042617321014404297,
+          "n": 1622681
+        },
+        "hp_ratio": {
+          "brier": 0.21647398825209035,
+          "log_loss": 0.6202170929354058,
+          "ece": 0.07724320743158049,
+          "n": 1622681
+        },
+        "lightgbm_float": {
+          "brier": 0.1889807949731147,
+          "log_loss": 0.5530096307019413,
+          "ece": 0.014282110676515972,
+          "n": 1622681
+        },
+        "logistic_float": {
+          "brier": 0.20268786860241797,
+          "log_loss": 0.5861774396048309,
+          "ece": 0.008137038078094365,
+          "n": 1622681
+        },
+        "logistic_onchain_integer": {
+          "brier": 0.202715540636764,
+          "log_loss": 0.5862355195019281,
+          "ece": 0.008047516340986768,
+          "n": 1622681
+        }
+      }
+    },
+    "metrics_hash": "58114e353b24813fb6c3e928c10c8a818d24ae68e7e955e2e09bb0293c3461ad"
+  },
+  "e3": {
+    "tick_cadence_ms": {
+      "n": 2961,
+      "p50": 100.0,
+      "p95": 121.0,
+      "p99": 138.0
+    },
+    "quote_age_at_fill_ms": {
+      "n": 1733,
+      "p50": 0.0,
+      "p95": 0.0
+    },
+    "submit_confirm_ms": {
+      "create_match": {
+        "p50": 242.890339,
+        "p95": 442.70027439999996,
+        "n": 19
+      },
+      "delegate_match": {
+        "p50": 418.135877,
+        "p95": 433.93082499999997,
+        "n": 19
+      },
+      "join_fight": {
+        "p50": 64.97862549999999,
+        "p95": 26275.976307750003,
+        "n": 36
+      },
+      "request_wave": {
+        "p50": 12.444821,
+        "p95": 42.97725729999998,
+        "n": 27
+      },
+      "submit_input": {
+        "p50": 9.061506,
+        "p95": 49.1179254,
+        "n": 4833
+      }
+    },
+    "counts": {
+      "matches": 23,
+      "rejections": 625,
+      "ticks": 2979,
+      "trades": 2082
+    },
+    "host_region": "local machine",
+    "er_endpoint": "http://127.0.0.1:7799"
+  },
+  "e4": {
+    "bots": 16,
+    "trades_per_bot": 40,
+    "trades_attempted": 640,
+    "success_rate": 1.0,
+    "rejects_by_reason": {},
+    "latency_ms": {
+      "n": 640,
+      "p50": 16.523706,
+      "p95": 17.412486,
+      "p99": 18.12738
+    },
+    "max_exposure_usdc": 0.727998,
+    "cap_usdc": 60.0,
+    "cu": {
+      "tick_p50": 35897,
+      "tick_p99": 39851,
+      "tick_max": 40828,
+      "trade": 24682
+    }
+  },
+  "e5": null,
+  "e6": {
+    "k": 18,
+    "incomplete_excluded": 2,
+    "verified_python": 18,
+    "verified_wasm": 18,
+    "ticks_checked": 2979
+  },
+  "e7": {
+    "heldout": true,
+    "episodes_per_bot": 300,
+    "train_steps": 141459456,
+    "train_minutes": 60,
+    "win_rate": {
+      "aggressive": 1.0,
+      "kiting": 1.0,
+      "defensive": 0.9966666666666667,
+      "random": 1.0
+    }
+  },
+  "headline": {
+    "delay_ms": 5000,
+    "n_matches": 20,
+    "courtsider_pnl_per_match_tv": 7.952994599999999,
+    "courtsider_pnl_per_match_ringside": -0.038301043478260834,
+    "stale_fills_accepted_tv": 208,
+    "stale_fills_accepted_ringside": 32,
+    "stale_rejections_ringside": 251
+  },
+  "negative": [
+    {
+      "title": "The onchain model is not the best model",
+      "value": 0.009629009778805098,
+      "detail": "The distilled logistic that fits in a tick has held-out Brier 0.1736 against 0.1639 for the LightGBM teacher it was distilled from. We trade some accuracy for running inside the instruction."
+    },
+    {
+      "title": "Calibration is worst late in regulation",
+      "value": 0.02489637752552794,
+      "detail": "In the last 20 seconds of regulation the onchain model's ECE is 0.0249, against 0.0034 overall: a linear model underfits the swingy end of a fight."
+    },
+    {
+      "title": "A short delay barely pays the courtsider",
+      "value": 1.25694,
+      "detail": "At a 0.5 s TV delay the courtsider's PnL per match is +1.26 (95% CI +1.26 to +1.26); the edge comes from the 2\u20138 s delays that real streams have."
+    },
+    {
+      "title": "Tick cadence has a tail",
+      "value": 138.0,
+      "detail": "Measured tick cadence is p50 100 ms but p99 138 ms: the 100 ms crank is a target, not a guarantee."
+    }
+  ],
+  "weakest_case": {
+    "title": "Calibration is worst late in regulation",
+    "detail": "In the last 20 seconds of regulation the onchain model's ECE is 0.0249, against 0.0034 overall: a linear model underfits the swingy end of a fight."
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "bots": 16,
+  "cap_usdc": 60.0,
+  "elapsed_s": 0.678454824,
+  "latency_ms": {
+    "n": 640,
+    "p50": 16.523706,
+    "p95": 17.412486,
+    "p99": 18.12738
+  },
+  "match_id": "1795726938531",
+  "max_exposure_usdc": 0.727998,
+  "onchain_counters": {
+    "n_rejected_other": 0,
+    "n_rejected_stale": 0,
+    "n_trades": 770
+  },
+  "rejects_by_reason": {},
+  "succeeded": 640,
+  "success_rate": 1.0,
+  "throughput_tps": 943.3199932557337,
+  "trade_cu": {
+    "max": 24686,
+    "p50": 24682
+  },
+  "trades_attempted": 640,
+  "trades_per_bot": 40
+}
