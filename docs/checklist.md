@@ -150,27 +150,27 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 
 ## Phase 8 — Web
 
-- [ ] P8.01 · Next.js 15 App Router + React 19 + TS + Tailwind scaffold in apps/web — `pnpm build` passes
-- [ ] P8.02 · Broadcast-style design system (dark, big odds line, motion) — screenshot review
+- [x] P8.01 · Next.js 15 App Router + React 19 + TS + Tailwind scaffold in apps/web — `pnpm build` passes
+- [x] P8.02 · Broadcast-style design system (dark, big odds line, motion) — screenshot review
 - [ ] P8.03 · Wallet adapter (Phantom/Solflare/Backpack) — connect works in browser
 - [ ] P8.04 · Onboarding wizard: session key (gum `createSession`), `delegateSpl`, Profile/Position create + delegate — devnet run
 - [ ] P8.05 · TEE auth: `verifyTeeRpcIntegrity` → `getAuthToken` → `?token=` only, auto refresh — unit test + devnet
-- [ ] P8.06 · Connections: base RPC, TEE RPC, ConnectionMagicRouter — used by client
-- [ ] P8.07 · `/` lobby: live matches, odds, volume, spectators, tick cadence, Fight / Watch / Leaderboard — page renders live data
+- [x] P8.06 · Connections: base RPC, TEE RPC, ConnectionMagicRouter — used by client
+- [x] P8.07 · `/` lobby: live matches, odds, volume, spectators, tick cadence, Fight / Watch / Leaderboard — page renders live data
 - [ ] P8.08 · Leaderboard from Profiles — renders
 - [ ] P8.09 · Fight flow: stake 1/5/10, queue, challenge-by-link, Fight an AI — devnet match created from UI
-- [ ] P8.10 · `/m/[id]` Pixi v8 arena, WASM interpolation at 60 fps, local prediction + reconciliation — renders a live match
+- [x] P8.10 · `/m/[id]` Pixi v8 arena, WASM interpolation at 60 fps, local prediction + reconciliation — renders a live match
 - [ ] P8.11 · Fighter controls: WASD/joystick, click/tap fire, Space dash, Shift shield — inputs land onchain
-- [ ] P8.12 · Odds chart (uPlot 10 Hz, 30 s history, hit/power-up markers) + bid/ask A/B — renders
+- [x] P8.12 · Odds chart (uPlot 10 Hz, 30 s history, hit/power-up markers) + bid/ask A/B — renders
 - [ ] P8.13 · Trade panel Buy A / Buy B / Sell with amount; shows seen_tick, fill tick, price, latency — devnet trade from UI
 - [ ] P8.14 · Private position view + reveal + payout animation + explorer links — devnet
-- [ ] P8.15 · QR code for phone spectator flow (qrcode.react) — QR opens /m/<id> on phone
+- [x] P8.15 · QR code for phone spectator flow (qrcode.react) — QR opens /m/<id> on phone
 - [ ] P8.16 · Judge mode: dual-book courtsiding panel with live counters (PnL, stale fills accepted, rejections, tx links) from indexer SSE — renders live
-- [ ] P8.17 · `/replay/[id]`: WASM re-sim, scrub timeline, odds curve, tx links, Verify ✓ hash chain vs onchain — Verified ✓ on a devnet match
+- [x] P8.17 · `/replay/[id]`: WASM re-sim, scrub timeline, odds curve, tx links, Verify ✓ hash chain vs onchain — Verified ✓ on a devnet match
 - [ ] P8.18 · `/proof`: A/B chart, calibration plot, latency histograms, privacy test, soak stats from results.json + indexer — renders
-- [ ] P8.19 · `/docs`: architecture diagram + how it works — renders
+- [x] P8.19 · `/docs`: architecture diagram + how it works — renders
 - [ ] P8.20 · Mobile layout for spectator flow — phone viewport screenshot
-- [ ] P8.21 · Web typecheck + lint + build green — `pnpm typecheck && pnpm build`
+- [x] P8.21 · Web typecheck + lint + build green — `pnpm typecheck && pnpm build`
 
 ## Phase 9 — Devnet deploy and experiments
 

@@ -96,7 +96,7 @@ metrics_hash 58114e353b24813fb6c3e928c10c8a818d24ae68e7e955e2e09bb0293c3461ad
 - Program: added `predict_bytes` (reads the 4,744-byte blob in place; proptest proves it bit-identical to `ModelParams::predict`) because a decoded `ModelParams` would overflow the 4 KB BPF stack frame.
 - PPO: `ml/ppo/train.py` smoke run reached 27k env steps/s; a 60-minute league run is in progress.
 
-## 2026-11-27 01:45 IST · Program builds; MagicSVM suite green (Phases 2–5 on the in-process ER)
+## 2026-11-27 01:30 IST · Program builds; MagicSVM suite green (Phases 2–5 on the in-process ER)
 - `anchor build --ignore-keys`: ringside.so 831,784 bytes (opt-level "s"), IDL with all 12 plan errors (6000 ErrStaleTick … 6011 ErrAlreadySettled) plus ErrFrozen and helpers.
 - Toolchain fixes: anchor macro crates pinned to 1.1.2 (1.2.2 pulls `create_account_allow_prefund` that anchor-lang 1.0.2 lacks); `hashv` from `solana-sha256-hasher`; host-only helpers gated behind `std` to keep BPF frames < 4 KB.
 - Bugs found by the suite and fixed: VRF callback args are raw bytes (`wave: u16`, not `Vec<u8>`); `#[vrf_callback]` identity derived at runtime used 197k CU → bound to compile-time const (decisions.md); wave index read from the wrong sim offset (16 → 14, now pinned by `codec_offsets_used_by_the_program`).
@@ -113,7 +113,7 @@ test result: ok. 5 passed; 0 failed
 - `full_match_lifecycle` asserts: config/model upload (blob byte-identical), house vault eATA + top-up, profiles delegated, match+books+escrow delegated (base owner = DLP), joins (stake → escrow, double join rejected), genesis hash via sha256 syscall == sha2 crate, VRF wave via ephemeral queue callback, input rules (ErrNotFighter, ErrBadSeq ×2), time gate (ErrTooEarly in one slot; wall-clock bound stops bursts), every tick's onchain state_hash == off-chain replay with the shared sim, book priced in the same instruction (last_priced_tick == tick), freeze after lethal-range hit (ErrFrozen), buy/sell fills with exact USDC movement, ErrStaleTick strict + recorded counter, ErrFighterBarred, ErrSlippage, ErrExposure (max exposure ≤ cap), private Position (unauthenticated and opposing fighter denied, owner allowed, market public), relay auth (ErrUnauthorized) and delayed-book fill on a 50-tick-old price while the live book rejects it, ErrClosed after the bell, post-end tick no-op, settle (winner 2×stake − 1%, fee accrued, idempotent), reveal (position public), claim exact + idempotent, finalize → MatchRecord written on base by the Magic Action with the final hash, withdraw_fees, cleanup_positions (position undelegated), direct write_match_record rejected (6015).
 - Note: devnet-tee behaviour (TEE privacy, real VRF oracle, crank cadence) is still to be proven live; the corresponding items stay unticked.
 
-## 2026-11-27 03:05 IST · TS client, setup scripts, local stack, match runner, PPO done
+## 2026-11-27 01:55 IST · TS client, setup scripts, local stack, match runner, PPO done
 - Local stack (`scripts/setup-local.sh`): base validator with MagicBlock program dumps + Ringside (upgradeable), ER 1.1.1 in Docker. Setup output:
 ```
 [local] config initialized Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK
@@ -125,7 +125,7 @@ test result: ok. 5 passed; 0 failed
 - PPO (`ml/ppo/out/eval.json`, 141,459,456 steps, 60 min): held-out (odd seeds) greedy win rate vs aggressive 1.0, kiting 1.0, defensive 0.9967, random 1.0 (300 episodes each).
 - Bugs fixed on the way: house/escrow canonical ATAs must exist on base for the ER projection; finalize commit split (decisions.md).
 
-## 2026-11-27 03:20 IST · Bot fleet on the local ER
+## 2026-11-27 02:05 IST · Bot fleet on the local ER
 - `bots/lobby.ts --matches 3 --delays 5000,500,2000` (local stack): relay + 4 spectators + courtsider running against back-to-back AI matches:
 ```
 courtsider …083978: delayed pnl -3.59 (11 fills, 11 stale accepted) · ringside pnl -1.82 (11 stale rejected, 10 fresh fills)
@@ -137,7 +137,7 @@ courtsider …173049: delayed pnl 13.56 (13 fills, 13 stale accepted) · ringsid
 ```
 - Scripted fighters (P6.01) run from the Rust policies through WASM (`bots/lib/brains.ts`), identical to training opponents.
 
-## 2026-11-27 03:45 IST · Indexer (Rust) on the local ER
+## 2026-11-27 02:12 IST · Indexer (Rust) on the local ER
 - `services/indexer` (tokio + axum + sqlx/Postgres 16 + tungstenite logs subscription, TEE token auth): `cargo +stable test` 2 passed.
 - After a lobby match (delay 2000 ms): `/matches/<id>/replay` → 121 ticks, complete chain; `/judge/<id>`:
 ```
@@ -147,3 +147,8 @@ tv_delay {'fills': 20, 'stale_fills_accepted': 20, 'stale_rejections': 0}
 - `/stats` reports tick cadence p50/p95/p99, quote age at fill, submit→confirm by kind (from bot OTel spans), counts.
 - MatchRecord check + finalize retry: the indexer builds and signs the finalize + commit_match transaction itself; the ER accepted it (sig 5LdXt9W4…). Locally the record cannot land (v1 settlement tx, see decisions); live check on devnet.
 - Program: TradeEvent now carries `game_tick` so staleness on the TV-delay book is measured against the fight's real tick.
+
+## 2026-11-27 02:28 IST · Web app (Phase 8) on the local stack
+- Direction chosen via award-site-design (style tiles in .design/tiles, sheet reviewed): "Slate & Ticket" — slate chalkboard for live surfaces, ticket stock + stamps for records, /proof and /docs. DESIGN.md written.
+- `pnpm build` (Next 15.5.6): routes / (118 kB), /m/[id] (476 kB), /replay/[id], /proof, /docs; `pnpm typecheck` clean.
+- Against the local stack + indexer: lobby renders live card + results and measured tick cadence (p50 100 ms · p95 102 ms over 675 ticks); match page shows Pixi arena, split-flap prices, odds line with dashed TV-delay book, trade ticket onboarding, QR; replay page re-simulated in WASM and printed "VERIFIED ✓ 91 TICKS" against the onchain hashes.
