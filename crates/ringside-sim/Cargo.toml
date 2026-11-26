@@ -1,0 +1,19 @@
+[package]
+name = "ringside-sim"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Deterministic fixed-point duel simulation shared by the Ringside program, WASM and Python"
+
+[features]
+default = ["std", "hash"]
+std = ["ringside-fixed/std"]
+# Software sha256 for the hash chain. The onchain program disables it and uses the sha256 syscall.
+hash = ["dep:sha2"]
+
+[dependencies]
+ringside-fixed = { path = "../ringside-fixed", default-features = false }
+sha2 = { version = "0.10", default-features = false, optional = true }
+
+[dev-dependencies]
+proptest = "1.5"

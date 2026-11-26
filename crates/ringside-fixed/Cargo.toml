@@ -1,0 +1,15 @@
+[package]
+name = "ringside-fixed"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Q32.32 fixed-point math, sigmoid LUT, calibrated logistic model and market-making math for Ringside"
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]
+
+[dev-dependencies]
+proptest = "1.5"

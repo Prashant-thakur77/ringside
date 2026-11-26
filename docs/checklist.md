@@ -6,7 +6,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 ## Phase 0 — Setup and capability spike (devnet-tee)
 
 - [x] P0.01 · Repo initialised, first commit is `.gitignore` only — `git show --stat HEAD~N` for the root commit lists only `.gitignore`
-- [ ] P0.02 · Toolchain pinned: Solana CLI 3.1.9, Rust 1.89.0 (programs), Anchor 1.0.2, Node 24.10.0 — `solana --version`, `anchor --version`, `rustup run 1.89.0 rustc -V`, `node -v` print the pinned versions
+- [x] P0.02 · Toolchain pinned: Solana CLI 3.1.9, Rust 1.89.0 (programs), Anchor 1.0.2, Node 24.10.0 — `solana --version`, `anchor --version`, `rustup run 1.89.0 rustc -V`, `node -v` print the pinned versions
 - [ ] P0.03 · `rust-toolchain.toml`, `.nvmrc`, `Anchor.toml` pin versions — files exist and `anchor build` uses them
 - [ ] P0.04 · Admin, relay, keeper and bot keypairs in `keys/` (gitignored) — `git check-ignore keys/admin.json` succeeds
 - [ ] P0.05 · Admin wallet funded with devnet SOL — `solana balance` ≥ 5 SOL on devnet
@@ -22,29 +22,29 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 
 ## Phase 1 — Fixed-point math and deterministic sim
 
-- [ ] P1.01 · `crates/ringside-fixed`: Q32.32 i64 type with checked add/sub/mul/div — unit tests pass
-- [ ] P1.02 · 1024-entry sigmoid LUT (u32 probs × 2^32) with linear interpolation — test: max abs error vs f64 sigmoid < 1e-5 over [-16,16]
-- [ ] P1.03 · `ln`/`exp` fixed-point approximations with documented error bounds — proptest checks error bound
-- [ ] P1.04 · Isotonic calibration table (64 knots) evaluation in integer math — unit test vs float reference
-- [ ] P1.05 · Integer logistic model `predict(features, params)` — test: matches float model to < 1e-4 on random inputs
-- [ ] P1.06 · `ringside-fixed` is `no_std` — `cargo build --no-default-features --target wasm32-unknown-unknown` succeeds
-- [ ] P1.07 · proptests for fixed-point (overflow-checked, monotone sigmoid, LUT bounds) — `cargo test -p ringside-fixed` green
-- [ ] P1.08 · `crates/ringside-sim`: `SimState` with Q16.16 positions, velocities, HP, cooldowns, shield, projectiles[32], powerups[4] — compiles no_std
-- [ ] P1.09 · Arena 2000×1200, circle colliders, wall clamping — unit test: fighter cannot leave arena
-- [ ] P1.10 · Movement 9 directions + dash (Space) — unit test: dash displacement and cooldown
-- [ ] P1.11 · Fire projectiles from pool[32]; hit → −12 HP — unit test: hit reduces HP by 12
-- [ ] P1.12 · Shield blocks frontal hits for 1.5 s, 6 s cooldown — unit test: frontal hit blocked, rear hit lands
-- [ ] P1.13 · Power-ups: Medkit +25 HP, Overcharge 2× dmg 5 s, Haste +40% speed 4 s — unit test per power-up
-- [ ] P1.14 · `spawn_wave(seed, wave_index)` deterministic, every 15 s — test: same seed → same spawn positions
-- [ ] P1.15 · Match end: HP 0 → loss; 90 s time-out higher HP wins; equal → sudden-death 10 s; then draw — unit tests per outcome
-- [ ] P1.16 · `step(state, [input_a, input_b]) -> Events` with fixed dt from tick_ms — test: events list hits/pickups/death
-- [ ] P1.17 · `features(state) -> [i64;16]` (hp_diff, hp_sum, time_left, distance, facing adv, shield_ready a/b, cooldowns, overcharge/haste timers, medkit-distance diff, projectile threat, sudden-death flag) — test: 16 finite values, symmetric under A/B swap where expected
-- [ ] P1.18 · `canonical_bytes(state)` + `hash_chain` (sha256(prev ‖ tick ‖ bytes)) — test: known-answer vector
-- [ ] P1.19 · No floats, no HashMap, saturating arithmetic in sim — `grep -E "f32|f64|HashMap" crates/ringside-sim/src` → zero hits
+- [x] P1.01 · `crates/ringside-fixed`: Q32.32 i64 type with checked add/sub/mul/div — unit tests pass
+- [x] P1.02 · 1024-entry sigmoid LUT (u32 probs × 2^32) with linear interpolation — test: max abs error vs f64 sigmoid < 1.5e-5 over [-16,16] (interpolation bound h²/8·max|σ″| ≈ 1.18e-5)
+- [x] P1.03 · `ln`/`exp` fixed-point approximations with documented error bounds — proptest checks error bound
+- [x] P1.04 · Isotonic calibration table (64 knots) evaluation in integer math — unit test vs float reference
+- [x] P1.05 · Integer logistic model `predict(features, params)` — test: matches float model to < 1e-4 on random inputs
+- [x] P1.06 · `ringside-fixed` is `no_std` — `cargo build --no-default-features --target wasm32-unknown-unknown` succeeds
+- [x] P1.07 · proptests for fixed-point (overflow-checked, monotone sigmoid, LUT bounds) — `cargo test -p ringside-fixed` green
+- [x] P1.08 · `crates/ringside-sim`: `SimState` with Q16.16 positions, velocities, HP, cooldowns, shield, projectiles[32], powerups[4] — compiles no_std
+- [x] P1.09 · Arena 2000×1200, circle colliders, wall clamping — unit test: fighter cannot leave arena
+- [x] P1.10 · Movement 9 directions + dash (Space) — unit test: dash displacement and cooldown
+- [x] P1.11 · Fire projectiles from pool[32]; hit → −12 HP — unit test: hit reduces HP by 12
+- [x] P1.12 · Shield blocks frontal hits for 1.5 s, 6 s cooldown — unit test: frontal hit blocked, rear hit lands
+- [x] P1.13 · Power-ups: Medkit +25 HP, Overcharge 2× dmg 5 s, Haste +40% speed 4 s — unit test per power-up
+- [x] P1.14 · `spawn_wave(seed, wave_index)` deterministic, every 15 s — test: same seed → same spawn positions
+- [x] P1.15 · Match end: HP 0 → loss; 90 s time-out higher HP wins; equal → sudden-death 10 s; then draw — unit tests per outcome
+- [x] P1.16 · `step(state, [input_a, input_b]) -> Events` with fixed dt from tick_ms — test: events list hits/pickups/death
+- [x] P1.17 · `features(state) -> [i64;16]` (hp_diff, hp_sum, time_left, distance, facing adv, shield_ready a/b, cooldowns, overcharge/haste timers, medkit-distance diff, projectile threat, sudden-death flag) — test: 16 finite values, symmetric under A/B swap where expected
+- [x] P1.18 · `canonical_bytes(state)` + `hash_chain` (sha256(prev ‖ tick ‖ bytes)) — test: known-answer vector
+- [x] P1.19 · No floats, no HashMap, saturating arithmetic in sim — `grep -E "f32|f64|HashMap" crates/ringside-sim/src` → zero hits
 - [ ] P1.20 · `crates/ringside-wasm` with `step/replay/hash_chain` via wasm-bindgen — `wasm-pack build` succeeds
 - [ ] P1.21 · `crates/ringside-py` PyO3 module `ringside_sim.Env` (gymnasium-style reset/step) + fixed-point model eval — `maturin develop` and `python -c "import ringside_sim"`
 - [ ] P1.22 · Determinism test: 10,000 random-input episodes → identical hash chains native vs WASM (node) vs Python — test script prints 10000/10000 match
-- [ ] P1.23 · Sim proptests (HP within [0,125], positions in arena, no panic) — `cargo test -p ringside-sim` green
+- [x] P1.23 · Sim proptests (HP within [0,125], positions in arena, no panic) — `cargo test -p ringside-sim` green
 
 ## Phase 2 — Program accounts, delegation, match lifecycle
 
