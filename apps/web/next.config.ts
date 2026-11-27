@@ -10,3 +10,6 @@ const config: NextConfig = {
   },
 };
 export default config;
+
+// Local `next dev` gets the same bindings (D1 waitlist) as the deployed worker.
+import("@opennextjs/cloudflare").then((m) => m.initOpenNextCloudflareForDev());

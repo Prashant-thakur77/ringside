@@ -4,5 +4,10 @@
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-11-27",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" }
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "d1_databases": [
+    { "binding": "WAITLIST", "database_name": "ringside-waitlist", "database_id": "92b3f876-e1d8-45b9-bd71-271d61766acd", "migrations_dir": "migrations" }
+  ],
+  "workers_dev": true,
+  "routes": [{ "pattern": "ringside.prashantthakur.dev", "custom_domain": true }]
 }
