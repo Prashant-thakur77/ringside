@@ -37,3 +37,4 @@ video/refs/
 video/*.mp4
 video/*.wav
 video/tools/__pycache__/
+video/film/package-lock.json
