@@ -15,7 +15,7 @@ function Board({ title, sub, book, gameTick, counts, tone, events }: { title: st
   return (
     <div className={`rounded border p-4 ${tone === "tv" ? "border-brass/50" : "border-rule"} bg-slate-2`}>
       <div className="flex items-baseline justify-between">
-        <h3 className="display text-2xl font-extrabold">{title}</h3>
+        <h3 className="display text-2xl font-semibold">{title}</h3>
         <span className="label">{sub}</span>
       </div>
       <div className="mt-3 flex items-center gap-4">
@@ -59,7 +59,7 @@ export function JudgePanel({ matchId, live, delayed, gameTick }: { matchId: stri
   return (
     <section aria-labelledby="judge" className="mt-4">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id="judge" className="display text-3xl font-extrabold">Judge mode · the courtsider A/B</h2>
+        <h2 id="judge" className="display text-3xl font-semibold">Judge mode · the courtsider A/B</h2>
         <p className="text-sm text-chalk-quiet">Same bot, same match, same pricing code. Only the feed differs.</p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">

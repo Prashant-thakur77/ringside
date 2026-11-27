@@ -69,7 +69,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
       {/* scorebug: corner, HP, clock */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded border border-rule bg-slate-2 px-3 py-2">
         <div>
-          <div className="display text-2xl font-extrabold text-red-ink md:text-3xl">{labelFor(m?.fighters[0])}</div>
+          <div className="display text-2xl font-semibold text-red-ink md:text-3xl">{labelFor(m?.fighters[0])}</div>
           <div className="mt-1 h-2 rounded bg-slate-3"><div className="h-2 rounded bg-red transition-[width] duration-150" style={{ width: `${hp[0]}%` }} /></div>
         </div>
         <div className="num text-center">
@@ -77,7 +77,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
           <div className="label">TICK {String(m?.tick ?? 0).padStart(6, "0")}</div>
         </div>
         <div className="text-right">
-          <div className="display text-2xl font-extrabold text-blue-ink md:text-3xl">{labelFor(m?.fighters[1])}</div>
+          <div className="display text-2xl font-semibold text-blue-ink md:text-3xl">{labelFor(m?.fighters[1])}</div>
           <div className="mt-1 h-2 rounded bg-slate-3"><div className="ml-auto h-2 rounded bg-blue transition-[width] duration-150" style={{ width: `${hp[1]}%` }} /></div>
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function MatchPage({ params }: { params: Promise<{ id: string }> 
             </p>
             {m && m.status >= 3 && (
               <div className="bell mt-3 border-t-4 border-brass pt-3">
-                <p className="display text-[56px] font-black leading-none text-brass">{m.winner === 1 ? "Red wins" : m.winner === 2 ? "Blue wins" : m.winner === 3 ? "Draw" : "Bell"}</p>
+                <p className="display text-[56px] font-semibold leading-none text-brass">{m.winner === 1 ? "Red wins" : m.winner === 2 ? "Blue wins" : m.winner === 3 ? "Draw" : "Bell"}</p>
                 <Link href={`/replay/${id}`} className="num text-sm underline">Replay and verify the hash chain →</Link>
               </div>
             )}

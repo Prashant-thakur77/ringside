@@ -56,3 +56,29 @@ Header scorebug (live clock + tick freshness, pinned on every page) · lobby row
 2. Judge mode: watch the courtsider get filled on the delayed board and rejected on Ringside.
 3. Scrub a replay and press Verify: the hash chain re-computes in your browser.
 4. Fight: control a fighter (WASD / tap) against the AI.
+
+## 2026-11-27 · Vivid direction (owner's pick)
+The owner chose a vivid look built on a broadcast-poster structure: vermilion corner red #ff3d2e, electric corner blue #2f5bff, bell yellow #ffd23f, canvas paper #f3eee4, fight-night ink #0b0c14 / navy #121a4d. Token names stay (slate=ink, chalk=paper, brass=bell). Signature: the two corners' colour shards clash in the hero; the gap scrub; the stamped tickets. All contrast pairs pass 4.5:1 (.design/palette-check.mjs).
+
+## Home page v2: the story page (dials CRAZINESS 7, MOTION 7, DENSITY 5, ART 6, PLAY 7, CALM 6)
+Stack: GSAP 3 (ScrollTrigger, SplitText) via `useGSAP`, Lenis smooth scroll synced to ScrollTrigger (off for reduced motion and coarse pointers). One ticker. Content is visible without JS: start states are set by script.
+
+Easings: `snap` = cubic-bezier(.2,.9,.1,1) (entrances), `out` = power2.in (exits, 0.6× entrance), `chalk` = steps(6) (wipe). Durations: `flip` 140 ms, `ui` 280 ms, `beat` 700 ms, `show` 1.4 s. Staggers 40–60 ms.
+
+### Motion score
+| Region | Entrance | Scroll | Idle life | Response |
+|---|---|---|---|---|
+| Header | — | hides on scroll down, returns on up (ui) | live dot blinks 1 Hz | — |
+| Hero | bell rule sweeps (beat), headline lines rise from masks (snap, 60 ms), chalkboard prices chalk in | board drifts 6% slower than text | board re-chalks every live tick (or a replayed price walk between bouts) | CTA presses 0.97 |
+| Live card | rows slide up once (ui) | — | split-flap prices flip on change | row hover tints slate-2 |
+| The gap (signature) | — | **pinned, scrubbed**: ring clock runs; a hit lands; Ringside book re-chalks at once; the TV clock and TV board follow 5 s later; the courtsider's ticket is stamped FILLED on TV, REJECTED · STALE TICK on Ringside | — | scrub = scroll; arrow keys step |
+| Try it (play) | — | — | — | delay slider + "Send the stale order" → ticket slides up, stamp lands (stamp 280 ms) |
+| One tick | the six steps light in order as a tick counter advances with scroll (scrub 0.6) | — | — | — |
+| Results board | split-flap cells flip from 0 to the results.json value when entering (once) | — | — | — |
+| Primitives card | rows rise from masks (once) | — | — | row opens (grid-rows, ui) |
+| Sealed ticket | — | — | — | tear the stub (click / Enter) → position revealed |
+| Hash tape | — | marquee speed follows scroll velocity | scrolls real state hashes | pause on hover/focus |
+| Waitlist | — | — | — | submit → ticket stamped ON THE CARD |
+| Footer finale | RINGSIDE wordmark letters rise from the canvas line (show, 50 ms stagger), the bell rule sweeps | — | — | back to the bell (top) |
+
+Reduced motion: no pins, scrubs, marquee or smooth scroll; the gap shows its final frame as a static diagram with both tickets; flaps show final values.

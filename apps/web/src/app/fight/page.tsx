@@ -34,7 +34,7 @@ export default function Fight() {
   return (
     <div className="mx-auto max-w-[900px] px-4 py-12 md:px-7">
       <p className="label">ROUND 00 · STEP INTO THE RING</p>
-      <h1 className="display mt-2 text-[clamp(48px,7vw,104px)] font-black">Fight</h1>
+      <h1 className="display mt-2 text-[clamp(48px,7vw,104px)] font-semibold">Fight</h1>
       <p className="mt-4 max-w-[56ch] text-chalk-quiet">90 seconds, 100 HP. Hits cost 12. Shield blocks frontal hits for 1.5 s. Power-ups drop every 15 s from VRF. The winner takes twice the stake minus a 1% fee, paid inside the rollup the moment the fight ends.</p>
       <div className="mt-8 flex items-center gap-2">
         <span className="label mr-2">STAKE</span>
@@ -46,12 +46,12 @@ export default function Fight() {
         <span className="label ml-2">{MINT_LABEL}</span>
       </div>
       <div className="mt-6 grid gap-3 md:grid-cols-2">
-        <button disabled={!!busy} onClick={() => go("challenge")} className="rounded bg-red p-5 text-left text-white disabled:opacity-50">
-          <span className="display block text-3xl font-black">Fight an AI</span>
+        <button disabled={!!busy} onClick={() => go("challenge")} className="press rounded-xl bg-hue p-5 text-left text-slate disabled:opacity-50">
+          <span className="display block text-3xl font-semibold">Fight an AI</span>
           <span className="num text-sm opacity-90">{busy === "challenge" ? "Booking the ring…" : "The PPO fighter takes red. You take blue."}</span>
         </button>
-        <button disabled={!!busy} onClick={() => go("friendly")} className="rounded border border-blue p-5 text-left disabled:opacity-50">
-          <span className="display block text-3xl font-black text-blue-ink">Challenge a friend</span>
+        <button disabled={!!busy} onClick={() => go("friendly")} className="press rounded-xl border border-chalk/30 p-5 text-left hover:border-hue disabled:opacity-50">
+          <span className="display block text-3xl font-semibold text-chalk">Challenge a friend</span>
           <span className="num text-sm text-chalk-quiet">{busy === "friendly" ? "Booking the ring…" : "Get a link; first to join takes red."}</span>
         </button>
       </div>

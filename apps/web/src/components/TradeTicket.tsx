@@ -39,7 +39,7 @@ export function TradeTicket({ matchId, book, mode = 0, closed }: { matchId: bigi
   return (
     <section className="rounded border border-rule bg-slate-2 p-4" aria-label="Trade">
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="display text-2xl font-extrabold">Trade</h2>
+        <h2 className="display text-2xl font-semibold">Trade</h2>
         <span className="label">TICK {book ? String(book.last_priced_tick).padStart(6, "0") : "——"}</span>
       </div>
       {t.step !== "ready" ? (

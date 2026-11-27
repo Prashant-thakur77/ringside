@@ -41,7 +41,7 @@ export function FighterPanel({ matchId, stake, joined, live }: { matchId: bigint
   const at = !t.pk ? 0 : !t.er ? 1 : !t.joined.has("funded") ? 2 : t.step !== "ready" ? 3 : joined || done ? 5 : 4;
   return (
     <section className="rounded border border-rule bg-slate-2 p-4" aria-label="Fight">
-      <h2 className="display mb-3 text-2xl font-extrabold">Your corner</h2>
+      <h2 className="display mb-3 text-2xl font-semibold">Your corner</h2>
       {at < 5 ? (
         <ol className="space-y-2">
           {steps.map(([k, label, go], i) => (

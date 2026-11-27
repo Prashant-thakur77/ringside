@@ -1,60 +1,98 @@
 "use client";
-// Pinned header: the live clock and tick freshness are always on screen.
+// Site header: the two corner tabs hang from the top edge (red MENU, blue WATCH LIVE) with the mark
+// in the middle. On app pages the live clock and tick freshness stay on screen next to the wallet.
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api, useLive, useNow, useFeed } from "@/lib/live";
+import { Logo } from "@/components/site/Logo";
+import { Menu } from "@/components/site/Menu";
+import { AnnounceBar } from "@/components/site/AnnounceBar";
 
 const WalletButton = dynamic(async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton, { ssr: false });
 
 export function Scorebug() {
   useFeed();
+  const path = usePathname();
+  const story = path === "/" || path.startsWith("/docs");
   const states = useLive((s) => s.states);
   const lastTickAt = useLive((s) => s.lastTickAt);
   const now = useNow(200);
-  // One status source: the stream when it is flowing, the indexer list otherwise.
-  const { data: list } = useQuery({ queryKey: ["matches"], queryFn: () => api<{ match_key: string; status: number }[]>("/matches?limit=40"), refetchInterval: 2000 });
+  const { data: list } = useQuery({ queryKey: ["matches"], queryFn: () => api<{ match_key: string; match_id: string; status: number }[]>("/matches?limit=40"), refetchInterval: 2000 });
   const fresh = now - lastTickAt < 3000;
   const live = Object.values(states).filter((s) => (s.match.status === 1 || s.match.status === 2) && fresh);
-  const listedLive = (list ?? []).filter((m) => m.status === 1 || m.status === 2).length;
+  const listed = (list ?? []).filter((m) => m.status === 1 || m.status === 2);
   const top = live.sort((a, b) => b.seen_ms - a.seen_ms)[0];
+  const liveId = top ? String(top.match.match_id) : listed[0]?.match_id;
   const t = top?.match.tick ?? 0;
   const secs = Math.floor((t * 100) / 1000);
   const clock = `${String(Math.floor(secs / 60)).padStart(2, "0")}:${String(secs % 60).padStart(2, "0")}`;
+  const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastY = useRef(0);
+  useEffect(() => {
+    const on = () => {
+      const y = window.scrollY;
+      setHidden(y > 240 && y > lastY.current + 4 ? true : y < lastY.current - 4 ? false : hidden);
+      lastY.current = y;
+    };
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  });
+  useEffect(() => setOpen(false), [path]);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-rule bg-slate/90 backdrop-blur">
-      <nav className="mx-auto flex max-w-[1400px] items-center gap-4 px-4 py-2.5 md:gap-6 md:px-7" aria-label="Main">
-        <Link href="/" className="display text-[22px] font-black tracking-wide text-chalk">
-          Ringside
-        </Link>
-        <div className="hidden items-center gap-5 text-sm text-chalk-quiet md:flex">
-          <Link href="/" className="hover:text-chalk">Lobby</Link>
-          <Link href="/fight" className="hover:text-chalk">Fight</Link>
-          <Link href="/proof" className="hover:text-chalk">Proof</Link>
-          <Link href="/docs" className="hover:text-chalk">How it works</Link>
-        </div>
-        <div className="num ml-auto flex items-center gap-3 text-[12px] md:text-[13px]">
-          {top ? (
-            <>
-              <span className="text-red-ink"><span className="live-dot">●</span> LIVE</span>
-              <span className="hidden sm:inline">{live.length} on</span>
-              <span className="hidden xs:inline sm:inline">{clock}</span>
-              <span className="hidden text-chalk-quiet sm:inline">TICK {String(t).padStart(6, "0")}</span>
-              <span className="hidden text-chalk-quiet sm:inline">{Math.max(0, now - lastTickAt)} ms ago</span>
-            </>
-          ) : listedLive ? (
-            <span className="text-red-ink"><span className="live-dot">●</span> LIVE · {listedLive} on</span>
-          ) : (
-            <span className="hidden text-chalk-quiet sm:inline">waiting for the next bell</span>
-          )}
-        </div>
-        <WalletButton style={{ height: 36, padding: "0 12px", whiteSpace: "nowrap", fontFamily: "var(--font-mono)", fontSize: 13, background: "#1f2522", border: "1px solid #333b37", borderRadius: 4 }} />
-      </nav>
-      <nav aria-label="Sections" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-rule bg-slate/95 text-center text-[13px] backdrop-blur md:hidden">
-        {[["/", "Lobby"], ["/fight", "Fight"], ["/proof", "Proof"], ["/docs", "How it works"]].map(([href, label]) => (
-          <Link key={href} href={href} className="num py-3 text-chalk-quiet hover:text-chalk">{label}</Link>
-        ))}
-      </nav>
-    </header>
+    <>
+      <AnnounceBar />
+      <header className={`sticky top-0 z-40 transition-transform duration-300 ${hidden && !open ? "-translate-y-full" : ""}`} style={{ transitionTimingFunction: "var(--ease-snap)" }}>
+        <nav className="relative flex h-[52px] items-start justify-between bg-slate/85 backdrop-blur" aria-label="Main">
+          <button
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-controls="site-menu"
+            className="tab press num relative z-[60] flex h-[46px] items-center gap-3 bg-hue px-5 text-[13px] font-semibold text-slate"
+          >
+            <span aria-hidden className="flex w-4 flex-col gap-[4px]">
+              <span className={`h-[2px] bg-slate transition-transform duration-300 ${open ? "translate-y-[3px] rotate-45" : ""}`} />
+              <span className={`h-[2px] bg-slate transition-transform duration-300 ${open ? "-translate-y-[3px] -rotate-45" : ""}`} />
+            </span>
+            {open ? "CLOSE" : "MENU"}
+          </button>
+          <div className="absolute left-1/2 top-[10px] -translate-x-1/2">
+            <Logo intro={path === "/"} compact={!story} />
+          </div>
+          <div className="flex items-start gap-3">
+            {!story && (
+              <div className="num hidden items-center gap-3 pt-[15px] text-[12px] md:flex">
+                {top ? (
+                  <>
+                    <span className="text-red-ink"><span className="live-dot">●</span> LIVE</span>
+                    <span>{clock}</span>
+                    <span className="text-chalk-quiet">TICK {String(t).padStart(6, "0")}</span>
+                    <span className="text-chalk-quiet">{Math.max(0, now - lastTickAt)} ms ago</span>
+                  </>
+                ) : listed.length ? (
+                  <span className="text-red-ink"><span className="live-dot">●</span> LIVE · {listed.length} on</span>
+                ) : (
+                  <span className="text-chalk-quiet">waiting for the next bell</span>
+                )}
+              </div>
+            )}
+            {!story && (
+              <div className="pt-[8px]">
+                <WalletButton style={{ height: 34, padding: "0 12px", whiteSpace: "nowrap", fontFamily: "var(--font-mono)", fontSize: 12, background: "#151726", border: "1px solid #2a2c40", borderRadius: 6 }} />
+              </div>
+            )}
+            <Link href={liveId ? `/m/${liveId}` : "/#card"} className="tab press num hidden h-[46px] items-center gap-2 bg-hue px-5 text-[13px] font-semibold text-slate sm:flex">
+              {liveId && <span className="live-dot">●</span>}
+              {liveId ? "WATCH LIVE" : "TONIGHT'S CARD"}
+            </Link>
+          </div>
+        </nav>
+      </header>
+      <Menu open={open} onClose={() => setOpen(false)} liveId={liveId} />
+    </>
   );
 }

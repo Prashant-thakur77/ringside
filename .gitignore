@@ -22,3 +22,4 @@ ml/ppo/out/league/
 .devnet/
 .open-next/
 .wrangler/
+apps/web/public/wasm/

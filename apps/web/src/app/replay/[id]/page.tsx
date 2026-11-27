@@ -85,7 +85,7 @@ export default function Replay({ params }: { params: Promise<{ id: string }> }) 
       <div className="flex items-center gap-3 py-4">
         <Link href={`/m/${id}`} className="label hover:text-chalk">← MATCH {id}</Link>
       </div>
-      <h1 className="display text-[clamp(40px,6vw,88px)] font-black">Replay &amp; verify</h1>
+      <h1 className="display text-[clamp(40px,6vw,88px)] font-semibold">Replay &amp; verify</h1>
       <p className="mt-3 max-w-[60ch] text-chalk-quiet">
         Your browser re-runs the fight from its inputs and VRF seeds with the same Rust simulation the program runs, then recomputes the state-hash chain and compares every link with the hash written onchain.
       </p>

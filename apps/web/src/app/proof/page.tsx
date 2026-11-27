@@ -13,7 +13,7 @@ function Round({ n, title, children }: { n: string; title: string; children: Rea
   return (
     <section className="border-t-2 border-ink pt-6">
       <p className="num text-[12px] text-ink-quiet">ROUND {n}</p>
-      <h2 className="display mt-1 text-[clamp(32px,4.5vw,64px)] font-black">{title}</h2>
+      <h2 className="display mt-1 text-[clamp(32px,4.5vw,64px)] font-semibold">{title}</h2>
       <div className="mt-4">{children}</div>
     </section>
   );
@@ -28,7 +28,7 @@ export default function Proof() {
       <div className="mx-auto max-w-[1100px] space-y-14 px-4 py-12 md:px-7">
         <header>
           <p className="num text-[12px] text-ink-quiet">PROOF · {r?.network ?? "devnet"} · generated {r?.generated_at ?? "—"} · held-out data</p>
-          <h1 className="display mt-2 text-[clamp(48px,7vw,112px)] font-black">Same bot. Same matches. Different feed.</h1>
+          <h1 className="display mt-2 text-[clamp(48px,7vw,112px)] font-semibold">Same bot. Same matches. Different feed.</h1>
           {h && (
             <p className="mt-5 max-w-[60ch] text-lg">
               Over the {h.n_matches} held-out matches with a {h.delay_ms / 1000} s TV delay, the courtsider made <b className="num">{f(h.courtsider_pnl_per_match_tv)}</b> per match on the delayed book and{" "}
