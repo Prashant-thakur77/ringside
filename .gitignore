@@ -23,3 +23,17 @@ ml/ppo/out/league/
 .open-next/
 .wrangler/
 apps/web/public/wasm/
+
+# video build outputs
+video/node_modules
+video/film/node_modules/
+video/film/out/
+video/film/public/captures/
+video/captures/
+video/narration/
+video/audio/
+video/qa/
+video/refs/
+video/*.mp4
+video/*.wav
+video/tools/__pycache__/

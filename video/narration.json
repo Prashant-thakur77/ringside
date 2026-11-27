@@ -1,0 +1,162 @@
+[
+ {
+  "scene": "i1",
+  "id": "i1",
+  "caption": "A punch lands in the ring.",
+  "spoken": "A punch lands in the ring.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "i2",
+  "id": "i2",
+  "caption": "On the broadcast, that punch lands five seconds later.",
+  "spoken": "On the broadcast, that punch lands five seconds later.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "i3",
+  "id": "i3",
+  "caption": "In those five seconds, anyone watching faster already knows the price is wrong.",
+  "spoken": "In those five seconds, anyone watching faster already knows the price is wrong.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "i4",
+  "id": "i4",
+  "caption": "Sportsbooks call it courtsiding, and they answer it by freezing the market.",
+  "spoken": "Sportsbooks call it courtsiding, and they answer it by freezing the market.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "i5",
+  "id": "i5",
+  "caption": "Ringside answers it with the clock.",
+  "spoken": "Ringside answers it with the clock.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "what",
+  "id": "w1",
+  "caption": "Ringside is an in-play fight exchange on Solana. The fight and the order book run inside the same MagicBlock ephemeral rollup, ten ticks a second.",
+  "spoken": "Ringside is an in play fight exchange on Solana. The fight and the order book run inside the same MagicBlock ephemeral rollup, ten ticks a second.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "what",
+  "id": "w2",
+  "caption": "Every order is stamped with the tick it was priced on. If the fight has moved on, the program refuses the order.",
+  "spoken": "Every order is stamped with the tick it was priced on. If the fight has moved on, the program refuses the order.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "gap",
+  "id": "g1",
+  "caption": "Here is a real devnet match, at its biggest hit. Red lands, and the fair price jumps in the same tick.",
+  "spoken": "Here is a real dev-net match, at its biggest hit. Red lands, and the fair price jumps in the same tick.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "gap",
+  "id": "g2",
+  "caption": "A bot watching the five-second TV feed sends the old price. On a delayed book, it fills. On Ringside, the same order is rejected onchain.",
+  "spoken": "A bot watching the five-second TV feed sends the old price. On a delayed book, it fills. On Ringside, the same order is rejected on-chain.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "card",
+  "id": "c1",
+  "caption": "Tonight's card lists every live bout. AI fighters, trained by self-play, run in the lobby around the clock, and you can challenge one yourself.",
+  "spoken": "Tonight's card lists every live bout. AI fighters, trained by self-play, run in the lobby around the clock, and you can challenge one yourself.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "live",
+  "id": "l1",
+  "caption": "Inside a match, the odds move with every hit. In a load test of 8 bots, fills confirmed in 262 milliseconds at the median.",
+  "spoken": "Inside a match, the odds move with every hit. In a load test of 8 bots, fills confirmed in 262 milliseconds at the median.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "sealed",
+  "id": "l2",
+  "caption": "Positions live in a private rollup inside a TEE. Nobody else can read yours until the bell.",
+  "spoken": "Positions live in a private rollup inside a T E E. Nobody else can read yours until the bell.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "replay",
+  "id": "r1",
+  "caption": "At the bell, settlement pays the winner, reveals every position, and writes the match record to Solana.",
+  "spoken": "At the bell, settlement pays the winner, reveals every position, and writes the match record to Solana.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "replay",
+  "id": "r2",
+  "caption": "Then anyone can replay the match in their browser. Press verify, and it re-runs every tick and checks the hash chain written onchain.",
+  "spoken": "Then anyone can replay the match in their browser. Press verify, and it re-runs every tick and checks the hash chain written on-chain.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "arch",
+  "id": "a1",
+  "caption": "Under the hood, the fight and the book are one ephemeral rollup, cranked every hundred milliseconds.",
+  "spoken": "Under the hood, the fight and the book are one ephemeral rollup, cranked every hundred milliseconds.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "arch",
+  "id": "a2",
+  "caption": "MagicBlock VRF seeds the power-ups. Session keys sign every move. The private rollup seals each position. And Magic Actions write the result back to Solana.",
+  "spoken": "MagicBlock V R F seeds the power-ups. Session keys sign every move. The private rollup seals each position. And Magic Actions write the result back to Solana.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "proof",
+  "id": "p1",
+  "caption": "We measured it on devnet. Across 23 held-out matches, the delayed book accepted 319 stale fills. Ringside accepted zero, and rejected 1,283 stale orders onchain.",
+  "spoken": "We measured it on dev-net. Across 23 held-out matches, the delayed book accepted 319 stale fills. Ringside accepted zero, and rejected 1,283 stale orders on-chain.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "proof",
+  "id": "p2",
+  "caption": "Ticks landed every 100 milliseconds at the median. 60 of 60 private reads were denied. And 19 of 19 replays verified, 10,266 ticks checked.",
+  "spoken": "Ticks landed every 100 milliseconds at the median. 60 of 60 private reads were denied. And 19 of 19 replays verified, 10,266 ticks checked.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "recap",
+  "id": "e1",
+  "caption": "A punch lands, and the price moves in the same instruction. There is no gap left to trade.",
+  "spoken": "A punch lands, and the price moves in the same instruction. There is no gap left to trade.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ },
+ {
+  "scene": "end",
+  "id": "e2",
+  "caption": "Ringside. Live on devnet, open source, and ready for the next fight.",
+  "spoken": "Ringside. Live on dev-net, open source, and ready for the next fight.",
+  "exaggeration": 0.55,
+  "cfg": 0.4
+ }
+]

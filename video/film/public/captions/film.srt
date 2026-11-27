@@ -1,0 +1,320 @@
+1
+00:00:00,000 --> 00:00:01,950
+A punch lands in the ring.
+
+2
+00:00:05,020 --> 00:00:05,970
+On the broadcast,
+
+3
+00:00:06,300 --> 00:00:08,270
+that punch lands five seconds later.
+
+4
+00:00:10,420 --> 00:00:11,710
+In those five seconds,
+
+5
+00:00:11,760 --> 00:00:13,570
+anyone watching faster already knows
+
+6
+00:00:13,420 --> 00:00:14,390
+the price is wrong.
+
+7
+00:00:15,980 --> 00:00:17,650
+Sportsbooks call it courtsiding,
+
+8
+00:00:17,920 --> 00:00:19,270
+and they answer it by freezing
+
+9
+00:00:19,120 --> 00:00:19,790
+the market.
+
+10
+00:00:21,540 --> 00:00:23,250
+Ringside answers it with the clock.
+
+11
+00:00:25,700 --> 00:00:27,870
+Ringside is an in-play fight exchange
+
+12
+00:00:27,720 --> 00:00:28,590
+on Solana.
+
+13
+00:00:28,440 --> 00:00:30,290
+The fight and the order book
+
+14
+00:00:30,140 --> 00:00:33,050
+run inside the same MagicBlock ephemeral rollup,
+
+15
+00:00:33,240 --> 00:00:34,150
+ten ticks a second.
+
+16
+00:00:35,080 --> 00:00:36,650
+Every order is stamped with the
+
+17
+00:00:36,500 --> 00:00:37,850
+tick it was priced on.
+
+18
+00:00:38,020 --> 00:00:39,350
+If the fight has moved on,
+
+19
+00:00:39,520 --> 00:00:41,010
+the program refuses the order.
+
+20
+00:00:42,340 --> 00:00:44,030
+Here is a real devnet match,
+
+21
+00:00:44,040 --> 00:00:45,110
+at its biggest hit.
+
+22
+00:00:45,480 --> 00:00:46,150
+Red lands,
+
+23
+00:00:46,420 --> 00:00:47,850
+and the fair price jumps in
+
+24
+00:00:47,700 --> 00:00:48,470
+the same tick.
+
+25
+00:00:49,580 --> 00:00:51,550
+A bot watching the five-second TV
+
+26
+00:00:51,400 --> 00:00:52,850
+feed sends the old price.
+
+27
+00:00:53,220 --> 00:00:54,250
+On a delayed book,
+
+28
+00:00:54,280 --> 00:00:54,850
+it fills.
+
+29
+00:00:55,160 --> 00:00:55,930
+On Ringside,
+
+30
+00:00:55,880 --> 00:00:57,730
+the same order is rejected onchain.
+
+31
+00:00:58,940 --> 00:01:00,910
+Tonight's card lists every live bout.
+
+32
+00:01:01,060 --> 00:01:01,730
+AI fighters,
+
+33
+00:01:01,800 --> 00:01:02,890
+trained by self-play,
+
+34
+00:01:03,060 --> 00:01:04,450
+run in the lobby around the clock,
+
+35
+00:01:04,500 --> 00:01:05,770
+and you can challenge one yourself.
+
+36
+00:01:07,340 --> 00:01:08,050
+Inside a match,
+
+37
+00:01:08,240 --> 00:01:09,790
+the odds move with every hit.
+
+38
+00:01:10,060 --> 00:01:11,550
+In a load test of 8 bots,
+
+39
+00:01:11,900 --> 00:01:14,370
+fills confirmed in 262 milliseconds
+
+40
+00:01:14,220 --> 00:01:15,170
+at the median.
+
+41
+00:01:16,580 --> 00:01:18,150
+Positions live in a private rollup
+
+42
+00:01:18,000 --> 00:01:19,890
+inside a TEE.
+
+43
+00:01:20,280 --> 00:01:21,970
+Nobody else can read yours until
+
+44
+00:01:21,820 --> 00:01:22,310
+the bell.
+
+45
+00:01:23,140 --> 00:01:24,210
+At the bell,
+
+46
+00:01:24,540 --> 00:01:25,730
+settlement pays the winner,
+
+47
+00:01:25,880 --> 00:01:27,070
+reveals every position,
+
+48
+00:01:27,300 --> 00:01:29,290
+and writes the match record to Solana.
+
+49
+00:01:30,480 --> 00:01:31,790
+Then anyone can replay the match
+
+50
+00:01:31,640 --> 00:01:32,430
+in their browser.
+
+51
+00:01:32,820 --> 00:01:33,530
+Press verify,
+
+52
+00:01:33,880 --> 00:01:35,410
+and it re-runs every tick and
+
+53
+00:01:35,260 --> 00:01:37,070
+checks the hash chain written onchain.
+
+54
+00:01:37,980 --> 00:01:38,650
+Under the hood,
+
+55
+00:01:38,960 --> 00:01:40,390
+the fight and the book are
+
+56
+00:01:40,240 --> 00:01:41,770
+one ephemeral rollup,
+
+57
+00:01:41,920 --> 00:01:43,510
+cranked every hundred milliseconds.
+
+58
+00:01:44,820 --> 00:01:47,010
+MagicBlock VRF seeds the power-ups.
+
+59
+00:01:47,440 --> 00:01:48,610
+Session keys sign every move.
+
+60
+00:01:48,460 --> 00:01:50,770
+The private rollup seals each position.
+
+61
+00:01:50,980 --> 00:01:52,610
+And Magic Actions write the result
+
+62
+00:01:52,460 --> 00:01:53,390
+back to Solana.
+
+63
+00:01:54,700 --> 00:01:56,210
+We measured it on devnet.
+
+64
+00:01:56,480 --> 00:01:58,290
+Across 23 held-out matches,
+
+65
+00:01:58,580 --> 00:02:01,450
+the delayed book accepted 319 stale fills.
+
+66
+00:02:01,860 --> 00:02:03,150
+Ringside accepted zero,
+
+67
+00:02:03,440 --> 00:02:06,230
+and rejected 1,283 stale orders onchain.
+
+68
+00:02:07,500 --> 00:02:09,270
+Ticks landed every 100 milliseconds
+
+69
+00:02:09,120 --> 00:02:10,030
+at the median.
+
+70
+00:02:10,500 --> 00:02:12,770
+60 of 60 private reads were denied.
+
+71
+00:02:12,980 --> 00:02:15,570
+And 19 of 19 replays verified,
+
+72
+00:02:15,420 --> 00:02:17,990
+10,266 ticks checked.
+
+73
+00:02:18,680 --> 00:02:20,030
+A punch lands,
+
+74
+00:02:20,360 --> 00:02:21,610
+and the price moves in the
+
+75
+00:02:21,460 --> 00:02:22,270
+same instruction.
+
+76
+00:02:22,760 --> 00:02:24,390
+There is no gap left to trade.
+
+77
+00:02:25,380 --> 00:02:26,090
+Ringside.
+
+78
+00:02:26,400 --> 00:02:27,470
+Live on devnet,
+
+79
+00:02:27,500 --> 00:02:28,150
+open source,
+
+80
+00:02:28,280 --> 00:02:29,470
+and ready for the next fight.
+

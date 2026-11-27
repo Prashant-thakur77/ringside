@@ -1,0 +1,21 @@
+{
+ "matches": 23,
+ "delayed_stale_fills": 319,
+ "ringside_stale_fills": 0,
+ "ringside_stale_rejections": 1283,
+ "tick_p50": 100,
+ "tick_p95": 111,
+ "tick_n": 14781,
+ "fill_p50": 262,
+ "load_bots": 8,
+ "load_trades": 320,
+ "private_denied": 60,
+ "private_attempts": 60,
+ "replays_verified": 19,
+ "replays_total": 19,
+ "ticks_checked": 10266,
+ "brier_onchain": 0.1736,
+ "brier_coin": 0.25,
+ "program_id": "4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej",
+ "gap_match": "1795754907106"
+}

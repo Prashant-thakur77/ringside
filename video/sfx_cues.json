@@ -1,0 +1,252 @@
+{
+ "duration": 151.434,
+ "dir": "audio/sfx",
+ "cues": [
+  {
+   "t": 1.0,
+   "sfx": "punch",
+   "db": -6,
+   "align": "peak"
+  },
+  {
+   "t": 1.15,
+   "sfx": "tick",
+   "db": -14,
+   "align": "peak"
+  },
+  {
+   "t": 4.35,
+   "sfx": "whoosh",
+   "db": -22,
+   "align": "peak"
+  },
+  {
+   "t": 7.748,
+   "sfx": "punch",
+   "db": -14,
+   "align": "peak"
+  },
+  {
+   "t": 9.75,
+   "sfx": "whoosh",
+   "db": -22,
+   "align": "peak"
+  },
+  {
+   "t": 12.763,
+   "sfx": "hit",
+   "db": -12,
+   "align": "peak"
+  },
+  {
+   "t": 15.15,
+   "sfx": "whoosh",
+   "db": -22,
+   "align": "peak"
+  },
+  {
+   "t": 18.17,
+   "sfx": "riser",
+   "db": -16,
+   "align": "end"
+  },
+  {
+   "t": 18.17,
+   "sfx": "hit",
+   "db": -9,
+   "align": "peak"
+  },
+  {
+   "t": 20.95,
+   "sfx": "whoosh_heavy",
+   "db": -16,
+   "align": "peak"
+  },
+  {
+   "t": 21.1,
+   "sfx": "bell",
+   "db": -6,
+   "align": "peak"
+  },
+  {
+   "t": 25.55,
+   "sfx": "whoosh_heavy",
+   "db": -16,
+   "align": "peak"
+  },
+  {
+   "t": 41.717,
+   "sfx": "whoosh",
+   "db": -22,
+   "align": "peak"
+  },
+  {
+   "t": 51.067,
+   "sfx": "hit",
+   "db": -15,
+   "align": "peak"
+  },
+  {
+   "t": 54.367,
+   "sfx": "punch",
+   "db": -11,
+   "align": "peak"
+  },
+  {
+   "t": 58.517,
+   "sfx": "whoosh",
+   "db": -22,
+   "align": "peak"
+  },
+  {
+   "t": 66.684,
+   "sfx": "whoosh",
+   "db": -22,
+   "align": "peak"
+  },
+  {
+   "t": 75.784,
+   "sfx": "whoosh",
+   "db": -22,
+   "align": "peak"
+  },
+  {
+   "t": 76.634,
+   "sfx": "punch",
+   "db": -16,
+   "align": "peak"
+  },
+  {
+   "t": 77.101,
+   "sfx": "punch",
+   "db": -16,
+   "align": "peak"
+  },
+  {
+   "t": 77.567,
+   "sfx": "punch",
+   "db": -16,
+   "align": "peak"
+  },
+  {
+   "t": 81.476,
+   "sfx": "ping",
+   "db": -18,
+   "align": "peak"
+  },
+  {
+   "t": 83.017,
+   "sfx": "whoosh",
+   "db": -22,
+   "align": "peak"
+  },
+  {
+   "t": 87.427,
+   "sfx": "click",
+   "db": -14,
+   "align": "peak"
+  },
+  {
+   "t": 97.917,
+   "sfx": "whoosh_heavy",
+   "db": -16,
+   "align": "peak"
+  },
+  {
+   "t": 98.317,
+   "sfx": "tick",
+   "db": -18,
+   "align": "peak"
+  },
+  {
+   "t": 100.517,
+   "sfx": "tick",
+   "db": -18,
+   "align": "peak"
+  },
+  {
+   "t": 105.117,
+   "sfx": "tick",
+   "db": -18,
+   "align": "peak"
+  },
+  {
+   "t": 106.917,
+   "sfx": "tick",
+   "db": -18,
+   "align": "peak"
+  },
+  {
+   "t": 108.817,
+   "sfx": "tick",
+   "db": -18,
+   "align": "peak"
+  },
+  {
+   "t": 110.817,
+   "sfx": "tick",
+   "db": -18,
+   "align": "peak"
+  },
+  {
+   "t": 114.384,
+   "sfx": "whoosh_heavy",
+   "db": -16,
+   "align": "peak"
+  },
+  {
+   "t": 115.201,
+   "sfx": "hit",
+   "db": -14,
+   "align": "peak"
+  },
+  {
+   "t": 115.734,
+   "sfx": "hit",
+   "db": -12,
+   "align": "peak"
+  },
+  {
+   "t": 127.358,
+   "sfx": "punch",
+   "db": -17,
+   "align": "peak"
+  },
+  {
+   "t": 127.692,
+   "sfx": "punch",
+   "db": -17,
+   "align": "peak"
+  },
+  {
+   "t": 128.025,
+   "sfx": "punch",
+   "db": -17,
+   "align": "peak"
+  },
+  {
+   "t": 138.784,
+   "sfx": "whoosh",
+   "db": -22,
+   "align": "peak"
+  },
+  {
+   "t": 139.034,
+   "sfx": "riser",
+   "db": -16,
+   "align": "end"
+  },
+  {
+   "t": 144.884,
+   "sfx": "whoosh",
+   "db": -22,
+   "align": "peak"
+  },
+  {
+   "t": 145.184,
+   "sfx": "bell",
+   "db": -8,
+   "align": "peak"
+  }
+ ]
+}

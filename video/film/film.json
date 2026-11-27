@@ -1,0 +1,328 @@
+{
+ "title": "Ringside",
+ "fps": 30,
+ "width": 1920,
+ "height": 1080,
+ "theme": {
+  "bg": "#0b0c14",
+  "surface": "#171925",
+  "fg": "#f3eee4",
+  "muted": "#a7a2b0",
+  "accent": "#f4845f",
+  "accent2": "#e7d5bd",
+  "good": "#3fbf8a",
+  "bad": "#ff5a4e"
+ },
+ "captions": "captions/captions.json",
+ "scenes": [
+  {
+   "id": "i1",
+   "type": "intro",
+   "beat": "punch",
+   "min": 4.4,
+   "backdrop": false,
+   "label": {
+    "text": "illustration"
+   },
+   "transition": {
+    "type": "cut"
+   },
+   "duration": 4.4
+  },
+  {
+   "id": "i2",
+   "type": "intro",
+   "beat": "tv",
+   "min": 5.4,
+   "backdrop": false,
+   "transition": {
+    "type": "slide",
+    "dur": 0.5,
+    "dir": "from-right"
+   },
+   "duration": 5.4
+  },
+  {
+   "id": "i3",
+   "type": "intro",
+   "beat": "fast",
+   "min": 5.4,
+   "backdrop": false,
+   "transition": {
+    "type": "wipe",
+    "dur": 0.5,
+    "dir": "from-bottom"
+   },
+   "duration": 5.4
+  },
+  {
+   "id": "i4",
+   "type": "intro",
+   "beat": "freeze",
+   "min": 5.4,
+   "backdrop": false,
+   "transition": {
+    "type": "cut"
+   },
+   "duration": 5.5
+  },
+  {
+   "id": "i5",
+   "type": "intro",
+   "beat": "logo",
+   "min": 4.6,
+   "backdrop": false,
+   "rope": true,
+   "transition": {
+    "type": "zoom",
+    "dur": 0.5
+   },
+   "duration": 4.6
+  },
+  {
+   "id": "what",
+   "type": "screen",
+   "src": "captures/HOME.mp4",
+   "trimBefore": 0.3,
+   "full": true,
+   "rope": true,
+   "label": {
+    "text": "the Ringside site \u00b7 devnet data"
+   },
+   "transition": {
+    "type": "fade",
+    "dur": 0.4
+   },
+   "zooms": [
+    {
+     "at": 0.4,
+     "dur": 3.6,
+     "box": {
+      "x": 40,
+      "y": 180,
+      "w": 1000,
+      "h": 560
+     },
+     "scale": 1.35
+    }
+   ],
+   "duration": 16.467
+  },
+  {
+   "id": "gap",
+   "type": "screen",
+   "src": "captures/GAP.mp4",
+   "trimBefore": 3.2,
+   "full": true,
+   "label": {
+    "text": "recorded devnet match \u00b7 biggest hit"
+   },
+   "transition": {
+    "type": "fade",
+    "dur": 0.4
+   },
+   "zooms": [
+    {
+     "at": 0.6,
+     "dur": 5.0,
+     "box": {
+      "x": 60,
+      "y": 360,
+      "w": 1760,
+      "h": 260
+     },
+     "scale": 1.25
+    },
+    {
+     "at": 8.0,
+     "dur": 6.0,
+     "box": {
+      "x": 60,
+      "y": 560,
+      "w": 1180,
+      "h": 460
+     },
+     "scale": 1.5
+    }
+   ],
+   "duration": 16.8
+  },
+  {
+   "id": "card",
+   "type": "screen",
+   "src": "captures/CARD.mp4",
+   "trimBefore": 3.4,
+   "full": true,
+   "label": {
+    "text": "the Ringside site \u00b7 devnet data"
+   },
+   "transition": {
+    "type": "slide",
+    "dur": 0.5,
+    "dir": "from-bottom"
+   },
+   "duration": 8.167
+  },
+  {
+   "id": "live",
+   "type": "screen",
+   "src": "captures/CHAP.mp4",
+   "trimBefore": 1.6,
+   "full": true,
+   "label": {
+    "text": "the Ringside site \u00b7 devnet data"
+   },
+   "transition": {
+    "type": "fade",
+    "dur": 0.4
+   },
+   "zooms": [
+    {
+     "at": 3.2,
+     "dur": 4.5,
+     "box": {
+      "x": 60,
+      "y": 200,
+      "w": 1800,
+      "h": 680
+     },
+     "scale": 1.2
+    }
+   ],
+   "duration": 9.1
+  },
+  {
+   "id": "sealed",
+   "type": "sealed",
+   "min": 6.2,
+   "backdrop": false,
+   "label": {
+    "text": "illustration \u00b7 result from devnet privacy test"
+   },
+   "transition": {
+    "type": "fade",
+    "dur": 0.4
+   },
+   "duration": 7.233
+  },
+  {
+   "id": "replay",
+   "type": "screen",
+   "src": "captures/REPLAY.mp4",
+   "trimBefore": 0.4,
+   "full": true,
+   "label": {
+    "text": "the Ringside site \u00b7 devnet data \u00b7 replay of a settled match"
+   },
+   "transition": {
+    "type": "fade",
+    "dur": 0.4
+   },
+   "zooms": [
+    {
+     "at": 6.8,
+     "dur": 7.4,
+     "box": {
+      "x": 1080,
+      "y": 360,
+      "w": 720,
+      "h": 300
+     },
+     "scale": 1.7
+    }
+   ],
+   "duration": 14.6
+  },
+  {
+   "id": "arch",
+   "type": "arch3d",
+   "title": "Under the hood",
+   "min": 15,
+   "cues": {
+    "l1": 0.4,
+    "er": 2.6,
+    "vrf": 7.2,
+    "sk": 9.0,
+    "tee": 10.9,
+    "act": 12.9
+   },
+   "rope": true,
+   "transition": {
+    "type": "fade",
+    "dur": 0.4
+   },
+   "layers": [
+    {
+     "id": "l1",
+     "label": "Solana devnet",
+     "sub": "program, escrow, match record"
+    },
+    {
+     "id": "er",
+     "label": "Ephemeral Rollup",
+     "sub": "fight + order book in one state \u00b7 cranked every 100 ms"
+    },
+    {
+     "id": "vrf",
+     "label": "MagicBlock VRF",
+     "sub": "seeds the power-ups"
+    },
+    {
+     "id": "sk",
+     "label": "Session keys",
+     "sub": "sign every move and trade"
+    },
+    {
+     "id": "tee",
+     "label": "Private rollup \u00b7 TEE",
+     "sub": "positions sealed until the bell"
+    },
+    {
+     "id": "act",
+     "label": "Magic Actions",
+     "sub": "commit + write the result to Solana"
+    }
+   ],
+   "duration": 16.467
+  },
+  {
+   "id": "proof",
+   "type": "tally",
+   "secondAt": 0.53,
+   "min": 14,
+   "backdrop": false,
+   "rope": true,
+   "transition": {
+    "type": "fade",
+    "dur": 0.4
+   },
+   "duration": 24.7
+  },
+  {
+   "id": "recap",
+   "type": "recap",
+   "backdrop": false,
+   "lines": [
+    "A punch lands.",
+    "The price moves in the same instruction.",
+    "No gap left to trade."
+   ],
+   "transition": {
+    "type": "zoom",
+    "dur": 0.5
+   },
+   "duration": 6.1
+  },
+  {
+   "id": "end",
+   "type": "endring",
+   "min": 6.5,
+   "backdrop": false,
+   "links": [
+    "ringside.prashantthakur.dev",
+    "github.com/Prashant-thakur77/ringside"
+   ],
+   "duration": 6.5
+  }
+ ]
+}

@@ -1,0 +1,91 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1920
+PlayResY: 1080
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Cap,Inter,64,&H00D4EA5E,&H00FFFFFF,&H66000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,2,2,120,120,110,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:01.95,Cap,,0,0,0,,{\k60}A {\k24}punch {\k40}lands {\k22}in {\k12}the {\k22}ring.
+Dialogue: 0,0:00:05.02,0:00:05.97,Cap,,0,0,0,,{\k18}On {\k14}the {\k48}broadcast,
+Dialogue: 0,0:00:06.30,0:00:08.27,Cap,,0,0,0,,{\k12}that {\k30}punch {\k36}lands {\k30}five {\k36}seconds {\k38}later.
+Dialogue: 0,0:00:10.42,0:00:11.71,Cap,,0,0,0,,{\k8}In {\k28}those {\k32}five {\k46}seconds,
+Dialogue: 0,0:00:11.76,0:00:13.57,Cap,,0,0,0,,{\k14}anyone {\k42}watching {\k42}faster {\k40}already {\k28}knows
+Dialogue: 0,0:00:13.42,0:00:14.39,Cap,,0,0,0,,{\k16}the {\k20}price {\k20}is {\k26}wrong.
+Dialogue: 0,0:00:15.98,0:00:17.65,Cap,,0,0,0,,{\k32}Sportsbooks {\k36}call {\k28}it {\k56}courtsiding,
+Dialogue: 0,0:00:17.92,0:00:19.27,Cap,,0,0,0,,{\k10}and {\k12}they {\k34}answer {\k16}it {\k12}by {\k36}freezing
+Dialogue: 0,0:00:19.12,0:00:19.79,Cap,,0,0,0,,{\k20}the {\k32}market.
+Dialogue: 0,0:00:21.54,0:00:23.25,Cap,,0,0,0,,{\k26}Ringside {\k38}answers {\k28}it {\k18}with {\k18}the {\k28}clock.
+Dialogue: 0,0:00:25.70,0:00:27.87,Cap,,0,0,0,,{\k56}Ringside {\k20}is {\k12}an {\k44}in-play {\k28}fight {\k42}exchange
+Dialogue: 0,0:00:27.72,0:00:28.59,Cap,,0,0,0,,{\k30}on {\k42}Solana.
+Dialogue: 0,0:00:28.44,0:00:30.29,Cap,,0,0,0,,{\k62}The {\k24}fight {\k24}and {\k12}the {\k20}order {\k28}book
+Dialogue: 0,0:00:30.14,0:00:33.05,Cap,,0,0,0,,{\k30}run {\k38}inside {\k20}the {\k26}same {\k62}MagicBlock {\k58}ephemeral {\k42}rollup,
+Dialogue: 0,0:00:33.24,0:00:34.15,Cap,,0,0,0,,{\k8}ten {\k24}ticks {\k18}a {\k26}second.
+Dialogue: 0,0:00:35.08,0:00:36.65,Cap,,0,0,0,,{\k36}Every {\k22}order {\k22}is {\k26}stamped {\k22}with {\k14}the
+Dialogue: 0,0:00:36.50,0:00:37.85,Cap,,0,0,0,,{\k18}tick {\k32}it {\k12}was {\k26}priced {\k32}on.
+Dialogue: 0,0:00:38.02,0:00:39.35,Cap,,0,0,0,,{\k22}If {\k12}the {\k16}fight {\k14}has {\k20}moved {\k34}on,
+Dialogue: 0,0:00:39.52,0:00:41.01,Cap,,0,0,0,,{\k6}the {\k32}program {\k44}refuses {\k24}the {\k28}order.
+Dialogue: 0,0:00:42.34,0:00:44.03,Cap,,0,0,0,,{\k34}Here {\k14}is {\k12}a {\k20}real {\k38}devnet {\k36}match,
+Dialogue: 0,0:00:44.04,0:00:45.11,Cap,,0,0,0,,{\k16}at {\k18}its {\k28}biggest {\k30}hit.
+Dialogue: 0,0:00:45.48,0:00:46.15,Cap,,0,0,0,,{\k20}Red {\k32}lands,
+Dialogue: 0,0:00:46.42,0:00:47.85,Cap,,0,0,0,,{\k14}and {\k12}the {\k22}fair {\k32}price {\k28}jumps {\k20}in
+Dialogue: 0,0:00:47.70,0:00:48.47,Cap,,0,0,0,,{\k12}the {\k20}same {\k30}tick.
+Dialogue: 0,0:00:49.58,0:00:51.55,Cap,,0,0,0,,{\k20}A {\k20}bot {\k40}watching {\k20}the {\k52}five-second {\k30}TV
+Dialogue: 0,0:00:51.40,0:00:52.85,Cap,,0,0,0,,{\k36}feed {\k26}sends {\k22}the {\k16}old {\k30}price.
+Dialogue: 0,0:00:53.22,0:00:54.25,Cap,,0,0,0,,{\k18}On {\k12}a {\k24}delayed {\k34}book,
+Dialogue: 0,0:00:54.28,0:00:54.85,Cap,,0,0,0,,{\k16}it {\k26}fills.
+Dialogue: 0,0:00:55.16,0:00:55.93,Cap,,0,0,0,,{\k14}On {\k48}Ringside,
+Dialogue: 0,0:00:55.88,0:00:57.73,Cap,,0,0,0,,{\k10}the {\k20}same {\k22}order {\k18}is {\k34}rejected {\k30}onchain.
+Dialogue: 0,0:00:58.94,0:01:00.91,Cap,,0,0,0,,{\k48}Tonight's {\k18}card {\k24}lists {\k38}every {\k28}live {\k26}bout.
+Dialogue: 0,0:01:01.06,0:01:01.73,Cap,,0,0,0,,{\k14}AI {\k38}fighters,
+Dialogue: 0,0:01:01.80,0:01:02.89,Cap,,0,0,0,,{\k20}trained {\k22}by {\k52}self-play,
+Dialogue: 0,0:01:03.06,0:01:04.45,Cap,,0,0,0,,{\k16}run {\k14}in {\k12}the {\k20}lobby {\k24}around {\k14}the {\k24}clock,
+Dialogue: 0,0:01:04.50,0:01:05.77,Cap,,0,0,0,,{\k2}and {\k10}you {\k12}can {\k28}challenge {\k20}one {\k40}yourself.
+Dialogue: 0,0:01:07.34,0:01:08.05,Cap,,0,0,0,,{\k18}Inside {\k16}a {\k22}match,
+Dialogue: 0,0:01:08.24,0:01:09.79,Cap,,0,0,0,,{\k8}the {\k22}odds {\k28}move {\k26}with {\k32}every {\k24}hit.
+Dialogue: 0,0:01:10.06,0:01:11.55,Cap,,0,0,0,,{\k6}In {\k12}a {\k20}load {\k22}test {\k20}of {\k22}8 {\k32}bots,
+Dialogue: 0,0:01:11.90,0:01:14.37,Cap,,0,0,0,,{\k8}fills {\k48}confirmed {\k32}in {\k72}262 {\k72}milliseconds
+Dialogue: 0,0:01:14.22,0:01:15.17,Cap,,0,0,0,,{\k36}at {\k12}the {\k32}median.
+Dialogue: 0,0:01:16.58,0:01:18.15,Cap,,0,0,0,,{\k30}Positions {\k24}live {\k12}in {\k12}a {\k28}private {\k36}rollup
+Dialogue: 0,0:01:18.00,0:01:19.89,Cap,,0,0,0,,{\k48}inside {\k34}a {\k92}TEE.
+Dialogue: 0,0:01:20.28,0:01:21.97,Cap,,0,0,0,,{\k14}Nobody {\k32}else {\k20}can {\k22}read {\k30}yours {\k36}until
+Dialogue: 0,0:01:21.82,0:01:22.31,Cap,,0,0,0,,{\k16}the {\k18}bell.
+Dialogue: 0,0:01:23.14,0:01:24.21,Cap,,0,0,0,,{\k52}At {\k16}the {\k24}bell,
+Dialogue: 0,0:01:24.54,0:01:25.73,Cap,,0,0,0,,{\k16}settlement {\k36}pays {\k24}the {\k28}winner,
+Dialogue: 0,0:01:25.88,0:01:27.07,Cap,,0,0,0,,{\k20}reveals {\k42}every {\k42}position,
+Dialogue: 0,0:01:27.30,0:01:29.29,Cap,,0,0,0,,{\k14}and {\k30}writes {\k18}the {\k22}match {\k32}record {\k26}to {\k42}Solana.
+Dialogue: 0,0:01:30.48,0:01:31.79,Cap,,0,0,0,,{\k8}Then {\k28}anyone {\k22}can {\k28}replay {\k14}the {\k16}match
+Dialogue: 0,0:01:31.64,0:01:32.43,Cap,,0,0,0,,{\k16}in {\k14}their {\k34}browser.
+Dialogue: 0,0:01:32.82,0:01:33.53,Cap,,0,0,0,,{\k18}Press {\k38}verify,
+Dialogue: 0,0:01:33.88,0:01:35.41,Cap,,0,0,0,,{\k8}and {\k10}it {\k40}re-runs {\k38}every {\k22}tick {\k20}and
+Dialogue: 0,0:01:35.26,0:01:37.07,Cap,,0,0,0,,{\k22}checks {\k20}the {\k20}hash {\k28}chain {\k24}written {\k52}onchain.
+Dialogue: 0,0:01:37.98,0:01:38.65,Cap,,0,0,0,,{\k18}Under {\k16}the {\k18}hood,
+Dialogue: 0,0:01:38.96,0:01:40.39,Cap,,0,0,0,,{\k6}the {\k24}fight {\k26}and {\k10}the {\k20}book {\k42}are
+Dialogue: 0,0:01:40.24,0:01:41.77,Cap,,0,0,0,,{\k30}one {\k62}ephemeral {\k46}rollup,
+Dialogue: 0,0:01:41.92,0:01:43.51,Cap,,0,0,0,,{\k22}cranked {\k34}every {\k36}hundred {\k52}milliseconds.
+Dialogue: 0,0:01:44.82,0:01:47.01,Cap,,0,0,0,,{\k38}MagicBlock {\k74}VRF {\k32}seeds {\k22}the {\k38}power-ups.
+Dialogue: 0,0:01:47.44,0:01:48.61,Cap,,0,0,0,,{\k1}Session {\k22}keys {\k30}sign {\k26}every {\k24}move.
+Dialogue: 0,0:01:48.46,0:01:50.77,Cap,,0,0,0,,{\k52}The {\k30}private {\k36}rollup {\k24}seals {\k28}each {\k46}position.
+Dialogue: 0,0:01:50.98,0:01:52.61,Cap,,0,0,0,,{\k28}And {\k22}Magic {\k40}Actions {\k20}write {\k14}the {\k24}result
+Dialogue: 0,0:01:52.46,0:01:53.39,Cap,,0,0,0,,{\k26}back {\k18}to {\k34}Solana.
+Dialogue: 0,0:01:54.70,0:01:56.21,Cap,,0,0,0,,{\k12}We {\k30}measured {\k20}it {\k28}on {\k46}devnet.
+Dialogue: 0,0:01:56.48,0:01:58.29,Cap,,0,0,0,,{\k28}Across {\k58}23 {\k40}held-out {\k40}matches,
+Dialogue: 0,0:01:58.58,0:02:01.45,Cap,,0,0,0,,{\k6}the {\k28}delayed {\k32}book {\k44}accepted {\k78}319 {\k42}stale {\k42}fills.
+Dialogue: 0,0:02:01.86,0:02:03.15,Cap,,0,0,0,,{\k34}Ringside {\k48}accepted {\k32}zero,
+Dialogue: 0,0:02:03.44,0:02:06.23,Cap,,0,0,0,,{\k10}and {\k34}rejected {\k90}1,283 {\k36}stale {\k36}orders {\k58}onchain.
+Dialogue: 0,0:02:07.50,0:02:09.27,Cap,,0,0,0,,{\k10}Ticks {\k26}landed {\k38}every {\k50}100 {\k38}milliseconds
+Dialogue: 0,0:02:09.12,0:02:10.03,Cap,,0,0,0,,{\k36}at {\k12}the {\k28}median.
+Dialogue: 0,0:02:10.50,0:02:12.77,Cap,,0,0,0,,{\k32}60 {\k20}of {\k42}60 {\k32}private {\k24}reads {\k28}were {\k34}denied.
+Dialogue: 0,0:02:12.98,0:02:15.57,Cap,,0,0,0,,{\k26}And {\k50}19 {\k20}of {\k52}19 {\k46}replays {\k50}verified,
+Dialogue: 0,0:02:15.42,0:02:17.99,Cap,,0,0,0,,{\k140}10,266 {\k52}ticks {\k50}checked.
+Dialogue: 0,0:02:18.68,0:02:20.03,Cap,,0,0,0,,{\k56}A {\k22}punch {\k42}lands,
+Dialogue: 0,0:02:20.36,0:02:21.61,Cap,,0,0,0,,{\k8}and {\k10}the {\k20}price {\k36}moves {\k24}in {\k12}the
+Dialogue: 0,0:02:21.46,0:02:22.27,Cap,,0,0,0,,{\k20}same {\k46}instruction.
+Dialogue: 0,0:02:22.76,0:02:24.39,Cap,,0,0,0,,{\k10}There {\k12}is {\k24}no {\k22}gap {\k30}left {\k20}to {\k30}trade.
+Dialogue: 0,0:02:25.38,0:02:26.09,Cap,,0,0,0,,{\k56}Ringside.
+Dialogue: 0,0:02:26.40,0:02:27.47,Cap,,0,0,0,,{\k26}Live {\k28}on {\k38}devnet,
+Dialogue: 0,0:02:27.50,0:02:28.15,Cap,,0,0,0,,{\k18}open {\k32}source,
+Dialogue: 0,0:02:28.28,0:02:29.47,Cap,,0,0,0,,{\k6}and {\k16}ready {\k20}for {\k10}the {\k20}next {\k32}fight.
