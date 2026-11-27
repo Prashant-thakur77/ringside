@@ -93,3 +93,17 @@ html.lenis, html.lenis body { height: auto; }
 .ch-pre.ch-in .ch-rise { transform: none; }
 .ch-pre.ch-in p .ch-rise { transition-delay: 120ms; }
 .hero-hide { visibility: hidden; }
+
+/* Menu: hovering one link fades the others; the hovered one turns paper-white (the reference's move). */
+.menu-link { transition: opacity .35s var(--ease-snap, ease), color .35s var(--ease-snap, ease); }
+@media (hover: hover) {
+  .menu-list:hover .menu-link { opacity: .32; }
+  .menu-list .menu-link:hover { opacity: 1; color: var(--color-paper); }
+}
+.menu-list .menu-link:focus-visible { opacity: 1; color: var(--color-paper); outline: none; }
+
+/* Footer wordmark letters: each one lifts and lights up under the pointer. */
+.foot-h { display: inline-block; transition: transform .5s var(--ease-snap, ease), color .4s ease; will-change: transform; }
+@media (hover: hover) { .foot-h:hover { transform: translateY(-9%) rotate(-2deg); color: var(--color-paper) !important; } }
+.foot-link .arrow { display: inline-block; width: 0; opacity: 0; overflow: hidden; transition: width .4s var(--ease-snap, ease), opacity .3s ease; }
+.foot-link:hover .arrow, .foot-link:focus-visible .arrow { width: 1.1em; opacity: 1; }
