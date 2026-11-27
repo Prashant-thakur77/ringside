@@ -407,11 +407,17 @@ async fn logs_loop(s: S) {
 
 async fn logs_once(s: &S) -> Result<()> {
     let url = s.er_url().await?;
-    let ws = if s.cfg.tee {
+    let mut ws = if s.cfg.tee {
         url.replacen("http", "ws", 1)
     } else {
         url.replacen("http", "ws", 1).replace(":7799", ":7800")
     };
+    // "wss://host?token=.." has an empty path, which the TEE answers with 400: make it "/".
+    if let Some(i) = ws.find('?') {
+        if ws[..i].matches('/').count() == 2 {
+            ws.insert(i, '/');
+        }
+    }
     let (mut sock, _) = tokio_tungstenite::connect_async(ws.as_str()).await.context("ws connect")?;
     let sub = json!({"jsonrpc":"2.0","id":1,"method":"logsSubscribe","params":[{"mentions":[PROGRAM_ID]},{"commitment":"confirmed"}]});
     sock.send(tokio_tungstenite::tungstenite::Message::Text(sub.to_string().into()))

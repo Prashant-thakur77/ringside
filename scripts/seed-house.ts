@@ -26,5 +26,7 @@ for (let i = 0; i < 60; i++) {
   await sleep(1000);
 }
 log("topup_house_vault", (await send(er, [await env.ix.topupHouseVault(admin.publicKey, amount)], [admin])).sig);
-const house = await getAccount(er, env.ix.houseToken());
-log("house vault on ER:", house.address.toBase58(), "balance", house.amount.toString());
+// On the private ER the Config-owned account is readable by no wallet; the admin's drained balance proves the move.
+const house = await getAccount(er, env.ix.houseToken()).catch(() => null);
+const left = await getAccount(er, env.ata(admin.publicKey)).then((a) => a.amount).catch(() => 0n);
+log("house vault on ER:", env.ix.houseToken().toBase58(), house ? `balance ${house.amount}` : "private (not readable)", "admin ER balance after", left.toString());
