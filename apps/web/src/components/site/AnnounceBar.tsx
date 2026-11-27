@@ -4,7 +4,7 @@ import { useResults, fmt } from "@/lib/home-data";
 
 export function AnnounceBar() {
   const { data: r } = useResults();
-  const items: string[] = ["Live on Solana devnet inside a MagicBlock private ephemeral rollup"];
+  const items: string[] = ["NEW · Ringside for AI agents: npx -y ringside-mcp", "Live on Solana devnet inside a MagicBlock private ephemeral rollup"];
   if (r?.e1?.ringside) items.push(`${fmt(r.e1.ringside.stale_rejections)} stale orders rejected onchain, ${r.e1.ringside.stale_fills_accepted} filled`);
   if (r?.e3?.tick_cadence_ms) items.push(`One tick every ${Math.round(r.e3.tick_cadence_ms.p50)} ms (p50) over ${fmt(r.e3.tick_cadence_ms.n)} ticks`);
   if (r?.e6) items.push(`${r.e6.verified_wasm}/${r.e6.k} matches replayed in WASM to the same hash chain`);

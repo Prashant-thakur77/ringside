@@ -8,6 +8,8 @@ Ringside is an in-play betting exchange that can't be courtsided, built on Magic
 
 Same bot, same 11 held-out matches, 5 s TV delay: the courtsider made **+4.38** per match on the delayed book and **+0.00** on Ringside, where 1283 of its stale orders were rejected onchain and 0 filled. Measured on Solana devnet + MagicBlock devnet-tee.
 
+> **New: Ringside for AI agents.** [`ringside-mcp`](https://www.npmjs.com/package/ringside-mcp) is on npm. One line, `npx -y ringside-mcp`, gives any MCP client seven tools to list matches, read both order books, pull odds by tick and re-run a match in WASM to verify its onchain hash chain. **New on the site:** [Play](https://ringside.prashantthakur.dev/play), a trading game on a replayed devnet fight at the real per-tick price, no wallet needed.
+
 ![A live Ringside match: the odds line moves with every hit](docs/media/ringside.gif)
 
 ## Tour
@@ -35,6 +37,8 @@ Every number here is generated from `eval/results/results.json`.
 - **Positions stay private until settle.** Non-member reads of a live Position were denied 20/20 times, unauthenticated reads 20/20, the opposing fighter 20/20. After the reveal the same reader succeeds 20/20.
 - **Every match is replayable.** 19/19 devnet matches re-simulated in WASM and 19/19 in Python reproduce the onchain hash chain exactly (10266 links). The browser runs the same check on every `/replay` page.
 - **Holds up under load.** 8 bots × 40 trades: 91.6% succeeded, confirm p99 352 ms, peak house exposure 5.17 against a cap of 60.
+- **Agent-ready.** [`ringside-mcp`](https://www.npmjs.com/package/ringside-mcp) on npm exposes matches, both books, odds history, the courtsiding report and full WASM re-verification of any match to AI agents over MCP. No wallet or key.
+- **Playable without a wallet.** [Play](https://ringside.prashantthakur.dev/play) replays a real devnet match at its onchain per-tick fair price so anyone can trade it in the browser.
 - **Fighters you can bet against.** A PPO agent trained for 60 minutes wins 100.0%, 100.0%, 99.7% and 100.0% against the aggressive, kiting, defensive and random bots over 300 held-out episodes each.
 
 ## The site

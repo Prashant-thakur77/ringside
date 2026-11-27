@@ -8,6 +8,8 @@ Ringside is an in-play betting exchange that can't be courtsided, built on Magic
 
 Same bot, same {{headline.n_matches}} held-out matches, {{headline.delay_ms:s}} s TV delay: the courtsider made **{{headline.courtsider_pnl_per_match_tv:+.2f}}** per match on the delayed book and **{{headline.courtsider_pnl_per_match_ringside:+.2f}}** on Ringside, where {{headline.stale_rejections_ringside}} of its stale orders were rejected onchain and {{headline.stale_fills_accepted_ringside}} filled. Measured on {{network}}.
 
+> **New: Ringside for AI agents.** [`ringside-mcp`](https://www.npmjs.com/package/ringside-mcp) is on npm. One line, `npx -y ringside-mcp`, gives any MCP client seven tools to list matches, read both order books, pull odds by tick and re-run a match in WASM to verify its onchain hash chain. **New on the site:** [Play]({{link:site}}/play), a trading game on a replayed devnet fight at the real per-tick price, no wallet needed.
+
 ![A live Ringside match: the odds line moves with every hit]({{link:gif}})
 
 ## Tour
@@ -35,6 +37,8 @@ Every number here is generated from `eval/results/results.json`.
 - **Positions stay private until settle.** Non-member reads of a live Position were denied {{e5.denied.non_member}}/{{e5.attempts.non_member}} times, unauthenticated reads {{e5.denied.unauthenticated}}/{{e5.attempts.unauthenticated}}, the opposing fighter {{e5.denied.opposing_fighter}}/{{e5.attempts.opposing_fighter}}. After the reveal the same reader succeeds {{e5.after_reveal_reads}}/{{e5.n}}.
 - **Every match is replayable.** {{e6.verified_wasm}}/{{e6.k}} devnet matches re-simulated in WASM and {{e6.verified_python}}/{{e6.k}} in Python reproduce the onchain hash chain exactly ({{e6.ticks_checked}} links). The browser runs the same check on every `/replay` page.
 - **Holds up under load.** {{e4.bots}} bots × {{e4.trades_per_bot}} trades: {{e4.success_rate:pct}} succeeded, confirm p99 {{e4.latency_ms.p99:.0f}} ms, peak house exposure {{e4.max_exposure_usdc:.2f}} against a cap of {{e4.cap_usdc:.0f}}.
+- **Agent-ready.** [`ringside-mcp`](https://www.npmjs.com/package/ringside-mcp) on npm exposes matches, both books, odds history, the courtsiding report and full WASM re-verification of any match to AI agents over MCP. No wallet or key.
+- **Playable without a wallet.** [Play]({{link:site}}/play) replays a real devnet match at its onchain per-tick fair price so anyone can trade it in the browser.
 - **Fighters you can bet against.** A PPO agent trained for {{e7.train_minutes}} minutes wins {{e7.win_rate.aggressive:pct}}, {{e7.win_rate.kiting:pct}}, {{e7.win_rate.defensive:pct}} and {{e7.win_rate.random:pct}} against the aggressive, kiting, defensive and random bots over {{e7.episodes_per_bot}} held-out episodes each.
 
 ## The site

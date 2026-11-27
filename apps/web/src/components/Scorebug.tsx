@@ -67,6 +67,7 @@ export function Scorebug() {
                 <Link href={p.href} aria-current={path.startsWith(p.href) ? "page" : undefined}
                   className={`border-b-2 pb-1 transition-colors hover:text-hue ${path.startsWith(p.href) ? "border-hue text-hue" : "border-transparent text-chalk"}`}>
                   {p.label.toUpperCase()}
+                  {p.isNew && <sup className="ml-1 text-[9px] text-mint">NEW</sup>}
                 </Link>
               </li>
             ))}

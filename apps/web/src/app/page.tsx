@@ -9,6 +9,7 @@ import { Statement } from "@/components/home/Statement";
 import { ResultsRoll } from "@/components/home/ResultsRoll";
 import { useCard } from "@/components/home/Card";
 import { Explore } from "@/components/home/Explore";
+import { AgentBand } from "@/components/home/AgentBand";
 import { BellCta } from "@/components/home/BellCta";
 import { Waitlist } from "@/components/home/Waitlist";
 import { Faq } from "@/components/home/Faq";
@@ -29,6 +30,7 @@ export default function Home() {
       <Hero liveId={liveId} />
       <Statement />
       <Explore />
+      <AgentBand />
       <ResultsRoll />
       <BellCta liveId={liveId} />
       <Waitlist />
