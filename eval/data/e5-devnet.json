@@ -1,0 +1,19 @@
+{
+  "match_id": "1795753242111",
+  "n": 20,
+  "attempts": {
+    "non_member": 20,
+    "unauthenticated": 20,
+    "opposing_fighter": 20
+  },
+  "denied": {
+    "non_member": 20,
+    "unauthenticated": 20,
+    "opposing_fighter": 20
+  },
+  "owner_control_readable": 20,
+  "plain_er_readable": true,
+  "target": "D5vBzqxN5ZGBb7SFrvpSY71cEvQBrCtwe9iFz5NHdKhG",
+  "after_reveal_readable": false,
+  "after_reveal_reads": 0
+}

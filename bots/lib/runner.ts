@@ -1,7 +1,7 @@
 // Runs one Ringside match end to end on the configured profile (local stack or devnet-tee).
 import { createAssociatedTokenAccountIdempotentInstruction } from "@solana/spl-token";
 import { Keypair, PublicKey, type Connection } from "@solana/web3.js";
-import { decodeMarket, decodeMatch, marketPda, matchPda, MODE_DELAYED, MODE_LIVE, positionPda, recordPda, type MatchAccount } from "@ringside/client";
+import { decodeMarket, decodeMatch, eataPda, marketPda, matchPda, MODE_DELAYED, MODE_LIVE, positionPda, recordPda, type MatchAccount } from "@ringside/client";
 import { type Env, errorCode, send, sleep, type Sent } from "@ringside/client/node";
 import type { Brain } from "./brains.ts";
 import { timed } from "./telemetry.ts";
@@ -68,7 +68,8 @@ export class MatchRunner {
     const er = await this.er(admin);
     for (let i = 0; i < 60; i++) {
       const info = await er.getAccountInfo(game).catch(() => null);
-      const esc = await er.getAccountInfo(env.ata(game)).catch(() => null);
+      // The canonical escrow ATA is owner-only on the private ER; its delegated eATA is public.
+      const esc = await er.getAccountInfo(eataPda(game, env.p.mint)).catch(() => null);
       if (info && esc) return;
       await sleep(500);
     }

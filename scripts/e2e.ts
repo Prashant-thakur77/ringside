@@ -88,23 +88,34 @@ const proofs = async () => {
   const { decodeMarket } = await import("@ringside/client");
   const m = decodeMarket((await er.getAccountInfo((await import("@ringside/client")).marketPda(id, MODE_LIVE)))!.data);
   const tick = m.lastPricedTick;
-  const fill = await send(er, [await env.ix.trade(spec.publicKey, spec.publicKey, id, MODE_LIVE, tick, "A", "buy", 3n, m.askA + 20_000n, false)], [spec], { skipPreflight: true }).catch((e) => ({ sig: `err ${errorCode(e)}` }));
-  links.trade_fill = tx(fill.sig);
+  // The freshness window is stale_ticks_max ticks; like a real client, re-quote from a fresh read and retry.
+  let fill: { sig: string } = { sig: "err none" };
+  for (let i = 0; i < 8 && (i === 0 || fill.sig.startsWith("err")); i++) {
+    const mf = decodeMarket((await er.getAccountInfo((await import("@ringside/client")).marketPda(id, MODE_LIVE)))!.data);
+    fill = await send(er, [await env.ix.trade(spec.publicKey, spec.publicKey, id, MODE_LIVE, mf.lastPricedTick, "A", "buy", 3n, mf.askA + 100_000n, false)], [spec], { skipPreflight: true }).catch((e) => ({ sig: `err ${errorCode(e)}` }));
+    if (fill.sig.startsWith("err")) log(`fill attempt ${i + 1}: ${fill.sig}`);
+  }
   log(`fill ${fill.sig}`);
+  if (!fill.sig.startsWith("err")) links.trade_fill = tx(fill.sig);
+  else delete links.trade_fill;
   const stale = await strict("stale", courtsider, () => env.ix.trade(courtsider.publicKey, courtsider.publicKey, id, MODE_LIVE, tick > 6n ? tick - 6n : 0n, "B", "buy", 2n, 1_000_000n, false), 6000);
   if (stale) links.stale_reject = tx(stale);
   const barred = await strict("fighter bar", fa, () => env.ix.trade(fa.publicKey, fa.publicKey, id, MODE_LIVE, tick, "A", "buy", 1n, 1_000_000n, false), 6001);
   if (barred) links.fighter_reject = tx(barred);
   try {
     const s = await makeSession(sessionUser);
+    // The token is created on the base layer; the ER clones it on first use, so wait until it is readable there.
+    const ser = await env.er(sessionUser);
+    for (let i = 0; i < 40 && !(await ser.getAccountInfo(s.token)); i++) await sleep(250);
     const m2 = decodeMarket((await er.getAccountInfo((await import("@ringside/client")).marketPda(id, MODE_LIVE)))!.data);
-    const r = await send(await env.er(sessionUser), [await env.ix.trade(s.kp.publicKey, sessionUser.publicKey, id, MODE_LIVE, m2.lastPricedTick, "B", "buy", 1n, m2.askB + 30_000n, false, s.token)], [s.kp], { skipPreflight: true });
+    const r = await send(await env.er(sessionUser), [await env.ix.trade(s.kp.publicKey, sessionUser.publicKey, id, MODE_LIVE, m2.lastPricedTick, "B", "buy", 1n, m2.askB + 100_000n, false, s.token)], [s.kp]);
     links.session_trade = tx(r.sig);
     log(`session-key trade ${r.sig}`);
     spike.push(`5. Session key accepted on the ER: trade signed only by session key ${s.kp.publicKey.toBase58()} (token ${s.token.toBase58()}): ${tx(r.sig)}`);
   } catch (e) {
-    spike.push(`5. Session-key trade failed: ${String((e as Error).message).split("\n")[0]}`);
-    log(`session-key trade failed: ${String((e as Error).message).slice(0, 400)}`);
+    const msg = (e as { transactionMessage?: string; message?: string }).transactionMessage ?? (e as Error).message ?? JSON.stringify(e);
+    spike.push(`5. Session-key trade failed: ${String(msg).split("\n")[0]}`);
+    log(`session-key trade failed: ${String(msg).slice(0, 400)}`);
   }
   // E5: privacy reads against the courtsider's private Position while the match is live.
   try {
@@ -146,6 +157,17 @@ for (const s of sigs.reverse()) {
   if (!settleSig && logs.some((l) => l.includes("Instruction: Settle")) && logs.some((l) => l.includes("Program data:")) && !t?.meta?.err) settleSig = s.signature;
   if (!firstTick && logs.some((l) => l.includes("Instruction: Tick")) && !t?.meta?.err) firstTick = s.signature;
 }
+// The private ER keeps little history once the match is committed: the indexer recorded the rest live.
+const indexer = process.env.INDEXER_URL ?? "http://127.0.0.1:8787";
+let indexed = "indexer unavailable";
+const rp = await fetch(`${indexer}/matches/${id}/replay`).then((x) => x.json()).catch(() => null);
+if (rp) {
+  firstTick ||= rp.ticks?.find((t: { sig?: string }) => t.sig)?.sig ?? "";
+  settleSig ||= rp.settle_sig ?? "";
+  vrfCallback ||= rp.seeds?.find((x: { sig?: string }) => x.sig)?.sig ?? "";
+  log(`indexer replay: ${rp.ticks?.length ?? 0} ticks, complete ${rp.complete}`);
+  indexed = `${rp.ticks?.length ?? 0} ticks indexed (complete: ${rp.complete})`;
+}
 if (vrfCallback) links.vrf_callback = tx(vrfCallback);
 if (settleSig) links.settle = tx(settleSig);
 if (r.sigs.finalize) {
@@ -175,7 +197,7 @@ spike.unshift(
   "Run with the production program instead of throwaway spike programs (decisions.md). Each line is evidence from match " + id + ".",
   "",
   `1. Delegation to the TEE validator + private Position (permission created on the ER, members = owner + house authority); reads by non-members and unauthenticated clients: see eval/data/e5-${env.p.name}.json. Reveal at settle: ${links.settle ?? "n/a"}.`,
-  `2. Crank: \`schedule_tick\` on the ${env.p.name === "devnet" ? "TEE" : "local"} ER ${r.sigs.schedule_tick ? tx(r.sigs.schedule_tick) : "(not scheduled)"}; match advanced by: **${r.crank}** → Switch A = ${r.crank === "crank" ? "ER crank" : "keeper fallback"}. First crank tick: ${firstTick ? tx(firstTick) : "n/a"}. Cadence: eval/data/e3-${env.p.name}.json.`,
+  `2. Crank: \`schedule_tick\` on the ${env.p.name === "devnet" ? "TEE" : "local"} ER ${r.sigs.schedule_tick ? tx(r.sigs.schedule_tick) : "(not scheduled)"}; match advanced by: **${r.crank}** → Switch A = ${r.crank === "crank" ? "ER crank" : "keeper fallback"}. First crank tick: ${firstTick ? tx(firstTick) : "executed inside the validator's crank (no client-visible signature); the indexer follows ticks by account subscription: " + indexed}. Cadence: eval/data/e3-${env.p.name}.json.`,
   `3. VRF on the ephemeral queue: request ${r.sigs.vrf_request ? tx(r.sigs.vrf_request) : "n/a"}, callback ${vrfCallback ? tx(vrfCallback) : "NOT OBSERVED"} → Switch B = ${vrfCallback ? "ephemeral-queue VRF" : "base-layer seed chain fallback"}.`,
   `4. Ephemeral SPL: stakes moved player eATA → match escrow (join ${r.sigs.join_a ? tx(r.sigs.join_a) : "n/a"}), PDA-signed payout at settle (${links.settle ?? "n/a"}), house vault funded by \`topup_house_vault\`.`,
 );

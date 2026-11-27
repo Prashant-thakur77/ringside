@@ -49,6 +49,8 @@ struct Shared {
     http: reqwest::Client,
     tx: broadcast::Sender<Value>,
     token: RwLock<Option<(String, i64)>>,
+    seen: RwLock<std::collections::HashSet<String>>,
+    following: RwLock<std::collections::HashSet<String>>,
     live: RwLock<HashMap<String, (MatchView, Option<MarketView>, Option<MarketView>)>>,
 }
 
@@ -340,7 +342,13 @@ async fn store_event(s: &S, sig: &str, ev: &Event, failed: bool) -> Result<()> {
                 .execute(&s.db)
                 .await?;
         }
-        Event::Settle { .. } => {}
+        Event::Settle { match_key, .. } => {
+            sqlx::query("UPDATE matches SET settle_sig=$2 WHERE match_key=$1")
+                .bind(match_key)
+                .bind(sig)
+                .execute(&s.db)
+                .await?;
+        }
     }
     Ok(())
 }
@@ -441,27 +449,244 @@ async fn logs_once(s: &S) -> Result<()> {
             .map(|a| a.iter().filter_map(|l| l.as_str().map(String::from)).collect())
             .unwrap_or_default();
         let failed = !val["err"].is_null();
-        if failed {
-            let s2 = s.clone();
-            let sig2 = sig.to_string();
-            tokio::spawn(async move {
-                if let Err(e) = store_failed_trade(&s2, &sig2, &logs).await {
-                    warn!("failed-trade backfill: {e:#}");
-                }
-            });
-            continue;
+        process_logs(s, sig, logs, failed).await;
+    }
+    Err(anyhow!("ws closed"))
+}
+
+/// Stores the events of one transaction's logs (shared by the websocket and signature-poll paths).
+async fn process_logs(s: &S, sig: &str, logs: Vec<String>, failed: bool) {
+    if !s.seen.write().await.insert(sig.to_string()) {
+        return;
+    }
+    if failed {
+        let s2 = s.clone();
+        let sig2 = sig.to_string();
+        tokio::spawn(async move {
+            if let Err(e) = store_failed_trade(&s2, &sig2, &logs).await {
+                warn!("failed-trade backfill: {e:#}");
+            }
+        });
+        return;
+    }
+    for ev in events_from_logs(&logs) {
+        if let Err(e) = store_event(s, sig, &ev, false).await {
+            warn!("store: {e:#}");
         }
-        for ev in events_from_logs(&logs) {
-            if let Err(e) = store_event(s, sig, &ev, false).await {
-                warn!("store: {e:#}");
+        let mut j = serde_json::to_value(&ev).unwrap_or(Value::Null);
+        j["signature"] = json!(sig);
+        j["seen_ms"] = json!(now_ms());
+        let _ = s.tx.send(j);
+    }
+}
+
+/// The private ER does not deliver logsSubscribe notifications, so on the TEE the indexer follows
+/// each open match by polling the signatures of its match and market accounts and reading each
+/// new transaction's logs (authenticated reads).
+async fn sig_poll_loop(s: S) {
+    let mut cursor: HashMap<String, String> = HashMap::new();
+    loop {
+        let addrs: Vec<String> = s
+            .live
+            .read()
+            .await
+            .iter()
+            .filter(|(_, (m, _, _))| m.status <= 4)
+            .flat_map(|(k, (m, _, _))| [k.clone(), m.market_live.clone(), m.market_delayed.clone()])
+            .collect();
+        for a in addrs {
+            let mut opts = json!({"limit": 1000, "commitment": "confirmed"});
+            if let Some(u) = cursor.get(&a) {
+                opts["until"] = json!(u);
+            }
+            let Ok(list) = s.er("getSignaturesForAddress", json!([a, opts])).await else {
+                continue;
+            };
+            let list = list.as_array().cloned().unwrap_or_default();
+            if let Some(newest) = list.first().and_then(|x| x["signature"].as_str()) {
+                cursor.insert(a.clone(), newest.to_string());
+            }
+            let mut sigs: Vec<String> = vec![];
+            {
+                let seen = s.seen.read().await;
+                for x in list.iter().rev() {
+                    if let Some(sig) = x["signature"].as_str() {
+                        if !seen.contains(sig) {
+                            sigs.push(sig.to_string());
+                        }
+                    }
+                }
+            }
+            let txs: Vec<(String, Option<Value>)> = futures::stream::iter(sigs)
+                .map(|sig| {
+                    let s = s.clone();
+                    async move {
+                        let t = s
+                            .er(
+                                "getTransaction",
+                                json!([sig, {"encoding":"json","maxSupportedTransactionVersion":0,"commitment":"confirmed"}]),
+                            )
+                            .await
+                            .ok();
+                        (sig, t)
+                    }
+                })
+                .buffered(12)
+                .collect()
+                .await;
+            for (sig, t) in txs {
+                let Some(t) = t.filter(|t| !t.is_null()) else { continue };
+                let logs: Vec<String> = t["meta"]["logMessages"]
+                    .as_array()
+                    .map(|a| a.iter().filter_map(|l| l.as_str().map(String::from)).collect())
+                    .unwrap_or_default();
+                let failed = !t["meta"]["err"].is_null();
+                process_logs(&s, &sig, logs, failed).await;
+            }
+        }
+        tokio::time::sleep(Duration::from_millis(400)).await;
+    }
+}
+
+/// On the TEE, crank-executed ticks leave no transaction history a client can read, but account
+/// subscriptions deliver every write. Each Match snapshot after a tick carries the tick, the inputs
+/// the step used (sim.last_inputs) and the hash chain; stepping the previous snapshot with those
+/// inputs recovers the event flags and cross-checks the state. fair_p comes from the live market.
+async fn follow_match(s: S, key: String, market_live: String) -> Result<()> {
+    let url = s.er_url().await?;
+    let mut ws = url.replacen("http", "ws", 1);
+    if let Some(i) = ws.find('?') {
+        if ws[..i].matches('/').count() == 2 {
+            ws.insert(i, '/');
+        }
+    }
+    let (mut sock, _) = tokio_tungstenite::connect_async(ws.as_str()).await.context("ws connect")?;
+    for (id, k) in [(1, &key), (2, &market_live)] {
+        let sub = json!({"jsonrpc":"2.0","id":id,"method":"accountSubscribe","params":[k,{"encoding":"base64","commitment":"confirmed"}]});
+        sock.send(tokio_tungstenite::tungstenite::Message::Text(sub.to_string().into()))
+            .await?;
+    }
+    let mut subs: HashMap<u64, u8> = HashMap::new();
+    let mut prev: Option<(u32, Vec<u8>)> = None;
+    let mut fair: (u64, f64) = (0, 0.5);
+    let mut pending: Option<Event> = None;
+    let flush = |ev: Event, fair_p: f64| match ev {
+        Event::Tick {
+            match_key,
+            tick,
+            inputs,
+            flags,
+            state_hash,
+            ..
+        } => Event::Tick {
+            match_key,
+            tick,
+            inputs,
+            flags,
+            fair_p,
+            state_hash,
+        },
+        e => e,
+    };
+    let emit = |s: &S, ev: Event| {
+        let s = s.clone();
+        async move {
+            if let Err(e) = store_event(&s, "", &ev, false).await {
+                warn!("store tick: {e:#}");
             }
             let mut j = serde_json::to_value(&ev).unwrap_or(Value::Null);
-            j["signature"] = json!(sig);
             j["seen_ms"] = json!(now_ms());
             let _ = s.tx.send(j);
         }
+    };
+    let started = now_ms();
+    while let Some(msg) = sock.next().await {
+        let txt = match msg? {
+            tokio_tungstenite::tungstenite::Message::Text(t) => t.to_string(),
+            tokio_tungstenite::tungstenite::Message::Ping(p) => {
+                sock.send(tokio_tungstenite::tungstenite::Message::Pong(p)).await?;
+                continue;
+            }
+            _ => continue,
+        };
+        let v: Value = serde_json::from_str(&txt).unwrap_or(Value::Null);
+        if let (Some(id), Some(sub)) = (v["id"].as_u64(), v["result"].as_u64()) {
+            subs.insert(sub, id as u8);
+            continue;
+        }
+        let Some(sub) = v["params"]["subscription"].as_u64() else {
+            continue;
+        };
+        let Some(data) = account_data(&v["params"]["result"]["value"]) else {
+            continue;
+        };
+        match subs.get(&sub) {
+            Some(2) => {
+                if let Some(m) = decode_market(&data) {
+                    fair = (m.last_priced_tick, m.fair_p);
+                    if let Some(Event::Tick { tick, .. }) = &pending {
+                        if m.last_priced_tick >= *tick {
+                            emit(&s, flush(pending.take().unwrap(), m.fair_p)).await;
+                        }
+                    }
+                }
+            }
+            Some(1) => {
+                let Some(m) = decode_match(&data) else { continue };
+                let b = &data[8..];
+                let sim = &b[392..392 + 832];
+                if prev.as_ref().map(|p| p.0) == Some(m.tick) {
+                    // Not a tick: an input, a VRF seed or the fight start. Keep the newest snapshot.
+                    prev = Some((m.tick, sim.to_vec()));
+                    continue;
+                }
+                if let Some(ev) = pending.take() {
+                    emit(&s, flush(ev, fair.1)).await;
+                }
+                let Some(cur) = ringside_sim::decode(sim) else { continue };
+                let mut flags = 0u32;
+                if let Some((pt, pb)) = &prev {
+                    if *pt + 1 == m.tick {
+                        if let Some(mut st) = ringside_sim::decode(pb) {
+                            let ev = ringside_sim::step(&mut st, cur.last_inputs);
+                            if ringside_sim::encode(&st)[..] == *sim {
+                                flags = ev.flags;
+                            } else {
+                                warn!("tick {} of {key}: local step disagrees with the chain", m.tick);
+                            }
+                        }
+                    }
+                }
+                if m.tick > 0 {
+                    let ev = Event::Tick {
+                        match_key: key.clone(),
+                        tick: m.tick as u64,
+                        inputs: cur.last_inputs,
+                        flags,
+                        fair_p: fair.1,
+                        state_hash: m.state_hash.clone(),
+                    };
+                    if fair.0 >= m.tick as u64 || m.status >= 3 {
+                        emit(&s, ev).await;
+                    } else {
+                        pending = Some(ev);
+                    }
+                }
+                prev = Some((m.tick, sim.to_vec()));
+                if m.status >= 3 {
+                    if let Some(ev) = pending.take() {
+                        emit(&s, flush(ev, fair.1)).await;
+                    }
+                    return Ok(());
+                }
+            }
+            _ => {}
+        }
+        if now_ms() - started > 30 * 60 * 1000 {
+            return Err(anyhow!("follow timeout"));
+        }
     }
-    Err(anyhow!("ws closed"))
+    Err(anyhow!("account stream closed"))
 }
 
 async fn poll_loop(s: S) {
@@ -484,6 +709,17 @@ async fn poll_loop(s: S) {
                         let key = a["pubkey"].as_str().unwrap_or_default().to_string();
                         if let Some(m) = account_data(&a["account"]).and_then(|d| decode_match(&d)) {
                             let _ = upsert_match(&s, &key, &m).await;
+                            if m.status <= 2 && s.cfg.tee && s.following.write().await.insert(key.clone()) {
+                                let (s2, k2, ml) = (s.clone(), key.clone(), m.market_live.clone());
+                                tokio::spawn(async move {
+                                    for attempt in 0..5 {
+                                        match follow_match(s2.clone(), k2.clone(), ml.clone()).await {
+                                            Ok(()) => break,
+                                            Err(e) => warn!("follow {k2} (attempt {attempt}): {e:#}"),
+                                        }
+                                    }
+                                });
+                            }
                             if m.status <= 3 {
                                 known.push(key);
                             }
@@ -638,8 +874,15 @@ async fn replay(State(s): State<S>, Path(id): Path<String>) -> Json<Value> {
     let trades = sqlx::query("SELECT signature,mode,trader,tick,seen_tick,price,qty,side,dir FROM trades WHERE market IN (SELECT market_live FROM matches WHERE match_key=$1 UNION SELECT market_delayed FROM matches WHERE match_key=$1) ORDER BY tick")
         .bind(&key).fetch_all(&s.db).await.unwrap_or_default();
     let complete = ticks.iter().enumerate().all(|(i, r)| r.get::<i32, _>(0) == i as i32 + 1);
+    let settle_sig: Option<String> = sqlx::query_scalar("SELECT settle_sig FROM matches WHERE match_key=$1")
+        .bind(&key)
+        .fetch_optional(&s.db)
+        .await
+        .ok()
+        .flatten()
+        .flatten();
     Json(json!({
-        "match_key": key, "match_id": id, "tick_ms": 100, "complete": complete,
+        "match_key": key, "match_id": id, "tick_ms": 100, "complete": complete, "settle_sig": settle_sig,
         "ticks": ticks.iter().map(|r| json!({"tick": r.get::<i32,_>(0), "inputs": [r.get::<i32,_>(1), r.get::<i32,_>(2)], "hash": r.get::<String,_>(3), "sig": r.get::<Option<String>,_>(4), "fair_p": r.get::<f64,_>(5), "flags": r.get::<i64,_>(6)})).collect::<Vec<_>>(),
         "seeds": seeds.iter().map(|r| json!({"wave": r.get::<i32,_>(0), "apply_at_tick": r.get::<i32,_>(1), "seed": r.get::<String,_>(2), "sig": r.get::<Option<String>,_>(3)})).collect::<Vec<_>>(),
         "trades": trades.iter().map(|r| json!({"sig": r.get::<String,_>(0), "mode": r.get::<i16,_>(1), "trader": r.get::<String,_>(2), "tick": r.get::<i64,_>(3), "seen_tick": r.get::<i64,_>(4), "price": r.get::<i64,_>(5), "qty": r.get::<i64,_>(6), "side": r.get::<i16,_>(7), "dir": r.get::<i16,_>(8)})).collect::<Vec<_>>(),
@@ -802,10 +1045,15 @@ async fn main() -> Result<()> {
         http: reqwest::Client::new(),
         tx,
         token: RwLock::new(None),
+        seen: RwLock::new(Default::default()),
+        following: RwLock::new(Default::default()),
         live: RwLock::new(HashMap::new()),
     });
     info!("indexer for {env}: er {} base {}", s.cfg.er_rpc, s.cfg.base_rpc);
     tokio::spawn(logs_loop(s.clone()));
+    if s.cfg.tee {
+        tokio::spawn(sig_poll_loop(s.clone()));
+    }
     tokio::spawn(poll_loop(s.clone()));
     tokio::spawn(record_loop(s.clone()));
     let app = Router::new()

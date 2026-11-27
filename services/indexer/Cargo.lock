@@ -1545,6 +1545,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ringside-fixed"
+version = "0.1.0"
+
+[[package]]
 name = "ringside-indexer"
 version = "0.1.0"
 dependencies = [
@@ -1558,6 +1562,7 @@ dependencies = [
  "opentelemetry",
  "opentelemetry_sdk",
  "reqwest",
+ "ringside-sim",
  "serde",
  "serde_json",
  "sha2",
@@ -1569,6 +1574,14 @@ dependencies = [
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "ringside-sim"
+version = "0.1.0"
+dependencies = [
+ "ringside-fixed",
+ "sha2",
 ]
 
 [[package]]
