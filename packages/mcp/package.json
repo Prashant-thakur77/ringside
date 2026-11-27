@@ -1,0 +1,47 @@
+{
+  "name": "ringside-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Ringside, the in-play fight exchange on Solana and MagicBlock ephemeral rollups: matches, live and delayed books, odds history, replay verification and courtsiding evidence.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "ringside-mcp": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "solana",
+    "magicblock",
+    "ephemeral-rollups",
+    "prediction-market",
+    "ringside"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Prashant-thakur77/ringside.git",
+    "directory": "packages/mcp"
+  },
+  "homepage": "https://ringside.prashantthakur.dev",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-wasm.mjs",
+    "test": "node test/smoke.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.4",
+    "typescript": "~5.8.3"
+  }
+}
