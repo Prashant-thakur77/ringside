@@ -63,10 +63,33 @@ export function useFeed() {
   }, [push]);
 }
 
-export async function api<T>(path: string): Promise<T> {
-  const r = await fetch(`${INDEXER}${path}`, { cache: "no-store" });
+/** True once a request has been served from the recorded devnet snapshot instead of the live indexer. */
+export const useSnapshot = create<{ on: boolean }>(() => ({ on: false }));
+let liveDownUntil = 0;
+
+async function fromSnapshot<T>(path: string): Promise<T> {
+  const r = await fetch(`/snap${path.split("?")[0]}.json`);
   if (!r.ok) throw new Error(`${path}: ${r.status}`);
+  if (!useSnapshot.getState().on) useSnapshot.setState({ on: true });
   return r.json();
+}
+
+/** Live indexer first; if it can't be reached, the finished devnet matches baked into the site at deploy time. */
+export async function api<T>(path: string): Promise<T> {
+  if (Date.now() >= liveDownUntil) {
+    try {
+      const r = await fetch(`${INDEXER}${path}`, { cache: "no-store", signal: AbortSignal.timeout(4000) });
+      if (r.ok) {
+        if (useSnapshot.getState().on) useSnapshot.setState({ on: false });
+        return r.json();
+      }
+      if (r.status === 404) throw new Error(`${path}: 404`);
+    } catch (e) {
+      if (String(e).includes(": 404")) return fromSnapshot<T>(path).catch(() => { throw e; });
+    }
+    liveDownUntil = Date.now() + 15_000; // don't wait on a dead indexer for every poll
+  }
+  return fromSnapshot<T>(path);
 }
 
 /** Re-renders every `ms` (for "x ms ago" freshness stamps). */

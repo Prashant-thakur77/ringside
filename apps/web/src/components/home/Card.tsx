@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Flap } from "@/components/Flap";
-import { api, STATUS, useLive, type Book } from "@/lib/live";
+import { api, STATUS, useLive, useSnapshot, type Book } from "@/lib/live";
 import { labelFor } from "@/lib/names";
 
 export interface Row {
@@ -29,6 +29,7 @@ export function useCard() {
 
 export function Card() {
   const { live, done, loading, offline } = useCard();
+  const snap = useSnapshot((s) => s.on);
   return (
     <section id="card" className="scroll-mt-16 bg-slate px-4 py-24 text-chalk md:px-8" aria-labelledby="card-title">
       <div className="mx-auto max-w-[1400px]">
@@ -38,7 +39,8 @@ export function Card() {
         </div>
         {loading && <p className="num py-10 text-chalk-quiet">Reading the card from the indexer…</p>}
         {offline && <p className="py-10 text-chalk-quiet">The live indexer is not reachable right now. The story above uses a recorded devnet match, and every replay below still verifies in your browser.</p>}
-        {!loading && !offline && live.length === 0 && (
+        {snap && <p className="num pt-6 text-[13px] text-chalk-quiet">RECORDED ON SOLANA DEVNET · EVERY REPLAY BELOW RE-RUNS AND VERIFIES IN YOUR BROWSER</p>}
+        {!loading && !offline && !snap && live.length === 0 && (
           <p className="py-10 text-[17px] text-chalk-quiet">Between bouts. Start one yourself: <Link href="/fight" className="text-hue underline">fight an AI</Link>, or replay a finished match below.</p>
         )}
         <ul>
