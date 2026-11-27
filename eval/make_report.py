@@ -84,7 +84,7 @@ def e1(env):
     out["ringside"] = {
         "n_matches": len(rows), "pnl_mean": float(np.mean(pl)), "pnl_ci95": boot_ci(pl),
         "stale_attempts": int(sum(r["attemptsLiveStale"] for r in rows)), "stale_rejections": int(sum(min(r["rejectsLiveStale"], r["attemptsLiveStale"]) for r in rows)),
-        "stale_fills_accepted": int(sum(r["fillsLiveStale"] for r in rows)), "fresh_fills": int(sum(r["fillsLiveFresh"] for r in rows)),
+        "stale_fills_accepted": int(sum(r["fillsLiveStale"] for r in rows)), "fresh_fills": int(sum(r["fillsLiveFresh"] for r in rows)), "fresh_attempts": int(sum(r.get("attemptsLiveFresh", 0) for r in rows)),
         "transport_errors": int(sum(r.get("transportErrors", 0) for r in rows)),
         "house_pnl_mean": float(np.mean([r["housePnlLive"] for r in rows])),
     }
@@ -172,6 +172,13 @@ def negatives(r):
         if rs["pnl_ci95"][0] is not None and rs["pnl_ci95"][0] > 0:
             neg.append({"title": "Fresh orders still find a small edge", "value": rs["pnl_mean"],
                         "detail": f"On Ringside every stale order was rejected, but the courtsider's orders at the live tick still made {rs['pnl_mean']:+.2f} per match (95% CI {rs['pnl_ci95'][0]:+.2f} to {rs['pnl_ci95'][1]:+.2f}): the model does not fully price the momentum right after a hit."})
+    if r.get("e1"):
+        rs = r["e1"]["ringside"]
+        if rs.get("fresh_attempts") and rs["fresh_fills"] < 0.5 * rs["fresh_attempts"]:
+            rtt = (((r.get("e3") or {}).get("submit_confirm_ms") or {}).get("trade") or {}).get("p50")
+            neg.append({"title": "A far-away client misses the freshness window", "value": rs["fresh_fills"] / rs["fresh_attempts"],
+                        "detail": f"The courtsider's at-the-live-tick orders filled {rs['fresh_fills']} of {rs['fresh_attempts']} times: they are sent after two confirmed orders, so the quote is older than the {2 * 100} ms window when they land"
+                        + (f" (trade round trip from this host p50 {rtt:.0f} ms)" if rtt else "") + ". A client far from the validator needs a wider window or a closer RPC."})
     if r.get("e3") and r["e3"]["tick_cadence_ms"].get("p99"):
         c = r["e3"]["tick_cadence_ms"]
         neg.append({"title": "Tick cadence has a tail", "value": c["p99"], "detail": f"Measured tick cadence is p50 {c['p50']:.0f} ms but p99 {c['p99']:.0f} ms: the 100 ms crank is a target, not a guarantee."})

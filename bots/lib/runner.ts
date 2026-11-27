@@ -211,7 +211,9 @@ export class MatchRunner {
       this.sigs.settle = r.sig;
     }
     g = await this.game(id);
-    for (let i = 4; i < positions.length; i += 4) {
+    // When the crank settles (no position accounts attached), none are revealed yet; already
+    // revealed positions are skipped by the program, so reveal them all.
+    for (let i = 0; i < positions.length; i += 4) {
       this.sigs.reveal ??= (await send(er, [await this.env.ix.revealPositions(id, positions.slice(i, i + 4))], [this.admin], { cu: 1_000_000 })).sig;
     }
     for (const p of positions) {

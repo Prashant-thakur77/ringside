@@ -52,9 +52,9 @@ eval_e1() {
 soak() {
   start soak-match bots npx tsx run-match.ts --a defensive --b defensive
   for _ in $(seq 1 60); do ID=$(grep -oE "match [0-9]+ created" $LOG/soak-match.log | grep -oE "[0-9]+" || true); [ -n "$ID" ] && break; sleep 2; done
-  (cd bots && npx tsx soak/setup.ts "$ID" 16)
+  (cd bots && npx tsx soak/setup.ts "$ID" "${SOAK_USERS:-16}")
   MINT="$(python3 -c "import json;print(json.load(open('keys/state-devnet.json'))['mint'])")" KEYS_DIR=keys ER_RPC="$(cd scripts && npx tsx tee-url.ts admin | tail -n 1)" \
-    bots/soak/target/release/ringside-soak "$ID" 16 40 | tee eval/data/e4-soak-devnet.json
+    bots/soak/target/release/ringside-soak "$ID" "${SOAK_USERS:-16}" "${SOAK_ROUNDS:-40}" | tee eval/data/e4-soak-devnet.json
 }
 
 report() {

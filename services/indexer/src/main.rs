@@ -1033,7 +1033,7 @@ async fn stats(State(s): State<S>) -> Json<Value> {
          SELECT count(dt), percentile_cont(0.5) WITHIN GROUP (ORDER BY dt), percentile_cont(0.95) WITHIN GROUP (ORDER BY dt), percentile_cont(0.99) WITHIN GROUP (ORDER BY dt) FROM d WHERE dt IS NOT NULL AND dt < 10000",
     )
     .fetch_one(&s.db).await.ok();
-    let age = sqlx::query("SELECT count(*), percentile_cont(0.5) WITHIN GROUP (ORDER BY (game_tick-seen_tick)*100), percentile_cont(0.95) WITHIN GROUP (ORDER BY (game_tick-seen_tick)*100) FROM trades WHERE mode=0")
+    let age = sqlx::query("SELECT count(*), percentile_cont(0.5) WITHIN GROUP (ORDER BY (game_tick-seen_tick)*100), percentile_cont(0.95) WITHIN GROUP (ORDER BY (game_tick-seen_tick)*100) FROM trades WHERE mode=0 AND signature NOT LIKE 'acct:%'")
         .fetch_one(&s.db).await.ok();
     let lat = sqlx::query("SELECT kind, count(*), percentile_cont(0.5) WITHIN GROUP (ORDER BY ms), percentile_cont(0.95) WITHIN GROUP (ORDER BY ms) FROM latency GROUP BY kind ORDER BY kind")
         .fetch_all(&s.db).await.unwrap_or_default();

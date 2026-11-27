@@ -170,6 +170,7 @@ if (rp) {
 }
 if (vrfCallback) links.vrf_callback = tx(vrfCallback);
 if (settleSig) links.settle = tx(settleSig);
+if (r.sigs.reveal) links.reveal = tx(r.sigs.reveal);
 if (r.sigs.finalize) {
   links.finalize = tx(r.sigs.finalize);
   try {
@@ -196,10 +197,10 @@ spike.unshift(
   "",
   "Run with the production program instead of throwaway spike programs (decisions.md). Each line is evidence from match " + id + ".",
   "",
-  `1. Delegation to the TEE validator + private Position (permission created on the ER, members = owner + house authority); reads by non-members and unauthenticated clients: see eval/data/e5-${env.p.name}.json. Reveal at settle: ${links.settle ?? "n/a"}.`,
+  `1. Delegation to the TEE validator + private Position (permission created on the ER, members = owner + house authority); reads by non-members and unauthenticated clients: see eval/data/e5-${env.p.name}.json. Settle runs inside the crank; reveal of sealed positions: ${links.reveal ?? links.settle ?? "n/a"}.`,
   `2. Crank: \`schedule_tick\` on the ${env.p.name === "devnet" ? "TEE" : "local"} ER ${r.sigs.schedule_tick ? tx(r.sigs.schedule_tick) : "(not scheduled)"}; match advanced by: **${r.crank}** → Switch A = ${r.crank === "crank" ? "ER crank" : "keeper fallback"}. First crank tick: ${firstTick ? tx(firstTick) : "executed inside the validator's crank (no client-visible signature); the indexer follows ticks by account subscription: " + indexed}. Cadence: eval/data/e3-${env.p.name}.json.`,
   `3. VRF on the ephemeral queue: request ${r.sigs.vrf_request ? tx(r.sigs.vrf_request) : "n/a"}, callback ${vrfCallback ? tx(vrfCallback) : "NOT OBSERVED"} → Switch B = ${vrfCallback ? "ephemeral-queue VRF" : "base-layer seed chain fallback"}.`,
-  `4. Ephemeral SPL: stakes moved player eATA → match escrow (join ${r.sigs.join_a ? tx(r.sigs.join_a) : "n/a"}), PDA-signed payout at settle (${links.settle ?? "n/a"}), house vault funded by \`topup_house_vault\`.`,
+  `4. Ephemeral SPL: stakes moved player eATA → match escrow (join ${r.sigs.join_a ? tx(r.sigs.join_a) : "n/a"}), PDA-signed payout at settle (inside the crank; MatchRecord ${links.match_record ?? "n/a"}), house vault funded by \`topup_house_vault\`.`,
 );
 fs.writeFileSync(path.join(ROOT, "docs/spike.md"), spike.join("\n") + "\n");
 log("docs/spike.md written");
