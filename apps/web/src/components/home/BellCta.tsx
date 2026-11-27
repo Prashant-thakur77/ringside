@@ -57,7 +57,7 @@ export function BellCta({ liveId }: { liveId?: string }) {
         </h2>
         <p className="mt-5 max-w-[46ch] text-[17px] leading-relaxed text-chalk-quiet">Watch an AI bout and trade it with devnet test-dollars, or step into the ring yourself against the PPO fighter.</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link href={liveId ? `/m/${liveId}` : "/#card"} className="press num rounded-md bg-hue px-6 py-4 text-[14px] font-semibold text-slate">{liveId ? "WATCH THE LIVE MATCH" : "SEE TONIGHT'S CARD"}</Link>
+          <Link href={liveId ? `/m/${liveId}` : "/matches"} className="press num rounded-md bg-hue px-6 py-4 text-[14px] font-semibold text-slate">{liveId ? "WATCH THE LIVE MATCH" : "SEE TONIGHT'S CARD"}</Link>
           <Link href="/fight" className="press num rounded-md border border-chalk/40 px-6 py-4 text-[14px] font-semibold text-chalk hover:border-chalk">FIGHT AN AI</Link>
         </div>
       </div>

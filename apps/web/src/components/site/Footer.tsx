@@ -1,6 +1,7 @@
 "use client";
 // Footer finale: the wordmark's letters rise from the rope line, shading from coral to beige.
 import Link from "next/link";
+import { PAGES } from "@/lib/nav";
 import { useRef } from "react";
 import { gsap, useGSAP, reduced } from "@/lib/motion";
 import { Mark } from "./Logo";
@@ -40,7 +41,7 @@ export function Footer() {
         <nav aria-label="Footer">
           <p className="label mb-3">EXPLORE</p>
           <ul className="space-y-1">
-            {[["Tonight's card", "/#card"], ["Fight an AI", "/fight"], ["How it works", "/#gap"], ["Proof", "/proof"], ["Docs", "/docs"], ["Waitlist", "/#waitlist"]].map(([l, h]) => (
+            {PAGES.map(({ label: l, href: h }) => (
               <li key={h}>
                 <Link href={h} className="serif text-[30px] text-chalk transition-colors hover:text-hue">{l}</Link>
               </li>

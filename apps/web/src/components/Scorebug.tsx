@@ -2,6 +2,7 @@
 // Site header: the two corner tabs hang from the top edge (red MENU, blue WATCH LIVE) with the mark
 // in the middle. On app pages the live clock and tick freshness stay on screen next to the wallet.
 import Link from "next/link";
+import { PAGES } from "@/lib/nav";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -60,7 +61,17 @@ export function Scorebug() {
             </span>
             {open ? "CLOSE" : "MENU"}
           </button>
-          <div className="absolute left-1/2 top-[10px] -translate-x-1/2">
+          <ul className="num ml-4 mr-auto hidden items-center gap-5 pt-[16px] text-[12px] font-semibold tracking-[.08em] xl:flex">
+            {PAGES.map((p) => (
+              <li key={p.href}>
+                <Link href={p.href} aria-current={path.startsWith(p.href) ? "page" : undefined}
+                  className={`border-b-2 pb-1 transition-colors hover:text-hue ${path.startsWith(p.href) ? "border-hue text-hue" : "border-transparent text-chalk"}`}>
+                  {p.label.toUpperCase()}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="absolute left-1/2 top-[10px] -translate-x-1/2 xl:static xl:left-auto xl:translate-x-0 xl:pt-[10px] xl:pr-6">
             <Logo intro={path === "/"} compact={!story} />
           </div>
           <div className="flex items-start gap-3">
@@ -85,7 +96,7 @@ export function Scorebug() {
                 <WalletButton style={{ height: 34, padding: "0 12px", whiteSpace: "nowrap", fontFamily: "var(--font-mono)", fontSize: 12, background: "#151726", border: "1px solid #2a2c40", borderRadius: 6 }} />
               </div>
             )}
-            <Link href={liveId ? `/m/${liveId}` : "/#card"} className="tab press num hidden h-[46px] items-center gap-2 bg-hue px-5 text-[13px] font-semibold text-slate sm:flex">
+            <Link href={liveId ? `/m/${liveId}` : "/matches"} className="tab press num hidden h-[46px] items-center gap-2 bg-hue px-5 text-[13px] font-semibold text-slate sm:flex">
               {liveId && <span className="live-dot">●</span>}
               {liveId ? "WATCH LIVE" : "TONIGHT'S CARD"}
             </Link>

@@ -1,19 +1,14 @@
 "use client";
-// The story page: hero → statement → the gap → five rounds → try it → receipts → results →
-// tonight's card → the undercard → ring the bell → waitlist → FAQ → footer.
+// The front door: hero → statement → one tile per page → results → ring the bell → waitlist → FAQ → footer.
 import { useEffect } from "react";
 import { ScrollTrigger } from "@/lib/motion";
 import { useGap, useResults } from "@/lib/home-data";
 import { SmoothScroll } from "@/components/home/SmoothScroll";
 import { Hero } from "@/components/home/Hero";
 import { Statement } from "@/components/home/Statement";
-import { TheGap } from "@/components/home/TheGap";
-import { Chapters } from "@/components/home/Chapters";
-import { TryIt } from "@/components/home/TryIt";
-import { Receipts } from "@/components/home/Receipts";
 import { ResultsRoll } from "@/components/home/ResultsRoll";
-import { Card, useCard } from "@/components/home/Card";
-import { Primitives } from "@/components/home/Primitives";
+import { useCard } from "@/components/home/Card";
+import { Explore } from "@/components/home/Explore";
 import { BellCta } from "@/components/home/BellCta";
 import { Waitlist } from "@/components/home/Waitlist";
 import { Faq } from "@/components/home/Faq";
@@ -33,13 +28,8 @@ export default function Home() {
       <SmoothScroll />
       <Hero liveId={liveId} />
       <Statement />
-      <TheGap />
-      <Chapters />
-      <TryIt />
-      <Receipts />
+      <Explore />
       <ResultsRoll />
-      <Card />
-      <Primitives />
       <BellCta liveId={liveId} />
       <Waitlist />
       <Faq />

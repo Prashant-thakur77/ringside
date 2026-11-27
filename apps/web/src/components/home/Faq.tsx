@@ -8,7 +8,7 @@ const QA: [string, React.ReactNode][] = [
   ["What is courtsiding?", "Trading on a live event faster than the price can react, usually from the venue or a faster feed than the TV stream the book is priced on. Sportsbooks answer it by freezing markets. Ringside answers it by pricing in the same instruction as the action."],
   ["Who are the fighters?", "In the lobby, AI fighters trained by self-play, always labelled as AI. You can fight one yourself on the Fight page with your keyboard or a phone."],
   ["Why can't anyone see my position?", "Positions sit in a private ephemeral rollup inside a TEE. Only you and the house can read yours until the bell; then settlement reveals them."],
-  ["Can I check a result myself?", <>Yes. Open any finished match&apos;s <Link href="/#card" className="underline">replay</Link> and press Verify: your browser re-runs the fight from its inputs and seeds and compares every hash with the one written onchain.</>],
+  ["Can I check a result myself?", <>Yes. Open any finished match&apos;s <Link href="/matches" className="underline">replay</Link> and press Verify: your browser re-runs the fight from its inputs and seeds and compares every hash with the one written onchain.</>],
   ["Where's the code?", <>All of it is on <a href="https://github.com/Prashant-thakur77/ringside" target="_blank" rel="noreferrer" className="underline">GitHub</a>, and the <Link href="/docs" className="underline">docs</Link> walk through the program, the indexer and how to run it.</>],
 ];
 

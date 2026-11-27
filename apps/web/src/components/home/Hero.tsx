@@ -173,7 +173,7 @@ export function Hero({ liveId }: { liveId?: string }) {
               ))}
             </h1>
             <div className="hero-cta mt-6 flex flex-wrap gap-3">
-              <Link href={liveId ? `/m/${liveId}` : "#card"} className="press num rounded-md bg-hue px-5 py-3 text-[13px] font-semibold text-slate md:bg-slate md:text-chalk">
+              <Link href={liveId ? `/m/${liveId}` : "/matches"} className="press num rounded-md bg-hue px-5 py-3 text-[13px] font-semibold text-slate md:bg-slate md:text-chalk">
                 {liveId ? "WATCH THE LIVE MATCH" : "SEE TONIGHT'S CARD"}
               </Link>
               <a href="#waitlist" className="press num rounded-md border border-chalk/40 px-5 py-3 text-[13px] font-semibold text-chalk md:border-slate/60 md:text-slate">

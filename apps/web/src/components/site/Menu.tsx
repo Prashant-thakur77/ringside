@@ -2,17 +2,11 @@
 // Full-screen menu: the red and the blue corner shards sweep in from the MENU tab and the links rise
 // from masks, right-aligned. Esc closes, focus stays inside, the page behind stops scrolling.
 import Link from "next/link";
+import { PAGES } from "@/lib/nav";
 import { useEffect, useRef } from "react";
 import { gsap, useGSAP, reduced } from "@/lib/motion";
 
-const LINKS: [string, string][] = [
-  ["Tonight's card", "/#card"],
-  ["Fight an AI", "/fight"],
-  ["How it works", "/#gap"],
-  ["Proof", "/proof"],
-  ["Docs", "/docs"],
-  ["Waitlist", "/#waitlist"],
-];
+const LINKS: [string, string][] = [["Home", "/"], ...PAGES.map((p) => [p.label, p.href] as [string, string]), ["Waitlist", "/#waitlist"]];
 const CLOSED = "polygon(0% 0%, 0% 0%, 0% 0%, 0% 0%)";
 
 export function Menu({ open, onClose, liveId }: { open: boolean; onClose: () => void; liveId?: string }) {
