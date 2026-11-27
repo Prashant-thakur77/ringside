@@ -19,7 +19,7 @@ export function DocsNav({ sections }: { sections: [string, string][] }) {
     return () => window.removeEventListener("scroll", on);
   }, [sections]);
   return (
-    <nav aria-label="On this page" className="sticky top-[52px] z-10 -mx-4 overflow-x-auto bg-paper/95 px-4 py-3 backdrop-blur md:top-24 md:mx-0 md:self-start md:overflow-visible md:bg-transparent md:p-0 md:pt-10">
+    <nav aria-label="On this page" className="sticky top-[52px] z-10 -mx-4 overflow-x-auto bg-paper/95 px-4 py-3 md:top-24 md:mx-0 md:self-start md:overflow-visible md:bg-transparent md:p-0 md:pt-10">
       <p className="num mb-3 hidden text-[12px] text-slate/60 md:block">ON THIS PAGE</p>
       <ul className="flex gap-2 md:block md:space-y-0.5">
         {sections.map(([id, label]) => (

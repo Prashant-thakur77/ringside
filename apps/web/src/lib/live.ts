@@ -47,6 +47,7 @@ export function useFeed() {
     if (started) return;
     started = true;
     let es: EventSource | null = null;
+    let wait = 2000; // back off while the feed is unreachable: 2 s, 4 s ... up to 60 s
     const open = () => {
       es = new EventSource(`${INDEXER}/events`);
       es.onmessage = (m) => {
@@ -54,9 +55,11 @@ export function useFeed() {
           push(JSON.parse(m.data));
         } catch {}
       };
+      es.onopen = () => { wait = 2000; };
       es.onerror = () => {
         es?.close();
-        setTimeout(open, 2000);
+        setTimeout(open, wait);
+        wait = Math.min(wait * 2, 60_000);
       };
     };
     open();

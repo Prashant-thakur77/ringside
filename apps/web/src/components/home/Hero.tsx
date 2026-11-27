@@ -80,17 +80,22 @@ export function Hero({ liveId }: { liveId?: string }) {
       // Start states are applied by the from() tweens above; only now is the hero allowed to show.
       gsap.set(root.current, { visibility: "visible" });
 
-      // Pointer: the corners lean a few percent toward the pointer.
-      const lean = { x: 0, y: 0 };
+      // Pointer: the corners lean toward the pointer. Transform-only (GPU), one reusable tween per axis,
+      // so moving the mouse never repaints the hero or re-measures the letters.
+      const sr = root.current!.querySelector<HTMLElement>(".shard-r")!;
+      const sb = root.current!.querySelector<HTMLElement>(".shard-b")!;
+      gsap.set([sr, sb], { scale: 1.06, transformOrigin: "50% 50%", force3D: true });
+      const rx = gsap.quickTo(sr, "x", { duration: 0.9, ease: "power3.out" }), ry = gsap.quickTo(sr, "y", { duration: 0.9, ease: "power3.out" });
+      const bx = gsap.quickTo(sb, "x", { duration: 1.1, ease: "power3.out" }), by = gsap.quickTo(sb, "y", { duration: 1.1, ease: "power3.out" });
+      let pending = false, ex = 0, ey = 0;
       const move = (e: PointerEvent) => {
-        gsap.to(lean, {
-          x: (e.clientX / innerWidth - 0.5) * 5, y: (e.clientY / innerHeight - 0.5) * 4, duration: 0.8, ease: "power3.out",
-          onUpdate: () => {
-            if (tl.isActive()) return;
-            s.red = RED.map(([x, y], i) => (i === 1 || i === 2 ? [x + lean.x, y + lean.y] : [x, y]) as P);
-            s.blue = BLUE.map(([x, y], i) => (i === 3 || i === 0 ? [x + lean.x, y + lean.y] : [x, y]) as P);
-            paint();
-          },
+        ex = e.clientX / innerWidth - 0.5; ey = e.clientY / innerHeight - 0.5;
+        if (pending) return;
+        pending = true;
+        requestAnimationFrame(() => {
+          pending = false;
+          if (tl.isActive()) return;
+          rx(ex * 26); ry(ey * 18); bx(ex * -18); by(ey * -14);
         });
       };
       const fine = matchMedia("(pointer: fine)").matches;
@@ -103,7 +108,7 @@ export function Hero({ liveId }: { liveId?: string }) {
         const st = gsap.timeline({ scrollTrigger: { trigger: root.current, start: "top top", end: "+=120%", scrub: 0.8, pin: true } });
         st.to(card, {
           scale: () => Math.max(innerWidth / card.offsetWidth, innerHeight / card.offsetHeight) * 1.02,
-          borderRadius: 0, ease: "power2.inOut", duration: 1,
+          ease: "power2.inOut", duration: 1,
         })
           .to(".hero-fade", { opacity: 0, duration: 0.3 }, 0)
           .fromTo(".bleed-title", { yPercent: 120 }, { yPercent: 0, duration: 0.4 }, 0.55)
@@ -183,7 +188,7 @@ export function Hero({ liveId }: { liveId?: string }) {
           </div>
 
           <div className="relative flex flex-col items-center">
-            <div className="hero-card relative h-[230px] w-[min(88vw,440px)] overflow-hidden rounded-[20px] bg-hue-deep shadow-[0_30px_80px_-20px_rgba(0,0,0,.6)] md:h-[270px] md:w-[460px]">
+            <div className="hero-card relative will-change-transform h-[230px] w-[min(88vw,440px)] overflow-hidden rounded-[20px] bg-hue-deep shadow-[0_30px_80px_-20px_rgba(0,0,0,.6)] md:h-[270px] md:w-[460px]">
               <div className="card-words absolute inset-0 grid place-items-center">
                 <p className="display text-[44px] font-semibold text-chalk">
                   Price the <span className="bg-slate px-2 text-hue">punch</span>

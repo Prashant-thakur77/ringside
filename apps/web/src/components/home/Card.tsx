@@ -16,7 +16,7 @@ const clock = (tick: number) => {
 };
 
 export function useCard() {
-  const { data: rows, isError } = useQuery({ queryKey: ["matches"], queryFn: () => api<Row[]>("/matches?limit=40"), refetchInterval: 2000 });
+  const { data: rows, isError } = useQuery({ queryKey: ["matches"], queryFn: () => api<Row[]>("/matches?limit=40"), refetchInterval: () => (useSnapshot.getState().on ? 60_000 : 2000) });
   const states = useLive((s) => s.states);
   const all = (rows ?? []).map((r) => {
     const st = states[r.match_key];

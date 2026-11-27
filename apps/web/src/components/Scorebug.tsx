@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api, useLive, useNow, useFeed } from "@/lib/live";
+import { api, useLive, useNow, useFeed, useSnapshot } from "@/lib/live";
 import { Logo } from "@/components/site/Logo";
 import { Menu } from "@/components/site/Menu";
 import { AnnounceBar } from "@/components/site/AnnounceBar";
@@ -20,8 +20,8 @@ export function Scorebug() {
   const story = path === "/" || path.startsWith("/docs");
   const states = useLive((s) => s.states);
   const lastTickAt = useLive((s) => s.lastTickAt);
-  const now = useNow(200);
-  const { data: list } = useQuery({ queryKey: ["matches"], queryFn: () => api<{ match_key: string; match_id: string; status: number }[]>("/matches?limit=40"), refetchInterval: 2000 });
+  const now = useNow(lastTickAt > 0 ? 250 : 5000); // fast only while ticks are arriving
+  const { data: list } = useQuery({ queryKey: ["matches"], queryFn: () => api<{ match_key: string; match_id: string; status: number }[]>("/matches?limit=40"), refetchInterval: () => (useSnapshot.getState().on ? 60_000 : 2000) });
   const fresh = now - lastTickAt < 3000;
   const live = Object.values(states).filter((s) => (s.match.status === 1 || s.match.status === 2) && fresh);
   const listed = (list ?? []).filter((m) => m.status === 1 || m.status === 2);
@@ -33,22 +33,25 @@ export function Scorebug() {
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const lastY = useRef(0);
+  const hid = useRef(false);
   useEffect(() => {
+    // one passive listener; the header re-renders only when it actually hides or shows
     const on = () => {
       const y = window.scrollY;
-      setHidden(y > 240 && y > lastY.current + 4 ? true : y < lastY.current - 4 ? false : hidden);
+      const next = y > 240 && y > lastY.current + 4 ? true : y < lastY.current - 4 ? false : hid.current;
       lastY.current = y;
+      if (next !== hid.current) { hid.current = next; setHidden(next); }
     };
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
-  });
+  }, []);
   useEffect(() => setOpen(false), [path]);
 
   return (
     <>
       <AnnounceBar />
       <header className={`sticky top-0 z-40 transition-transform duration-300 ${hidden && !open ? "-translate-y-full" : ""}`} style={{ transitionTimingFunction: "var(--ease-snap)" }}>
-        <nav className="relative flex h-[52px] items-start justify-between bg-slate/85 backdrop-blur" aria-label="Main">
+        <nav className="relative flex h-[52px] items-start justify-between bg-slate/95" aria-label="Main">
           <button
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
