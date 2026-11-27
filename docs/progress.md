@@ -189,3 +189,13 @@ tv_delay {'fills': 20, 'stale_fills_accepted': 20, 'stale_rejections': 0}
 - Blocked: admin wallet has 0 devnet SOL (airdrop rate-limited); needs ~15 SOL via faucet.solana.com (docs/blocked.md).
 - Next, once SOL lands (all scripted): `./scripts/devnet-all.sh deploy` → `services` (Postgres, indexer, our hydra-cranker against devnet-tee, matchmaker) → `e2e` (links.json, spike.md, E5) → `eval` (arena + 4 runners, E1 at 0.5/1/2/5/8 s) → `soak` → `report` (E3, E6, results.json, render docs, consistency) → Vercel deploy with tunnel URLs → `scripts/audit.sh`.
 - Open issues to watch on devnet: validator 2.0 crank needs a hydra-cranker (we run our own; keeper fallback exists); VRF callback on devnet-tee unverified (Switch B documented); commits/Magic Action only provable on devnet (MagicSVM proves the logic); house vault must be large (courtsider drains delayed books).
+
+## 2026-11-27 10:35 IST · Devnet run (10 SOL)
+- Deploy: program `4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej` (sig 2Qw4oL1o…), Config `Gn2PTrRk…`, test-dollar mint `9GkhvG9z…`, ModelParams `ATTNMp41…` (readback matches blob, metrics hash 58114e35…), house vault topped up on the TEE, bots funded.
+- e2e (match 1795753242111, devnet-tee): fill, stale reject 6000, fighter-bar 6001, session-key trade, VRF callback, crank ticks (validator-executed), finalize, commit, MatchRecord on L1, reveal. Links in docs/links.json and docs/spike.md.
+- E5: non-member / unauthenticated / opposing fighter 20/20 denied live; after reveal 20/20 readable; plain ER position readable.
+- E1: 23 complete matches (2 runners); TV-delay book 319 stale fills accepted; Ringside 1302 stale attempts, 1283 rejected, 0 filled.
+- E3: tick cadence p50 100 ms, p95 111, p99 137 over 14,781 ticks; E4: 8×40 soak 91.6% landed, p50 262 ms; E6: 19/19 Python + WASM (10,266 links), 1 incomplete excluded.
+- Indexer on the TEE follows matches by account subscription (logs are signer-only there); web on Cloudflare Workers; browser replay VERIFIED ✓ 574 ticks on the live site.
+- Fixes found by devnet: start/stop helpers in devnet-all.sh, TEE websocket path, escrow visibility wait, reveal after crank settle, soak retries, public RPC rate limits (MagicBlock devnet RPC).
+- Audit: PASS. CI green. Checklist 164/179.
