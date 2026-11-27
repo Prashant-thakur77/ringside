@@ -40,13 +40,13 @@ export default function Agents() {
         <div className="mx-auto grid max-w-[1400px] gap-12 lg:grid-cols-2">
           <div className="space-y-8">
             <div>
-              <p className="num text-[12px] text-hue">01 · CLAUDE CODE</p>
-              <h2 className="display mb-4 mt-1 text-[40px] font-semibold">Add it in one line</h2>
-              <Code text={`claude mcp add ringside -- npx -y ${MCP_PKG}`} />
+              <p className="num text-[12px] text-hue">01 · ONE COMMAND</p>
+              <h2 className="display mb-4 mt-1 text-[40px] font-semibold">Run it over stdio</h2>
+              <Code text={`npx -y ${MCP_PKG}`} />
             </div>
             <div>
-              <p className="num text-[12px] text-hue">02 · CLAUDE DESKTOP, CURSOR, ANY MCP CLIENT</p>
-              <h2 className="display mb-4 mt-1 text-[40px] font-semibold">Or drop in the config</h2>
+              <p className="num text-[12px] text-hue">02 · ANY MCP CLIENT</p>
+              <h2 className="display mb-4 mt-1 text-[40px] font-semibold">Drop in the config</h2>
               <Code text={cfg} />
               <p className="mt-3 text-[15px] text-chalk-quiet">Set <span className="num">RINGSIDE_INDEXER_URL</span> to point at your own indexer. Without it the server reads the live site, and falls back to the recorded devnet matches.</p>
             </div>

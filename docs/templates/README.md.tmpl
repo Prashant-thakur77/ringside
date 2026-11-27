@@ -16,7 +16,7 @@ Same bot, same {{headline.n_matches}} held-out matches, {{headline.delay_ms:s}} 
 |---|---|
 | ![Home](docs/media/site-home.jpg) **Home.** The pitch in one screen, a real match's odds line and the measured results. | ![Matches](docs/media/site-matches.jpg) **Matches.** Tonight's card with prices per tick, every finished result with replay and verify. |
 | ![Play](docs/media/site-trade.jpg) **Play.** Trade a replayed devnet fight at the real per-tick fair price, no wallet needed. | ![Replay](docs/media/site-replay.jpg) **Replay and verify.** Your browser re-runs the fight in WASM and checks every hash against the chain. |
-| ![How it works](docs/media/site-how.jpg) **How it works.** The five-second gap on a real match, the five rounds, the MagicBlock pieces. | ![Agents](docs/media/site-agents.jpg) **Agents.** Ringside as an MCP server for Claude, Cursor or any MCP client. |
+| ![How it works](docs/media/site-how.jpg) **How it works.** The five-second gap on a real match, the five rounds, the MagicBlock pieces. | ![Agents](docs/media/site-agents.jpg) **Agents.** Ringside as an MCP server for any agent or MCP client. |
 
 ## What it is
 
@@ -55,9 +55,7 @@ If the live indexer is unreachable, the site serves the finished devnet matches 
 
 `ringside-mcp` is a Model Context Protocol server that gives any agent read access to matches, both order books, odds by tick, replays and the measured results. No wallet, no API key.
 
-```bash
-claude mcp add ringside -- npx -y ringside-mcp
-```
+Add it to any MCP client's config, or run `npx -y ringside-mcp` over stdio:
 
 ```json
 { "mcpServers": { "ringside": { "command": "npx", "args": ["-y", "ringside-mcp"] } } }
