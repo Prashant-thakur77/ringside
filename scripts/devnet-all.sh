@@ -5,15 +5,17 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
 export RINGSIDE_ENV=devnet
+# MagicBlock's devnet RPC: the public endpoint rate-limits the parallel runners (decisions.md).
+export SOLANA_RPC="${SOLANA_RPC:-https://rpc.magicblock.app/devnet}"
 LOG="$PWD/.devnet"; mkdir -p "$LOG"
 RUNNERS="${RUNNERS:-4}"
 # start <name> <dir> <command...>: detached session; the session leader writes its own pid = pgid,
 # so ./scripts/stop-groups.sh "$(cat .devnet/<name>.pid)" stops the whole tree.
 start() {
   local name="$1" dir="$2"; shift 2
-  (cd "$dir" && setsid bash -c "echo \$\$ > '$LOG/$name.pid'; exec \"\$@\"" _ "$@" > "$LOG/$name.log" 2>&1 < /dev/null &)
+  ( cd "$dir" && exec setsid bash -c "echo \$\$ > '$LOG/$name.pid'; exec \"\$@\"" _ "$@" ) > "$LOG/$name.log" 2>&1 < /dev/null &
 }
-stop() { for n in "$@"; do [ -f "$LOG/$n.pid" ] && setsid ./scripts/stop-groups.sh "$(cat $LOG/$n.pid)" < /dev/null > /dev/null 2>&1; rm -f "$LOG/$n.pid"; done; }
+stop() { for n in "$@"; do [ -f "$LOG/$n.pid" ] && { setsid ./scripts/stop-groups.sh "$(cat "$LOG/$n.pid")" < /dev/null > /dev/null 2>&1 || true; }; rm -f "$LOG/$n.pid"; done; }
 TOOLS="$(for d in ~/.npm/_npx/*/node_modules/@magicblock-labs/ephemeral-validator; do grep -q '"version": "2.0.3"' $d/package.json && echo $d; done | head -1)/.."
 
 deploy() {
@@ -30,7 +32,7 @@ services() {
   DATABASE_URL=postgres://ringside:ringside@127.0.0.1:5435/ringside_devnet INDEXER_KEYPAIR=keys/indexer.json COURTSIDER="$(solana-keygen pubkey keys/courtsider.json)" \
     start indexer . services/indexer/target/release/ringside-indexer
   TEE_URL="$(cd scripts && npx tsx tee-url.ts cranker | tail -n 1)"
-  start cranker . "$TOOLS/hydra-cranker-linux-x64/bin/hydra-cranker" --ephemeral --base-rpc-url https://api.devnet.solana.com \
+  start cranker . "$TOOLS/hydra-cranker-linux-x64/bin/hydra-cranker" --ephemeral --base-rpc-url "$SOLANA_RPC" \
     --keypair keys/cranker.json --rpc-url "$TEE_URL" --ws-url "${TEE_URL/https/wss}" --prometheus-port 9797
   start matchmaker bots npx tsx matchmaker.ts
   echo "indexer, hydra-cranker and matchmaker started"

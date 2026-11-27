@@ -548,11 +548,68 @@ async fn sig_poll_loop(s: S) {
     }
 }
 
+/// Fills and recorded rejections from two consecutive snapshots of a market account. On the
+/// private ER the trader is not visible to the indexer (that is the point), so it is "private".
+/// A buy adds qty to the side's inventory and qty * price to house cash; a sell removes both.
+fn book_events(market: &str, old: &MarketView, new: &MarketView, game_tick: u64) -> Vec<(String, Event)> {
+    let mut out = vec![];
+    if new.n_trades > old.n_trades {
+        let da = new.inv_a as i128 - old.inv_a as i128;
+        let db = new.inv_b as i128 - old.inv_b as i128;
+        let (side, dq) = if da != 0 { (0u8, da) } else { (1u8, db) };
+        let qty = dq.unsigned_abs() as u64;
+        let cash = (new.house_cash as i128 - old.house_cash as i128).unsigned_abs() as u64;
+        if qty > 0 {
+            // Rows derived from account updates have no client-visible transaction: stable synthetic id.
+            out.push((
+                format!("acct:{market}:t{}", new.n_trades),
+                Event::Trade {
+                    market: market.to_string(),
+                    trader: "private".into(),
+                    tick: new.last_priced_tick,
+                    game_tick,
+                    seen_tick: new.last_priced_tick,
+                    price: cash / qty,
+                    qty,
+                    side,
+                    dir: if dq > 0 { 0 } else { 1 },
+                    mode: new.mode,
+                    unix_ms: now_ms(),
+                },
+            ));
+        }
+    }
+    let rejects = [
+        (new.n_rejected_stale.saturating_sub(old.n_rejected_stale), 6000u32),
+        (new.n_rejected_fighter.saturating_sub(old.n_rejected_fighter), 6001),
+        (new.n_rejected_other.saturating_sub(old.n_rejected_other), 6002),
+    ];
+    let before = old.n_rejected_stale + old.n_rejected_fighter + old.n_rejected_other;
+    let mut k = 0;
+    for (n, reason) in rejects {
+        for _ in 0..n {
+            k += 1;
+            out.push((
+                format!("acct:{market}:r{}", before + k),
+                Event::Reject {
+                    market: market.to_string(),
+                    trader: "private".into(),
+                    tick: game_tick,
+                    seen_tick: 0,
+                    reason,
+                    mode: new.mode,
+                },
+            ));
+        }
+    }
+    out
+}
+
 /// On the TEE, crank-executed ticks leave no transaction history a client can read, but account
 /// subscriptions deliver every write. Each Match snapshot after a tick carries the tick, the inputs
 /// the step used (sim.last_inputs) and the hash chain; stepping the previous snapshot with those
 /// inputs recovers the event flags and cross-checks the state. fair_p comes from the live market.
-async fn follow_match(s: S, key: String, market_live: String) -> Result<()> {
+async fn follow_match(s: S, key: String, market_live: String, market_delayed: String) -> Result<()> {
     let url = s.er_url().await?;
     let mut ws = url.replacen("http", "ws", 1);
     if let Some(i) = ws.find('?') {
@@ -561,7 +618,7 @@ async fn follow_match(s: S, key: String, market_live: String) -> Result<()> {
         }
     }
     let (mut sock, _) = tokio_tungstenite::connect_async(ws.as_str()).await.context("ws connect")?;
-    for (id, k) in [(1, &key), (2, &market_live)] {
+    for (id, k) in [(1, &key), (2, &market_live), (3, &market_delayed)] {
         let sub = json!({"jsonrpc":"2.0","id":id,"method":"accountSubscribe","params":[k,{"encoding":"base64","commitment":"confirmed"}]});
         sock.send(tokio_tungstenite::tungstenite::Message::Text(sub.to_string().into()))
             .await?;
@@ -570,6 +627,8 @@ async fn follow_match(s: S, key: String, market_live: String) -> Result<()> {
     let mut prev: Option<(u32, Vec<u8>)> = None;
     let mut fair: (u64, f64) = (0, 0.5);
     let mut pending: Option<Event> = None;
+    let mut books: HashMap<u8, MarketView> = HashMap::new();
+    let mut game_tick: u64 = 0;
     let flush = |ev: Event, fair_p: f64| match ev {
         Event::Tick {
             match_key,
@@ -588,10 +647,10 @@ async fn follow_match(s: S, key: String, market_live: String) -> Result<()> {
         },
         e => e,
     };
-    let emit = |s: &S, ev: Event| {
+    let emit = |s: &S, sig: String, ev: Event| {
         let s = s.clone();
         async move {
-            if let Err(e) = store_event(&s, "", &ev, false).await {
+            if let Err(e) = store_event(&s, &sig, &ev, false).await {
                 warn!("store tick: {e:#}");
             }
             let mut j = serde_json::to_value(&ev).unwrap_or(Value::Null);
@@ -621,12 +680,19 @@ async fn follow_match(s: S, key: String, market_live: String) -> Result<()> {
             continue;
         };
         match subs.get(&sub) {
-            Some(2) => {
-                if let Some(m) = decode_market(&data) {
+            Some(&which @ (2 | 3)) => {
+                let Some(m) = decode_market(&data) else { continue };
+                let mk = if which == 2 { &market_live } else { &market_delayed };
+                if let Some(old) = books.insert(which, m.clone()) {
+                    for (sig, ev) in book_events(mk, &old, &m, game_tick) {
+                        emit(&s, sig, ev).await;
+                    }
+                }
+                if which == 2 {
                     fair = (m.last_priced_tick, m.fair_p);
                     if let Some(Event::Tick { tick, .. }) = &pending {
                         if m.last_priced_tick >= *tick {
-                            emit(&s, flush(pending.take().unwrap(), m.fair_p)).await;
+                            emit(&s, String::new(), flush(pending.take().unwrap(), m.fair_p)).await;
                         }
                     }
                 }
@@ -641,8 +707,9 @@ async fn follow_match(s: S, key: String, market_live: String) -> Result<()> {
                     continue;
                 }
                 if let Some(ev) = pending.take() {
-                    emit(&s, flush(ev, fair.1)).await;
+                    emit(&s, String::new(), flush(ev, fair.1)).await;
                 }
+                game_tick = m.tick as u64;
                 let Some(cur) = ringside_sim::decode(sim) else { continue };
                 let mut flags = 0u32;
                 if let Some((pt, pb)) = &prev {
@@ -667,7 +734,7 @@ async fn follow_match(s: S, key: String, market_live: String) -> Result<()> {
                         state_hash: m.state_hash.clone(),
                     };
                     if fair.0 >= m.tick as u64 || m.status >= 3 {
-                        emit(&s, ev).await;
+                        emit(&s, String::new(), ev).await;
                     } else {
                         pending = Some(ev);
                     }
@@ -675,7 +742,7 @@ async fn follow_match(s: S, key: String, market_live: String) -> Result<()> {
                 prev = Some((m.tick, sim.to_vec()));
                 if m.status >= 3 {
                     if let Some(ev) = pending.take() {
-                        emit(&s, flush(ev, fair.1)).await;
+                        emit(&s, String::new(), flush(ev, fair.1)).await;
                     }
                     return Ok(());
                 }
@@ -710,10 +777,10 @@ async fn poll_loop(s: S) {
                         if let Some(m) = account_data(&a["account"]).and_then(|d| decode_match(&d)) {
                             let _ = upsert_match(&s, &key, &m).await;
                             if m.status <= 2 && s.cfg.tee && s.following.write().await.insert(key.clone()) {
-                                let (s2, k2, ml) = (s.clone(), key.clone(), m.market_live.clone());
+                                let (s2, k2, ml, md) = (s.clone(), key.clone(), m.market_live.clone(), m.market_delayed.clone());
                                 tokio::spawn(async move {
                                     for attempt in 0..5 {
-                                        match follow_match(s2.clone(), k2.clone(), ml.clone()).await {
+                                        match follow_match(s2.clone(), k2.clone(), ml.clone(), md.clone()).await {
                                             Ok(()) => break,
                                             Err(e) => warn!("follow {k2} (attempt {attempt}): {e:#}"),
                                         }
@@ -1017,7 +1084,7 @@ async fn main() -> Result<()> {
             if local {
                 "http://127.0.0.1:8899".into()
             } else {
-                "https://api.devnet.solana.com".into()
+                "https://rpc.magicblock.app/devnet".into()
             }
         }),
         er_rpc: std::env::var("ER_RPC").unwrap_or_else(|_| {

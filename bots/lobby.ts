@@ -16,6 +16,8 @@ const arg = (k: string, d: string) => {
 // --runner <k>: only run matches (fighters fighter-a-k / fighter-b-k), no bots; several runners can
 //   play matches in parallel. --arena: only the bots (relay, spectators, courtsider) for every match.
 const env = new Env(profile());
+// The public devnet RPC rate-limits bursts (429); a transient RPC error must not take the lobby down.
+process.on("unhandledRejection", (e) => console.log(`[lobby] unhandled: ${String((e as Error)?.message ?? e).split("\n")[0]}`));
 const admin = loadKeypair("admin");
 const runnerIdx = arg("runner", "");
 const arenaOnly = process.argv.includes("--arena");
@@ -55,7 +57,8 @@ for (let n = 0; total === 0 || n < total; n++) {
     const r = await runner.run();
     console.log(`[lobby] match ${r.id} (${ai.label} vs ${opp.label}, delay ${delay} ms): winner ${r.winner} at tick ${r.ticks}, ${r.crank}, record ${r.recordWritten}`);
   } catch (e) {
-    console.log(`[lobby] match failed: ${String((e as Error).message).split("\n")[0]}`);
+    const err = e as { transactionMessage?: string; message?: string; logs?: string[] };
+    console.log(`[lobby] match failed: ${String(err.transactionMessage ?? err.message).split("\n")[0]} ${(err.logs ?? []).filter((l) => l.includes("Error")).join(" | ")}`);
   }
 }
 process.exit(0);

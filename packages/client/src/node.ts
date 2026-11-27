@@ -73,7 +73,7 @@ export function profile(name = process.env.RINGSIDE_ENV ?? "devnet"): Profile {
   }
   return {
     name: "devnet",
-    baseRpc: process.env.SOLANA_RPC ?? "https://api.devnet.solana.com",
+    baseRpc: process.env.SOLANA_RPC ?? "https://rpc.magicblock.app/devnet",
     erRpc: process.env.TEE_RPC ?? "https://devnet-tee.magicblock.app",
     tee: true,
     validator: new PublicKey(process.env.TEE_VALIDATOR ?? "MTEWGuqxUpYZGFJQcp8tLN7x5v9BSeoFHYWQQ3n3xzo"),
