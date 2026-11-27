@@ -23,7 +23,7 @@ Onchain proof from one live match on devnet-tee:
 | VRF power-up wave (callback) | {{link:vrf_callback}} |
 | Stale order rejected (`ErrStaleTick`) | {{link:stale_reject}} |
 | Fighter trading their own match rejected (`ErrFighterBarred`) | {{link:fighter_reject}} |
-| Settlement and reveal of positions | {{link:settle}} |
+| Settlement (inside the crank) and reveal of positions | {{link:reveal}} |
 | Commit to Solana | {{link:commit}} |
 | MatchRecord written by the Magic Action | {{link:match_record}} |
 
@@ -102,7 +102,7 @@ The onchain integer model differs from the float student by {{e2.onchain_vs_floa
 
 ### E3 · latency, measured
 
-Tick cadence p50 {{e3.tick_cadence_ms.p50:.0f}} ms, p95 {{e3.tick_cadence_ms.p95:.0f}} ms, p99 {{e3.tick_cadence_ms.p99:.0f}} ms over {{e3.tick_cadence_ms.n}} ticks. Quote age at fill p50 {{e3.quote_age_at_fill_ms.p50:.0f}} ms, p95 {{e3.quote_age_at_fill_ms.p95:.0f}} ms. Trade submit to confirm p50 {{e3.submit_confirm_ms.trade.p50:.0f}} ms (p95 {{e3.submit_confirm_ms.trade.p95:.0f}} ms). Host: {{e3.host_region}}; rollup: {{e3.er_endpoint}}. A broadcast stream runs 5–8 s behind.
+Tick cadence p50 {{e3.tick_cadence_ms.p50:.0f}} ms, p95 {{e3.tick_cadence_ms.p95:.0f}} ms, p99 {{e3.tick_cadence_ms.p99:.0f}} ms over {{e3.tick_cadence_ms.n}} ticks. {{e3.quote_age_text}} Trade submit to confirm p50 {{e3.submit_confirm_ms.trade.p50:.0f}} ms (p95 {{e3.submit_confirm_ms.trade.p95:.0f}} ms). Host: {{e3.host_region}}; rollup: {{e3.er_endpoint}}. A broadcast stream runs 5–8 s behind.
 
 ### E4 · soak
 

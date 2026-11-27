@@ -14,6 +14,6 @@
   "owner_control_readable": 20,
   "plain_er_readable": true,
   "target": "D5vBzqxN5ZGBb7SFrvpSY71cEvQBrCtwe9iFz5NHdKhG",
-  "after_reveal_readable": false,
-  "after_reveal_reads": 0
+  "after_reveal_readable": true,
+  "after_reveal_reads": 20
 }

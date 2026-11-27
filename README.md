@@ -2,7 +2,7 @@
 
 Ringside is an in-play betting exchange that can't be courtsided: the fight and the order book live in the same MagicBlock rollup, so every price is as fresh as the last punch.
 
-Same bot, same 115 held-out matches, 5 s TV delay: the courtsider made **+13.42** per match on the delayed book and **+0.59** on Ringside, where 1420 of its stale orders were rejected onchain and 135 filled. Measured on local MagicBlock stack (base validator + ER 1.1.1).
+Same bot, same 11 held-out matches, 5 s TV delay: the courtsider made **+4.38** per match on the delayed book and **+0.00** on Ringside, where 1283 of its stale orders were rejected onchain and 0 filled. Measured on Solana devnet + MagicBlock devnet-tee.
 
 ![A live Ringside match: the odds line moves with every hit](docs/media/ringside.gif)
 
@@ -10,22 +10,22 @@ Same bot, same 115 held-out matches, 5 s TV delay: the courtsider made **+13.42*
 
 | | |
 |---|---|
-| Live app | PENDING |
+| Live app | https://ringside.prashant101007.workers.dev |
 | Video | PENDING |
-| Program (devnet) | [`4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej`](4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej) |
-| Fee vault (house eATA owner: Config PDA) | [`Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK`](Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK) |
-| Model params, v1 | [account](ATTNMp41xs7zeUxSdFMD3iBBhMp2QM8KMWxhoebZuEaF) |
+| Program (devnet) | [`4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej`](https://explorer.solana.com/address/4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej?cluster=devnet) |
+| Fee vault (house eATA owner: Config PDA) | [`Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK`](https://explorer.solana.com/address/Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK?cluster=devnet) |
+| Model params, v1 | [account](https://explorer.solana.com/address/ATTNMp41xs7zeUxSdFMD3iBBhMp2QM8KMWxhoebZuEaF?cluster=devnet) |
 
 Onchain proof from one live match on devnet-tee:
 
 | Event | Transaction |
 |---|---|
-| VRF power-up wave (callback) | PENDING |
-| Stale order rejected (`ErrStaleTick`) | local:5LL1F6LuXjT5EmhdQGSxCY5dThSg5PVxYShPA1DeLYQ3C3VJ45EJumLVbdadQM1bBgnHL2NRuxUBQFEFzGByMBBx |
-| Fighter trading their own match rejected (`ErrFighterBarred`) | local:5JfMdmMj7MNvp6vGWUuWFNb5QVDQRcHUBGJAuf1zy1GviBg59N97KQVJPGDFTVuAkxiMCTnt4oVBo7zrYv1aqack |
-| Settlement and reveal of positions | local:38ZshAWEKazf7fc3F8wUmCfgtKkJ77ADFN5Jth4RCq8amwb9QH3HT2Li4DSNWgtkPuJBHjyX1PAjdcCi8EnfLPMi |
-| Commit to Solana | PENDING |
-| MatchRecord written by the Magic Action | PENDING |
+| VRF power-up wave (callback) | https://explorer.solana.com/tx/WEuv5cCWGbG5bgwQrFU8Yu8UjX77vXc3cS8NDmimyPn7j61J1W7ibNXuKxq5GZQLRTqDB5iTsKUfDoqvGqup9A5?cluster=custom&customUrl=https%3A%2F%2Fdevnet-tee.magicblock.app |
+| Stale order rejected (`ErrStaleTick`) | https://explorer.solana.com/tx/591tfysPXLzBBhrxirr7dr19rJw4T6iNAmap7ig9tbbTCzhMSwvDNFxFqn3Hy3ezW4MMSsCR9i49jqZtVtR7QN2Y?cluster=custom&customUrl=https%3A%2F%2Fdevnet-tee.magicblock.app |
+| Fighter trading their own match rejected (`ErrFighterBarred`) | https://explorer.solana.com/tx/2Bw1FoM5JZQAsaDYzqQGknUUSkx58BQRLkWJRUeify2D1F3DHZM78TXMckcwKyrYB91ZYSQt3YqHrDBoiJGZjvNT?cluster=custom&customUrl=https%3A%2F%2Fdevnet-tee.magicblock.app |
+| Settlement (inside the crank) and reveal of positions | https://explorer.solana.com/tx/2tLKFwJ1tLYGxAYFioZsZ9kDJok5QDDvVJsfqnkqsfmXcWra8MkWq9KM1ds9rKY5ELYrcJrkR2WuXtGjN7cehMft?cluster=custom&customUrl=https%3A%2F%2Fdevnet-tee.magicblock.app |
+| Commit to Solana | https://explorer.solana.com/tx/3Uk5DY4rXV9fWrqgmnc9QyyiMFGK5BarrkGUCrzxvxFQSsBa5cba54HHb8msKnb2WSozXdapf9CeY9FhDd7UhdKx?cluster=devnet |
+| MatchRecord written by the Magic Action | https://explorer.solana.com/address/A7x8dRinneeA9CCn41KvAFdPb5D5jub5dwiKtyWFEmrW?cluster=devnet |
 
 Spectators use devnet test-dollars, a 6-decimal mint we created because the Circle devnet USDC faucet can't fund a house vault. The program takes any mint at setup; real devnet USDC works the same way.
 
@@ -71,20 +71,20 @@ Each match has two books on the same fight. The Ringside book is priced inside `
 
 All numbers below come from `eval/results/results.json`, written by `eval/make_report.py`. Evaluation is on held-out data: matches the courtsider was never tuned on, model metrics on a held-out 15% split by match, PPO win rates on match seeds never used in training.
 
-### E1 · courtsiding A/B (123 matches)
+### E1 · courtsiding A/B (23 matches)
 
 ![Courtsider PnL per match, TV-delay books vs Ringside](eval/results/e1_courtsider_ab.png)
 
 | Book | Matches | Courtsider PnL / match | 95% CI | Stale fills accepted | House PnL / match |
 |---|---|---|---|---|---|
-| TV delay 0.5 s | 1 | +1.26 | +1.26 to +1.26 | 10 | +2.33 |
-| TV delay 1 s | 4 | +11.55 | -1.08 to +19.50 | 24 | -0.63 |
-| TV delay 2 s | 3 | +15.59 | +9.18 to +24.02 | 28 | -14.52 |
-| TV delay 5 s | 115 | +13.42 | +11.48 to +15.41 | 898 | -16.74 |
-| TV delay 8 s | PENDING | PENDING | PENDING to PENDING | PENDING | PENDING |
-| Ringside | 123 | +0.59 | +0.22 to +0.94 | 135 | +5.86 |
+| TV delay 0.5 s | 3 | +2.25 | -2.41 to +8.57 | 34 | -6.10 |
+| TV delay 1 s | 4 | +1.89 | -1.58 to +5.78 | 46 | -0.68 |
+| TV delay 2 s | 3 | +7.00 | +4.86 to +10.53 | 38 | -9.65 |
+| TV delay 5 s | 11 | +4.38 | -1.76 to +9.73 | 176 | -4.87 |
+| TV delay 8 s | 2 | +2.73 | +0.00 to +5.45 | 25 | -13.20 |
+| Ringside | 23 | +0.00 | +0.00 to +0.00 | 0 | -0.87 |
 
-On Ringside the courtsider sent 1587 orders stamped with the tick it saw on the delayed feed; 1420 were rejected with `ErrStaleTick`. It also traded at the live tick 895 times, where it pays the spread like everyone else.
+On Ringside the courtsider sent 1302 orders stamped with the tick it saw on the delayed feed; 1283 were rejected with `ErrStaleTick`. It also traded at the live tick 0 times, where it pays the spread like everyone else.
 
 ### E2 · is the price right? (29890 held-out matches, 2859074 rows)
 
@@ -102,19 +102,19 @@ The onchain integer model differs from the float student by 0.0031 in probabilit
 
 ### E3 · latency, measured
 
-Tick cadence p50 100 ms, p95 124 ms, p99 140 ms over 7998 ticks. Quote age at fill p50 0 ms, p95 100 ms. Trade submit to confirm p50 22 ms (p95 26419 ms). Host: local machine; rollup: http://127.0.0.1:7799. A broadcast stream runs 5–8 s behind.
+Tick cadence p50 100 ms, p95 111 ms, p99 137 ms over 14781 ticks. Quote age at fill is not observable from outside on the private rollup: a trader's transaction is visible only to its signer, so fills are indexed from the public market account without the tick the order saw (the program still enforces the 2-tick window on every fill). Trade submit to confirm p50 503 ms (p95 974 ms). Host: Asia (India), residential connection; rollup: https://devnet-tee.magicblock.app. A broadcast stream runs 5–8 s behind.
 
 ### E4 · soak
 
-16 bots × 40 trades: 100.0% succeeded, confirm p50 17 ms and p99 18 ms. Peak house exposure 0.73 against a cap of 60. Compute: 38619 CU per tick at p50 (sim step, hash, features, model, quotes), 24682 CU per trade.
+8 bots × 40 trades: 91.6% succeeded, confirm p50 262 ms and p99 352 ms. Peak house exposure 5.17 against a cap of 60. Compute: 38619 CU per tick at p50 (sim step, hash, features, model, quotes), 24677 CU per trade.
 
 ### E5 · sealed until the bell
 
-Reads of a private Position during a live match: non-member with a valid TEE token PENDING/PENDING denied, unauthenticated PENDING/PENDING denied, the opposing fighter PENDING/PENDING denied. After the reveal the same non-member reads it PENDING/PENDING times. For comparison, a Position without a permission (a plain ER account) is readable by the same non-member in one call.
+Reads of a private Position during a live match: non-member with a valid TEE token 20/20 denied, unauthenticated 20/20 denied, the opposing fighter 20/20 denied. After the reveal the same non-member reads it 20/20 times. For comparison, a Position without a permission (a plain ER account) is readable by the same non-member in one call.
 
 ### E6 · replay determinism
 
-18/18 matches re-simulated in WASM and 18/18 in Python reproduce the onchain hash chain exactly (2979 links). The same check runs in the browser on every `/replay` page. In CI, 10,000 random-input episodes give identical hash chains in native Rust, WASM and Python.
+19/19 matches re-simulated in WASM and 19/19 in Python reproduce the onchain hash chain exactly (10266 links). The same check runs in the browser on every `/replay` page. In CI, 10,000 random-input episodes give identical hash chains in native Rust, WASM and Python.
 
 ### E7 · AI fighters
 
@@ -124,9 +124,9 @@ The PPO fighter (141459456 steps of self-play against a league of past checkpoin
 
 - The distilled logistic that fits in a tick has held-out Brier 0.1736 against 0.1639 for the LightGBM teacher it was distilled from. We trade some accuracy for running inside the instruction.
 - In the last 20 seconds of regulation the onchain model's ECE is 0.0249, against 0.0034 overall: a linear model underfits the swingy end of a fight.
-- At a 0.5 s TV delay the courtsider's PnL per match is +1.26 (95% CI +1.26 to +1.26); the edge comes from the 2–8 s delays that real streams have.
-- On Ringside every stale order was rejected, but the courtsider's orders at the live tick still made +0.59 per match (95% CI +0.22 to +0.94): the model does not fully price the momentum right after a hit.
-- Measured tick cadence is p50 100 ms but p99 140 ms: the 100 ms crank is a target, not a guarantee.
+- At a 0.5 s TV delay the courtsider's PnL per match is +2.25 (95% CI -2.41 to +8.57); the edge comes from the 2–8 s delays that real streams have.
+- The courtsider's at-the-live-tick orders filled 0 of 1287 times: they are sent after two confirmed orders, so the quote is older than the 200 ms window when they land (trade round trip from this host p50 503 ms). A client far from the validator needs a wider window or a closer RPC.
+- Measured tick cadence is p50 100 ms but p99 137 ms: the 100 ms crank is a target, not a guarantee.
 
 Weakest case: Calibration is worst late in regulation. In the last 20 seconds of regulation the onchain model's ECE is 0.0249, against 0.0034 overall: a linear model underfits the swingy end of a fight.
 

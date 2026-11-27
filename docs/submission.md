@@ -16,7 +16,7 @@ Ringside is an in-play betting exchange that can't be courtsided: the fight and 
 
 Two staked players fight a 90-second duel that runs fully onchain on a Private Ephemeral Rollup. A crank advances the fight every 100 ms, and the same instruction re-prices a "who wins" book from the new state with an integer win-probability model. Every order carries the tick it was priced on; anything more than 2 ticks stale is rejected by the program. Spectator positions stay sealed in the TEE until the bell, power-ups come from VRF, payouts move as Ephemeral SPL balances, and a Magic Action writes a MatchRecord receipt to Solana.
 
-Same bot, same 115 held-out matches, 5 s TV delay: the courtsider made +13.42 per match on the delayed book and +0.59 on Ringside, where 1420 of its stale orders were rejected onchain. Every match replays bit for bit in the browser from its VRF seeds and inputs.
+Same bot, same 11 held-out matches, 5 s TV delay: the courtsider made +4.38 per match on the delayed book and +0.00 on Ringside, where 1283 of its stale orders were rejected onchain. Every match replays bit for bit in the browser from its VRF seeds and inputs.
 
 ## Categories
 
@@ -24,7 +24,7 @@ Games, DeFi, Consumer
 
 ## Website
 
-PENDING
+https://ringside.prashant101007.workers.dev
 
 ## GitHub repository
 
@@ -36,9 +36,9 @@ PENDING
 
 ## Explorer link (integration proof)
 
-VRF callback that spawned a power-up wave: PENDING
+VRF callback that spawned a power-up wave: https://explorer.solana.com/tx/WEuv5cCWGbG5bgwQrFU8Yu8UjX77vXc3cS8NDmimyPn7j61J1W7ibNXuKxq5GZQLRTqDB5iTsKUfDoqvGqup9A5?cluster=custom&customUrl=https%3A%2F%2Fdevnet-tee.magicblock.app
 
-Settlement with reveal of sealed positions: local:38ZshAWEKazf7fc3F8wUmCfgtKkJ77ADFN5Jth4RCq8amwb9QH3HT2Li4DSNWgtkPuJBHjyX1PAjdcCi8EnfLPMi
+Settlement runs inside the crank (tick, then settle) on the private rollup; the reveal of sealed positions that follows it: https://explorer.solana.com/tx/2tLKFwJ1tLYGxAYFioZsZ9kDJok5QDDvVJsfqnkqsfmXcWra8MkWq9KM1ds9rKY5ELYrcJrkR2WuXtGjN7cehMft?cluster=custom&customUrl=https%3A%2F%2Fdevnet-tee.magicblock.app. The MatchRecord it wrote on L1: https://explorer.solana.com/address/A7x8dRinneeA9CCn41KvAFdPb5D5jub5dwiKtyWFEmrW?cluster=devnet
 
 ## Onchain program
 
@@ -54,7 +54,7 @@ PENDING
 
 ## X post
 
-Sportsbooks freeze in-play markets because faster watchers pick off stale prices. Ringside puts the fight and the order book in one @magicblock rollup: same bot, 5 s TV delay, +13.42 per match on a delayed book, +0.59 on Ringside. Play or trade a live fight from your phone: PENDING
+Sportsbooks freeze in-play markets because faster watchers pick off stale prices. Ringside puts the fight and the order book in one @magicblock rollup: same bot, 5 s TV delay, +4.38 per match on a delayed book, +0.00 on Ringside. Play or trade a live fight from your phone: https://ringside.prashant101007.workers.dev
 
 ## Builder directory blurb
 

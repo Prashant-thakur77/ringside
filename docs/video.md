@@ -12,7 +12,7 @@ Target length about 3 minutes (the form names no limit). Every number on screen 
 
 **0:40 Phone.** Point a phone at the QR code on the match screen. One wallet prompt, then the judge buys blue at the price on the board. The fill ticket prints with its tick and latency. Blue lands a comeback; the odds line swings; at the bell the payout lands in the same second.
 
-**1:15 Proof.** The A/B chart: +13.42 per match on the delayed book against +0.59 on Ringside over 115 held-out matches. The reliability diagram: onchain integer model Brier 0.1736 against 0.2500 for a coin flip. Tick cadence p50 100 ms, measured.
+**1:15 Proof.** The A/B chart: +4.38 per match on the delayed book against +0.00 on Ringside over 11 held-out matches. The reliability diagram: onchain integer model Brier 0.1736 against 0.2500 for a coin flip. Tick cadence p50 100 ms, measured.
 
 **1:45 Sealed until the bell.** A spectator's position read by another wallet: denied. After settle, the same read succeeds. Voice: "Positions stay private inside the TEE until the bell, then everyone can check them."
 
@@ -27,8 +27,8 @@ Target length about 3 minutes (the form names no limit). Every number on screen 
 | # | Shot | Source | Length |
 |---|---|---|---|
 | 1 | Broadcast clock behind the duel, courtsider draining the delayed board | Judge mode on a live devnet match, TV-delay side, clock overlay | 12 s |
-| 2 | Same order rejected on Ringside, stamp + explorer tx | Judge mode Ringside side + local:5LL1F6LuXjT5EmhdQGSxCY5dThSg5PVxYShPA1DeLYQ3C3VJ45EJumLVbdadQM1bBgnHL2NRuxUBQFEFzGByMBBx | 13 s |
-| 3 | Lobby → live match, odds line moving | PENDING | 15 s |
+| 2 | Same order rejected on Ringside, stamp + explorer tx | Judge mode Ringside side + https://explorer.solana.com/tx/591tfysPXLzBBhrxirr7dr19rJw4T6iNAmap7ig9tbbTCzhMSwvDNFxFqn3Hy3ezW4MMSsCR9i49jqZtVtR7QN2Y?cluster=custom&customUrl=https%3A%2F%2Fdevnet-tee.magicblock.app | 13 s |
+| 3 | Lobby → live match, odds line moving | https://ringside.prashant101007.workers.dev | 15 s |
 | 4 | Phone scan of the QR, onboarding, Buy Blue, fill ticket | Phone screen recording | 35 s |
 | 5 | A/B chart and reliability diagram | /proof, eval/results/*.png | 30 s |
 | 6 | Privacy read denied, then readable after reveal | scripts/e5-privacy.ts terminal output + /m page after the bell | 20 s |

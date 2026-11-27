@@ -1,0 +1,64 @@
+{
+  "tick_cadence_ms": {
+    "n": 14781,
+    "p50": 100.0,
+    "p95": 111.0,
+    "p99": 137.0
+  },
+  "quote_age_at_fill_ms": {
+    "n": 0,
+    "p50": null,
+    "p95": null
+  },
+  "submit_confirm_ms": {
+    "create_match": {
+      "p50": 1412.954044,
+      "p95": 9709.704352,
+      "n": 41
+    },
+    "delegate_match": {
+      "p50": 1595.0474685,
+      "p95": 3186.1412919999884,
+      "n": 38
+    },
+    "indexer_backfill_failed_trade": {
+      "p50": 0.0087945,
+      "p95": 0.017856749999999998,
+      "n": 266
+    },
+    "indexer_store_event": {
+      "p50": 5.084674,
+      "p95": 7.886101949999996,
+      "n": 17464
+    },
+    "join_fight": {
+      "p50": 1100.079053,
+      "p95": 1544.1974842500001,
+      "n": 66
+    },
+    "request_wave": {
+      "p50": 818.766648,
+      "p95": 930.2095743,
+      "n": 119
+    },
+    "submit_input": {
+      "p50": 384.131806,
+      "p95": 875.266154,
+      "n": 9031
+    },
+    "trade": {
+      "p50": 502.838047,
+      "p95": 973.6978699999999,
+      "n": 6345
+    }
+  },
+  "counts": {
+    "matches": 37,
+    "rejections": 1217,
+    "ticks": 14809,
+    "trades": 1351
+  },
+  "host_region": "Asia (India), residential connection",
+  "er_endpoint": "https://devnet-tee.magicblock.app",
+  "quote_age_text": "Quote age at fill is not observable from outside on the private rollup: a trader's transaction is visible only to its signer, so fills are indexed from the public market account without the tick the order saw (the program still enforces the 2-tick window on every fill)."
+}
