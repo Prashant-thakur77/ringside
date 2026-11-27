@@ -16,5 +16,6 @@
   "match_record": "https://explorer.solana.com/address/A7x8dRinneeA9CCn41KvAFdPb5D5jub5dwiKtyWFEmrW?cluster=devnet",
   "trade_fill": "https://explorer.solana.com/tx/5Ufxacedbr4RaSY6MpCbJF4A7equfFJ1njdZtYnsytic9cipjy9oYmyrbTobx6oqcmpjkyD8EMwqnQQ52mc7G3WR?cluster=custom&customUrl=https%3A%2F%2Fdevnet-tee.magicblock.app",
   "reveal": "https://explorer.solana.com/tx/2tLKFwJ1tLYGxAYFioZsZ9kDJok5QDDvVJsfqnkqsfmXcWra8MkWq9KM1ds9rKY5ELYrcJrkR2WuXtGjN7cehMft?cluster=custom&customUrl=https%3A%2F%2Fdevnet-tee.magicblock.app",
-  "site": "https://ringside.prashant101007.workers.dev"
+  "site": "https://ringside.prashantthakur.dev",
+  "docs": "https://ringside.prashantthakur.dev/docs"
 }

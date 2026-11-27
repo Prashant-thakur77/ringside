@@ -1,43 +1,48 @@
 # Ringside
 
-Ringside is an in-play betting exchange that can't be courtsided: the fight and the order book live in the same MagicBlock rollup, so every price is as fresh as the last punch.
+Ringside is an in-play betting exchange that can't be courtsided, built on MagicBlock ephemeral rollups. The fight and the order book run in the same Solana ephemeral rollup, so every price is as fresh as the last punch, and an order priced on an old tick is rejected onchain.
+
+**Live app:** {{link:site}} · **Docs:** {{link:docs}} · **Program (devnet):** [`4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej`]({{link:program}})
 
 Same bot, same {{headline.n_matches}} held-out matches, {{headline.delay_ms:s}} s TV delay: the courtsider made **{{headline.courtsider_pnl_per_match_tv:+.2f}}** per match on the delayed book and **{{headline.courtsider_pnl_per_match_ringside:+.2f}}** on Ringside, where {{headline.stale_rejections_ringside}} of its stale orders were rejected onchain and {{headline.stale_fills_accepted_ringside}} filled. Measured on {{network}}.
 
 ![A live Ringside match: the odds line moves with every hit]({{link:gif}})
 
-## Try it
+## What it is
 
-| | |
-|---|---|
-| Live app | {{link:site}} |
-| Video | {{link:video}} |
-| Program (devnet) | [`4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej`]({{link:program}}) |
-| Fee vault (house eATA owner: Config PDA) | [`Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK`]({{link:config}}) |
-| Model params, v1 | [account]({{link:model}}) |
+Ringside is a prediction market for a live, onchain fight. Two staked fighters play a 90-second duel whose simulation runs inside a MagicBlock Ephemeral Rollup. Spectators trade "red wins" and "blue wins" shares while the fight is on. The same instruction that advances the fight re-prices the book, so there is no window in which a faster feed knows something the market doesn't. That window is what courtsiding exploits in in-play betting today.
 
-Onchain proof from one live match on devnet-tee:
+Positions are sealed in a Private Ephemeral Rollup (TEE) until the bell, power-up waves come from verifiable randomness (VRF), spectators sign once with session keys and then trade without wallet popups, and every match can be re-simulated from its onchain hash chain (verifiable replay).
 
-| Event | Transaction |
-|---|---|
-| VRF power-up wave (callback) | {{link:vrf_callback}} |
-| Stale order rejected (`ErrStaleTick`) | {{link:stale_reject}} |
-| Fighter trading their own match rejected (`ErrFighterBarred`) | {{link:fighter_reject}} |
-| Settlement (inside the crank) and reveal of positions | {{link:reveal}} |
-| Commit to Solana | {{link:commit}} |
-| MatchRecord written by the Magic Action | {{link:match_record}} |
+## Highlights
 
-Spectators use devnet test-dollars, a 6-decimal mint we created because the Circle devnet USDC faucet can't fund a house vault. The program takes any mint at setup; real devnet USDC works the same way.
+Every number here is generated from `eval/results/results.json`.
 
-## The problem
+- **Courtsiding blocked onchain.** Across {{e1.n_matches}} held-out matches on devnet the courtsider sent {{e1.ringside.stale_attempts}} orders priced on a delayed feed; {{e1.ringside.stale_rejections}} were rejected with `ErrStaleTick` and {{e1.ringside.stale_fills_accepted}} filled. On the TV-delay book the same bot got {{headline.stale_fills_accepted_tv}} stale fills at a {{headline.delay_ms:s}} s delay.
+- **Courtsider profit goes to zero.** {{headline.courtsider_pnl_per_match_tv:+.2f}} per match on the {{headline.delay_ms:s}} s delayed book against {{e1.ringside.pnl_mean:+.2f}} on Ringside.
+- **A 100 ms market.** Tick cadence p50 {{e3.tick_cadence_ms.p50:.0f}} ms and p95 {{e3.tick_cadence_ms.p95:.0f}} ms over {{e3.tick_cadence_ms.n}} devnet ticks; trade submit to confirm p50 {{e3.submit_confirm_ms.trade.p50:.0f}} ms from a residential connection.
+- **The pricing model runs inside the instruction.** An integer logistic model with held-out Brier {{e2.models.logistic_onchain_integer.brier:.4f}} and ECE {{e2.models.logistic_onchain_integer.ece:.4f}} on {{e2.n_test_matches}} held-out matches, within {{e2.onchain_vs_float_gap.mean:.4f}} of its float version on average. A full tick (sim step, hash, features, model, quotes) costs {{e4.cu.tick_p50}} CU at p50.
+- **Positions stay private until settle.** Non-member reads of a live Position were denied {{e5.denied.non_member}}/{{e5.attempts.non_member}} times, unauthenticated reads {{e5.denied.unauthenticated}}/{{e5.attempts.unauthenticated}}, the opposing fighter {{e5.denied.opposing_fighter}}/{{e5.attempts.opposing_fighter}}. After the reveal the same reader succeeds {{e5.after_reveal_reads}}/{{e5.n}}.
+- **Every match is replayable.** {{e6.verified_wasm}}/{{e6.k}} devnet matches re-simulated in WASM and {{e6.verified_python}}/{{e6.k}} in Python reproduce the onchain hash chain exactly ({{e6.ticks_checked}} links). The browser runs the same check on every `/replay` page.
+- **Holds up under load.** {{e4.bots}} bots × {{e4.trades_per_bot}} trades: {{e4.success_rate:pct}} succeeded, confirm p99 {{e4.latency_ms.p99:.0f}} ms, peak house exposure {{e4.max_exposure_usdc:.2f}} against a cap of {{e4.cap_usdc:.0f}}.
+- **Fighters you can bet against.** A PPO agent trained for {{e7.train_minutes}} minutes wins {{e7.win_rate.aggressive:pct}}, {{e7.win_rate.kiting:pct}}, {{e7.win_rate.defensive:pct}} and {{e7.win_rate.random:pct}} against the aggressive, kiting, defensive and random bots over {{e7.episodes_per_bot}} held-out episodes each.
 
-Sportsbooks stream 5–8 seconds behind the action and freeze markets because faster watchers pick off stale prices. That is courtsiding: someone at the venue, or on a faster feed, trades against odds that haven't seen the point yet. Operators answer with suspensions and in-play delays on bets ([UK Gambling Commission on in-play betting](https://www.gamblingcommission.gov.uk/), [stream delay coverage on SBC News](https://www.sbcnews.co.uk/), [Courtsiding on Wikipedia](https://en.wikipedia.org/wiki/Courtsiding)).
+## MagicBlock primitives used
 
-Ringside removes the gap instead of policing it. The instruction that advances the duel also re-prices the book, and every order carries the tick it was priced on. An order more than 2 ticks behind the book is rejected by the program.
+| Primitive | What Ringside uses it for | What breaks without it |
+|---|---|---|
+| Ephemeral Rollup | The fight, both books and every fill in one delegated account set | Ticks and fills at L1 speed; prices lag the fight |
+| Private Ephemeral Rollup (TEE) | Positions sealed by per-account permissions, revealed at settle | Open positions readable mid-fight |
+| VRF | Power-up waves from the ephemeral queue, one request per wave | Predictable or operator-chosen waves |
+| Crank (ScheduleTask) | `tick` + `settle` every 100 ms, task id = hash(program ‖ match) | Nobody advances the fight unless they pay to push it |
+| Session keys | One wallet prompt, then 2 hours of gasless trades and inputs | A wallet popup per input and per trade |
+| Ephemeral SPL | Stakes, house vault and payouts as eATA balances in the rollup | Every payout waits for an L1 transfer |
+| Magic Router / TEE RPC | Clients find the delegated accounts; token-auth reads | Hard-coded endpoints, no private reads |
+| Magic Actions | `finalize` commits the book and writes the MatchRecord on L1 | No checkable receipt of result and final hash on Solana |
 
-## How it works
+## Architecture
 
-Two staked fighters play a 90-second top-down duel that runs fully onchain: a deterministic integer simulation in Q16.16, stepped by a crank every 100 ms. Power-up waves come from VRF every 15 seconds. After each step the same instruction hashes the state into a chain, computes 16 features, runs a calibrated logistic model in integer math (1024-entry sigmoid table plus a 64-knot isotonic table) and writes new quotes. Spectators buy and sell "red wins" or "blue wins" shares against a house that skews its quotes by inventory and caps its worst-case loss.
+The duel is a deterministic integer simulation in Q16.16, stepped by a crank every 100 ms. Power-up waves come from VRF every 15 seconds. After each step the same instruction hashes the state into a chain, computes 16 features, runs a calibrated logistic model in integer math (1024-entry sigmoid table plus a 64-knot isotonic table) and writes new quotes. Spectators buy and sell against a house that skews its quotes by inventory and caps its worst-case loss.
 
 ```
 Solana devnet          Config · ModelParams · Profile · MatchRecord · mint · eSPL vault
@@ -50,26 +55,65 @@ MagicBlock Private ER (devnet-tee)
 Indexer (Rust, Postgres)     Web (Next.js, Pixi, WASM sim)     Bots (TS + ONNX PPO)
 ```
 
-Why every account sits on the TEE validator: a trade must write the Market and the spectator's Position in one transaction, and the tick must read the Match and write the Market. Only accounts delegated to the same validator can change together, and private positions need the TEE, so the match, both books, the positions and the token custody are all delegated to devnet-tee. The Match and Markets have no permission and stay public there. Positions are private until `settle` flips them public.
+A trade must write the Market and the spectator's Position in one transaction, and the tick must read the Match and write the Market. Only accounts delegated to the same validator can change together, and private positions need the TEE, so the match, both books, the positions and the token custody are all delegated to devnet-tee. The Match and Markets have no permission and stay public there. Positions are private until `settle` flips them public.
 
 Each match has two books on the same fight. The Ringside book is priced inside `tick`. The TV-delay book runs the same pricing code on features a relay posts after a configurable delay (0.5–8 s): the world a sportsbook with a broadcast delay lives in. That is the A/B.
 
-## MagicBlock, load-bearing
+### The problem it solves
 
-| Primitive | What Ringside uses it for | What breaks without it |
-|---|---|---|
-| Ephemeral Rollup | The fight, both books and every fill in one delegated account set | Ticks and fills at L1 speed; prices lag the fight |
-| Private ER (TEE) | Positions sealed by per-account permissions, revealed at settle | Open positions readable mid-fight |
-| VRF | Power-up waves from the ephemeral queue, one request per wave | Predictable or operator-chosen waves |
-| Crank (ScheduleTask) | `tick` + `settle` every 100 ms, task id = hash(program ‖ match) | Nobody advances the fight unless they pay to push it |
-| Session keys | One wallet prompt, then 2 hours of gasless trades and inputs | A wallet popup per input and per trade |
-| Ephemeral SPL | Stakes, house vault and payouts as eATA balances in the rollup | Every payout waits for an L1 transfer |
-| Magic Router / TEE RPC | Clients find the delegated accounts; token-auth reads | Hard-coded endpoints, no private reads |
-| Magic Actions | `finalize` commits the book and writes the MatchRecord on L1 | No checkable receipt of result and final hash on Solana |
+Sportsbooks stream 5–8 seconds behind the action and freeze markets because faster watchers pick off stale prices. That is courtsiding: someone at the venue, or on a faster feed, trades against odds that haven't seen the point yet. Operators answer with suspensions and in-play delays on bets ([UK Gambling Commission on in-play betting](https://www.gamblingcommission.gov.uk/), [stream delay coverage on SBC News](https://www.sbcnews.co.uk/), [Courtsiding on Wikipedia](https://en.wikipedia.org/wiki/Courtsiding)). Ringside removes the gap instead of policing it: every order carries the tick it was priced on, and an order more than 2 ticks behind the book is rejected by the program.
 
-## Results
+## Quickstart
+
+Try it in the browser at {{link:site}}: pick a live match, sign once to open a session, and trade. Spectators use devnet test-dollars, a 6-decimal mint created because the Circle devnet USDC faucet can't fund a house vault; the program takes any mint at setup.
+
+Run the whole stack locally:
+
+```bash
+pnpm install && ./scripts/build-wasm.sh
+anchor build --ignore-keys
+./scripts/setup-local.sh            # local base validator + ER (Docker) + config, model, house, bots
+docker run -d --name ringside-pg -e POSTGRES_USER=ringside -e POSTGRES_PASSWORD=ringside -e POSTGRES_DB=ringside -p 5434:5432 postgres:16
+RINGSIDE_ENV=local cargo +stable run --release --manifest-path services/indexer/Cargo.toml
+cd bots && RINGSIDE_ENV=local npx tsx lobby.ts
+cd apps/web && pnpm dev             # then open localhost:3000
+```
+
+Layout: `programs/ringside` (Anchor 1.0 program), `crates/ringside-sim` (deterministic sim), `crates/ringside-fixed` (Q32.32 math, model, quotes, trade math), `crates/ringside-wasm` and `crates/ringside-py` (bindings), `crates/ringside-agent` (policy I/O), `apps/web`, `services/indexer`, `bots`, `ml`, `eval`, `tests`, `scripts`.
+
+## Devnet deployment
+
+| | |
+|---|---|
+| Program | [`4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej`]({{link:program}}) |
+| Fee vault (house eATA owner: Config PDA) | [`Gn2PTrRkfkFpvy3oU7FNMwSsPvaQ9fg61SoKeKMR4UqK`]({{link:config}}) |
+| Model params, v1 | [account]({{link:model}}) |
+
+Onchain proof from one live match on devnet-tee:
+
+| Event | Transaction |
+|---|---|
+| VRF power-up wave (callback) | {{link:vrf_callback}} |
+| Session-key trade | {{link:session_trade}} |
+| Stale order rejected (`ErrStaleTick`) | {{link:stale_reject}} |
+| Fighter trading their own match rejected (`ErrFighterBarred`) | {{link:fighter_reject}} |
+| Settlement (inside the crank) and reveal of positions | {{link:reveal}} |
+| Commit to Solana | {{link:commit}} |
+| MatchRecord written by the Magic Action | {{link:match_record}} |
+
+## Evaluation
 
 All numbers below come from `eval/results/results.json`, written by `eval/make_report.py`. Evaluation is on held-out data: matches the courtsider was never tuned on, model metrics on a held-out 15% split by match, PPO win rates on match seeds never used in training.
+
+| Experiment | Result |
+|---|---|
+| E1 courtsiding A/B | Courtsider {{headline.courtsider_pnl_per_match_tv:+.2f}} per match at a {{headline.delay_ms:s}} s delay vs {{e1.ringside.pnl_mean:+.2f}} on Ringside; {{e1.ringside.stale_rejections}} stale orders rejected, {{e1.ringside.stale_fills_accepted}} filled |
+| E2 price quality | Onchain model Brier {{e2.models.logistic_onchain_integer.brier:.4f}}, ECE {{e2.models.logistic_onchain_integer.ece:.4f}} on {{e2.n_test_matches}} held-out matches |
+| E3 latency | Tick p50 {{e3.tick_cadence_ms.p50:.0f}} ms, p99 {{e3.tick_cadence_ms.p99:.0f}} ms; trade confirm p50 {{e3.submit_confirm_ms.trade.p50:.0f}} ms |
+| E4 soak | {{e4.success_rate:pct}} of {{e4.trades_attempted}} trades succeeded; {{e4.cu.tick_p50}} CU per tick, {{e4.cu.trade}} CU per trade |
+| E5 privacy | {{e5.denied.non_member}}/{{e5.attempts.non_member}} non-member reads denied during the match |
+| E6 replay | {{e6.verified_wasm}}/{{e6.k}} matches reproduce the onchain hash chain in WASM |
+| E7 AI fighters | PPO wins {{e7.win_rate.defensive:pct}} to {{e7.win_rate.aggressive:pct}} against scripted bots |
 
 ### E1 · courtsiding A/B ({{e1.n_matches}} matches)
 
@@ -84,7 +128,7 @@ All numbers below come from `eval/results/results.json`, written by `eval/make_r
 | TV delay 8 s | {{delay.8000.n_matches}} | {{delay.8000.pnl_mean:+.2f}} | {{delay.8000.pnl_ci95.0:+.2f}} to {{delay.8000.pnl_ci95.1:+.2f}} | {{delay.8000.stale_fills_accepted}} | {{delay.8000.house_pnl_mean:+.2f}} |
 | Ringside | {{e1.ringside.n_matches}} | {{e1.ringside.pnl_mean:+.2f}} | {{e1.ringside.pnl_ci95.0:+.2f}} to {{e1.ringside.pnl_ci95.1:+.2f}} | {{e1.ringside.stale_fills_accepted}} | {{e1.ringside.house_pnl_mean:+.2f}} |
 
-On Ringside the courtsider sent {{e1.ringside.stale_attempts}} orders stamped with the tick it saw on the delayed feed; {{e1.ringside.stale_rejections}} were rejected with `ErrStaleTick`. It also traded at the live tick {{e1.ringside.fresh_fills}} times, where it pays the spread like everyone else.
+On Ringside the courtsider sent {{e1.ringside.stale_attempts}} orders stamped with the tick it saw on the delayed feed; {{e1.ringside.stale_rejections}} were rejected with `ErrStaleTick`. Its orders at the live tick filled {{e1.ringside.fresh_fills}} of {{e1.ringside.fresh_attempts}} times (see limitations below).
 
 ### E2 · is the price right? ({{e2.n_test_matches}} held-out matches, {{e2.n_test_rows}} rows)
 
@@ -100,33 +144,27 @@ On Ringside the courtsider sent {{e1.ringside.stale_attempts}} orders stamped wi
 
 The onchain integer model differs from the float student by {{e2.onchain_vs_float_gap.mean:.4f}} in probability on average ({{e2.onchain_vs_float_gap.p99:.4f}} at p99). Training data: {{e2.n_matches_total}} simulated matches with mixed bot pairings, every 5th tick, split by match.
 
-### E3 · latency, measured
+### E3 · latency
 
 Tick cadence p50 {{e3.tick_cadence_ms.p50:.0f}} ms, p95 {{e3.tick_cadence_ms.p95:.0f}} ms, p99 {{e3.tick_cadence_ms.p99:.0f}} ms over {{e3.tick_cadence_ms.n}} ticks. {{e3.quote_age_text}} Trade submit to confirm p50 {{e3.submit_confirm_ms.trade.p50:.0f}} ms (p95 {{e3.submit_confirm_ms.trade.p95:.0f}} ms). Host: {{e3.host_region}}; rollup: {{e3.er_endpoint}}. A broadcast stream runs 5–8 s behind.
 
 ### E4 · soak
 
-{{e4.bots}} bots × {{e4.trades_per_bot}} trades: {{e4.success_rate:pct}} succeeded, confirm p50 {{e4.latency_ms.p50:.0f}} ms and p99 {{e4.latency_ms.p99:.0f}} ms. Peak house exposure {{e4.max_exposure_usdc:.2f}} against a cap of {{e4.cap_usdc:.0f}}. Compute: {{e4.cu.tick_p50}} CU per tick at p50 (sim step, hash, features, model, quotes), {{e4.cu.trade}} CU per trade.
+{{e4.bots}} bots × {{e4.trades_per_bot}} trades: {{e4.success_rate:pct}} succeeded, confirm p50 {{e4.latency_ms.p50:.0f}} ms and p99 {{e4.latency_ms.p99:.0f}} ms. Peak house exposure {{e4.max_exposure_usdc:.2f}} against a cap of {{e4.cap_usdc:.0f}}. Compute: {{e4.cu.tick_p50}} CU per tick at p50, {{e4.cu.trade}} CU per trade.
 
 ### E5 · sealed until the bell
 
-Reads of a private Position during a live match: non-member with a valid TEE token {{e5.denied.non_member}}/{{e5.attempts.non_member}} denied, unauthenticated {{e5.denied.unauthenticated}}/{{e5.attempts.unauthenticated}} denied, the opposing fighter {{e5.denied.opposing_fighter}}/{{e5.attempts.opposing_fighter}} denied. After the reveal the same non-member reads it {{e5.after_reveal_reads}}/{{e5.n}} times. For comparison, a Position without a permission (a plain ER account) is readable by the same non-member in one call.
+Reads of a private Position during a live match: non-member with a valid TEE token {{e5.denied.non_member}}/{{e5.attempts.non_member}} denied, unauthenticated {{e5.denied.unauthenticated}}/{{e5.attempts.unauthenticated}} denied, the opposing fighter {{e5.denied.opposing_fighter}}/{{e5.attempts.opposing_fighter}} denied. After the reveal the same non-member reads it {{e5.after_reveal_reads}}/{{e5.n}} times. A Position without a permission (a plain ER account) is readable by the same non-member in one call.
 
 ### E6 · replay determinism
 
-{{e6.verified_wasm}}/{{e6.k}} matches re-simulated in WASM and {{e6.verified_python}}/{{e6.k}} in Python reproduce the onchain hash chain exactly ({{e6.ticks_checked}} links). The same check runs in the browser on every `/replay` page. In CI, 10,000 random-input episodes give identical hash chains in native Rust, WASM and Python.
+{{e6.verified_wasm}}/{{e6.k}} matches re-simulated in WASM and {{e6.verified_python}}/{{e6.k}} in Python reproduce the onchain hash chain exactly ({{e6.ticks_checked}} links). In CI, 10,000 random-input episodes give identical hash chains in native Rust, WASM and Python.
 
 ### E7 · AI fighters
 
 The PPO fighter ({{e7.train_steps}} steps of self-play against a league of past checkpoints and the scripted bots, {{e7.train_minutes}} minutes on CPU) wins {{e7.win_rate.aggressive:pct}} against the aggressive bot, {{e7.win_rate.kiting:pct}} against kiting, {{e7.win_rate.defensive:pct}} against defensive and {{e7.win_rate.random:pct}} against random, over {{e7.episodes_per_bot}} held-out episodes each.
 
-### Where it falls short
-
-{{bullets:negative.detail}}
-
-Weakest case: {{weakest_case.title}}. {{weakest_case.detail}}
-
-## Reproduce
+## Reproduce the numbers
 
 ```bash
 ./tests/determinism/run.sh 10000                     # native = WASM = Python hash chains
@@ -142,18 +180,10 @@ python eval/e6_replay.py 20                          # E6
 python eval/make_report.py && python scripts/render_docs.py && python scripts/check_consistency.py
 ```
 
-## Run locally
+## Limitations
 
-```bash
-pnpm install && ./scripts/build-wasm.sh
-anchor build --ignore-keys
-./scripts/setup-local.sh            # local base validator + ER (Docker) + config, model, house, bots
-docker run -d --name ringside-pg -e POSTGRES_USER=ringside -e POSTGRES_PASSWORD=ringside -e POSTGRES_DB=ringside -p 5434:5432 postgres:16
-RINGSIDE_ENV=local cargo +stable run --release --manifest-path services/indexer/Cargo.toml
-cd bots && RINGSIDE_ENV=local npx tsx lobby.ts
-cd apps/web && pnpm dev             # http://localhost:3000
-```
+{{bullets:negative.detail}}
 
-Layout: `programs/ringside` (Anchor 1.0 program), `crates/ringside-sim` (deterministic sim), `crates/ringside-fixed` (Q32.32 math, model, quotes, trade math), `crates/ringside-wasm` and `crates/ringside-py` (bindings), `crates/ringside-agent` (policy I/O), `apps/web`, `services/indexer`, `bots`, `ml`, `eval`, `tests`, `scripts`.
+## License
 
-MIT licensed.
+MIT.

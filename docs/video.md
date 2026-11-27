@@ -28,7 +28,7 @@ Target length about 3 minutes (the form names no limit). Every number on screen 
 |---|---|---|---|
 | 1 | Broadcast clock behind the duel, courtsider draining the delayed board | Judge mode on a live devnet match, TV-delay side, clock overlay | 12 s |
 | 2 | Same order rejected on Ringside, stamp + explorer tx | Judge mode Ringside side + https://explorer.solana.com/tx/591tfysPXLzBBhrxirr7dr19rJw4T6iNAmap7ig9tbbTCzhMSwvDNFxFqn3Hy3ezW4MMSsCR9i49jqZtVtR7QN2Y?cluster=custom&customUrl=https%3A%2F%2Fdevnet-tee.magicblock.app | 13 s |
-| 3 | Lobby → live match, odds line moving | https://ringside.prashant101007.workers.dev | 15 s |
+| 3 | Lobby → live match, odds line moving | https://ringside.prashantthakur.dev | 15 s |
 | 4 | Phone scan of the QR, onboarding, Buy Blue, fill ticket | Phone screen recording | 35 s |
 | 5 | A/B chart and reliability diagram | /proof, eval/results/*.png | 30 s |
 | 6 | Privacy read denied, then readable after reveal | scripts/e5-privacy.ts terminal output + /m page after the bell | 20 s |

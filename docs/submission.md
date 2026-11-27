@@ -24,7 +24,7 @@ Games, DeFi, Consumer
 
 ## Website
 
-https://ringside.prashant101007.workers.dev
+https://ringside.prashantthakur.dev
 
 ## GitHub repository
 
@@ -54,7 +54,7 @@ PENDING
 
 ## X post
 
-Sportsbooks freeze in-play markets because faster watchers pick off stale prices. Ringside puts the fight and the order book in one @magicblock rollup: same bot, 5 s TV delay, +4.38 per match on a delayed book, +0.00 on Ringside. Play or trade a live fight from your phone: https://ringside.prashant101007.workers.dev
+Sportsbooks freeze in-play markets because faster watchers pick off stale prices. Ringside puts the fight and the order book in one @magicblock rollup: same bot, 5 s TV delay, +4.38 per match on a delayed book, +0.00 on Ringside. Play or trade a live fight from your phone: https://ringside.prashantthakur.dev
 
 ## Builder directory blurb
 
