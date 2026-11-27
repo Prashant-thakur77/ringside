@@ -17,6 +17,7 @@
     "@magicblock-labs/ephemeral-rollups-sdk": "0.18.0",
     "@magicblock-labs/gum-react-sdk": "3.0.10",
     "@magicblock-labs/gum-sdk": "3.0.10",
+    "@opennextjs/cloudflare": "^1.20.19",
     "@ringside/client": "workspace:*",
     "@solana/spl-token": "0.4.14",
     "@solana/wallet-adapter-base": "^0.9.27",
@@ -44,6 +45,7 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "tailwindcss": "^4.1.13",
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "wrangler": "^4.168.0"
   }
 }

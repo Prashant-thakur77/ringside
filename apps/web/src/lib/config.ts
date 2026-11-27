@@ -11,3 +11,5 @@ export const explorerTx = (sig: string, er = false) =>
     : `https://explorer.solana.com/tx/${sig}?cluster=${CLUSTER}`;
 export const explorerAddr = (a: string) => `https://explorer.solana.com/address/${a}?cluster=${CLUSTER}`;
 export const MATCHMAKER = process.env.NEXT_PUBLIC_MATCHMAKER_URL ?? "http://127.0.0.1:8788";
+// Rows the indexer derives from private-ER account updates carry an "acct:" id, not a transaction.
+export const isTx = (sig?: string | null): sig is string => !!sig && !sig.startsWith("acct:");

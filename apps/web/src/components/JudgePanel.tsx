@@ -5,7 +5,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Flap } from "./Flap";
 import { api, useLive, type Book, type FeedEvent } from "@/lib/live";
-import { explorerTx } from "@/lib/config";
+import { explorerTx, isTx } from "@/lib/config";
 
 interface JudgeCounts { fills: number; stale_fills_accepted: number; stale_rejections: number; reject_sig: string | null }
 const COURTSIDER = process.env.NEXT_PUBLIC_COURTSIDER ?? "";
@@ -41,7 +41,7 @@ function Board({ title, sub, book, gameTick, counts, tone, events }: { title: st
         {events.slice(-4).reverse().map((e, i) => (
           <li key={i} className="ticket flex items-center justify-between rounded-sm px-2.5 py-1.5 text-[12px]">
             <span className="num">seen {String(e.seen_tick)} {e.game_tick != null ? `· fight ${String(e.game_tick)}` : ""}</span>
-            {e.signature ? <a className="num underline" href={explorerTx(String(e.signature), true)} target="_blank" rel="noreferrer">tx</a> : null}
+            {isTx(e.signature as string) ? <a className="num underline" href={explorerTx(String(e.signature), true)} target="_blank" rel="noreferrer">tx</a> : null}
             <span className="stamp text-[11px]" style={{ color: e.type === "trade" ? "var(--color-stamp-blue)" : "var(--color-stamp-red)" }}>
               {e.type === "trade" ? "FILLED" : "REJECTED · STALE"}
             </span>
@@ -66,7 +66,7 @@ export function JudgePanel({ matchId, live, delayed, gameTick }: { matchId: stri
         <Board title="TV-delay book" sub={`feed ${delayed ? delayed.delay_ms : "—"} ms late`} book={delayed} gameTick={gameTick} counts={data?.tv_delay} tone="tv" events={mine.filter((e) => Number(e.mode) === 1)} />
         <Board title="Ringside book" sub="priced in the tick" book={live} gameTick={gameTick} counts={data?.ringside} tone="ring" events={mine.filter((e) => Number(e.mode) === 0)} />
       </div>
-      {data?.ringside?.reject_sig && (
+      {isTx(data?.ringside?.reject_sig) && (
         <p className="num mt-3 text-[13px] text-chalk-quiet">
           A stale order rejected onchain: <a className="text-brass underline" href={explorerTx(data.ringside.reject_sig, true)} target="_blank" rel="noreferrer">{data.ringside.reject_sig.slice(0, 16)}…</a>
         </p>

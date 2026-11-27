@@ -3,7 +3,8 @@ type Wasm = typeof import("../../public/wasm/ringside_wasm.js");
 let p: Promise<Wasm> | null = null;
 export function loadSim(): Promise<Wasm> {
   p ??= (async () => {
-    const url = "/wasm/ringside_wasm.js";
+    // Built at runtime so server bundlers leave this browser-only import alone.
+    const url = new URL("/wasm/ringside_wasm.js", window.location.origin).href;
     const m = (await import(/* webpackIgnore: true */ url)) as Wasm & { default: (u?: string) => Promise<unknown> };
     await m.default("/wasm/ringside_wasm_bg.wasm");
     return m;

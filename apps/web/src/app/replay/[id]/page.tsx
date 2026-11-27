@@ -8,7 +8,7 @@ import { Arena } from "@/components/Arena";
 import { OddsChart } from "@/components/OddsChart";
 import { api } from "@/lib/live";
 import { bytesToHex, hexToBytes, loadSim } from "@/lib/wasm";
-import { explorerTx } from "@/lib/config";
+import { explorerTx, isTx } from "@/lib/config";
 
 interface ReplayData {
   match_key: string;
@@ -129,7 +129,7 @@ export default function Replay({ params }: { params: Promise<{ id: string }> }) 
                   <li key={t.tick}>tick {t.tick} hash {t.hash.slice(0, 12)}… {t.sig && <a className="text-brass underline" href={explorerTx(t.sig, true)} target="_blank" rel="noreferrer">tx</a>}</li>
                 ))}
                 {data.trades.slice(0, 6).map((t) => (
-                  <li key={t.sig}>{t.mode ? "TV-delay" : "Ringside"} fill · seen {t.seen_tick} · {(t.price / 1e6).toFixed(3)} × {t.qty} <a className="text-brass underline" href={explorerTx(t.sig, true)} target="_blank" rel="noreferrer">tx</a></li>
+                  <li key={t.sig}>{t.mode ? "TV-delay" : "Ringside"} fill · seen {t.seen_tick} · {(t.price / 1e6).toFixed(3)} × {t.qty} {isTx(t.sig) ? <a className="text-brass underline" href={explorerTx(t.sig, true)} target="_blank" rel="noreferrer">tx</a> : <span title="Trader and transaction stay private on the TEE rollup">private</span>}</li>
                 ))}
               </ul>
             </section>
