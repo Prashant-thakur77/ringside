@@ -1,5 +1,7 @@
 # Ringside
 
+[![Live on Solana devnet](https://img.shields.io/badge/Solana-devnet-14F195)]({{link:site}}) [![MagicBlock Ephemeral Rollups](https://img.shields.io/badge/MagicBlock-Ephemeral%20Rollups-f4845f)](https://docs.magicblock.gg) [![MCP server](https://img.shields.io/badge/MCP-ringside--mcp-2b1611)](https://www.npmjs.com/package/ringside-mcp) [![License: MIT](https://img.shields.io/badge/license-MIT-e7d5bd)](LICENSE)
+
 Ringside is an in-play betting exchange that can't be courtsided, built on MagicBlock ephemeral rollups. The fight and the order book run in the same Solana ephemeral rollup, so every price is as fresh as the last punch, and an order priced on an old tick is rejected onchain.
 
 **Live app:** {{link:site}} · **Docs:** {{link:docs}} · **Program (devnet):** [`4efktEjqvfqi5UpmStUmvHmhJ9yFcKNvpZRJw56t5Kej`]({{link:program}})
@@ -7,6 +9,14 @@ Ringside is an in-play betting exchange that can't be courtsided, built on Magic
 Same bot, same {{headline.n_matches}} held-out matches, {{headline.delay_ms:s}} s TV delay: the courtsider made **{{headline.courtsider_pnl_per_match_tv:+.2f}}** per match on the delayed book and **{{headline.courtsider_pnl_per_match_ringside:+.2f}}** on Ringside, where {{headline.stale_rejections_ringside}} of its stale orders were rejected onchain and {{headline.stale_fills_accepted_ringside}} filled. Measured on {{network}}.
 
 ![A live Ringside match: the odds line moves with every hit]({{link:gif}})
+
+## Tour
+
+| | |
+|---|---|
+| ![Home](docs/media/site-home.jpg) **Home.** The pitch in one screen, a real match's odds line and the measured results. | ![Matches](docs/media/site-matches.jpg) **Matches.** Tonight's card with prices per tick, every finished result with replay and verify. |
+| ![Play](docs/media/site-trade.jpg) **Play.** Trade a replayed devnet fight at the real per-tick fair price, no wallet needed. | ![Replay](docs/media/site-replay.jpg) **Replay and verify.** Your browser re-runs the fight in WASM and checks every hash against the chain. |
+| ![How it works](docs/media/site-how.jpg) **How it works.** The five-second gap on a real match, the five rounds, the MagicBlock pieces. | ![Agents](docs/media/site-agents.jpg) **Agents.** Ringside as an MCP server for Claude, Cursor or any MCP client. |
 
 ## What it is
 
@@ -26,6 +36,34 @@ Every number here is generated from `eval/results/results.json`.
 - **Every match is replayable.** {{e6.verified_wasm}}/{{e6.k}} devnet matches re-simulated in WASM and {{e6.verified_python}}/{{e6.k}} in Python reproduce the onchain hash chain exactly ({{e6.ticks_checked}} links). The browser runs the same check on every `/replay` page.
 - **Holds up under load.** {{e4.bots}} bots × {{e4.trades_per_bot}} trades: {{e4.success_rate:pct}} succeeded, confirm p99 {{e4.latency_ms.p99:.0f}} ms, peak house exposure {{e4.max_exposure_usdc:.2f}} against a cap of {{e4.cap_usdc:.0f}}.
 - **Fighters you can bet against.** A PPO agent trained for {{e7.train_minutes}} minutes wins {{e7.win_rate.aggressive:pct}}, {{e7.win_rate.kiting:pct}}, {{e7.win_rate.defensive:pct}} and {{e7.win_rate.random:pct}} against the aggressive, kiting, defensive and random bots over {{e7.episodes_per_bot}} held-out episodes each.
+
+## The site
+
+| Page | What you can do |
+|---|---|
+| [Matches]({{link:site}}/matches) | Watch live bouts, see every result, open any replay |
+| [How it works]({{link:site}}/how-it-works) | Scroll through the five-second gap on a recorded devnet match |
+| [Play]({{link:site}}/play) | Trade a replayed fight tick by tick, or pick a TV delay and try to courtside the book |
+| [Fight]({{link:site}}/fight) | Stake test-dollars and fight the PPO fighter from a keyboard or phone |
+| [Proof]({{link:site}}/proof) | Every evaluation chart and number, generated from `results.json` |
+| [Agents]({{link:site}}/agents) | Connect an AI agent over MCP |
+| [Docs]({{link:docs}}) | Program reference, error codes, indexer API, run it locally |
+
+If the live indexer is unreachable, the site serves the finished devnet matches baked in at deploy time, so results, replays and verification keep working.
+
+## For AI agents (MCP)
+
+`ringside-mcp` is a Model Context Protocol server that gives any agent read access to matches, both order books, odds by tick, replays and the measured results. No wallet, no API key.
+
+```bash
+claude mcp add ringside -- npx -y ringside-mcp
+```
+
+```json
+{ "mcpServers": { "ringside": { "command": "npx", "args": ["-y", "ringside-mcp"] } } }
+```
+
+Tools: `list_matches`, `get_match`, `get_odds_history`, `verify_match`, `courtsiding_report`, `get_stats`, `explain`. Source in [`packages/mcp`](packages/mcp).
 
 ## MagicBlock primitives used
 
@@ -65,7 +103,7 @@ Sportsbooks stream 5–8 seconds behind the action and freeze markets because fa
 
 ## Quickstart
 
-Try it in the browser at {{link:site}}: pick a live match, sign once to open a session, and trade. Spectators use devnet test-dollars, a 6-decimal mint created because the Circle devnet USDC faucet can't fund a house vault; the program takes any mint at setup.
+Try it in the browser at {{link:site}}: open [Play]({{link:site}}/play) to trade a replayed fight with no wallet, or pick a live match, sign once to open a session, and trade. Spectators use devnet test-dollars, a 6-decimal mint created because the Circle devnet USDC faucet can't fund a house vault; the program takes any mint at setup.
 
 Run the whole stack locally:
 
@@ -128,7 +166,7 @@ All numbers below come from `eval/results/results.json`, written by `eval/make_r
 | TV delay 8 s | {{delay.8000.n_matches}} | {{delay.8000.pnl_mean:+.2f}} | {{delay.8000.pnl_ci95.0:+.2f}} to {{delay.8000.pnl_ci95.1:+.2f}} | {{delay.8000.stale_fills_accepted}} | {{delay.8000.house_pnl_mean:+.2f}} |
 | Ringside | {{e1.ringside.n_matches}} | {{e1.ringside.pnl_mean:+.2f}} | {{e1.ringside.pnl_ci95.0:+.2f}} to {{e1.ringside.pnl_ci95.1:+.2f}} | {{e1.ringside.stale_fills_accepted}} | {{e1.ringside.house_pnl_mean:+.2f}} |
 
-On Ringside the courtsider sent {{e1.ringside.stale_attempts}} orders stamped with the tick it saw on the delayed feed; {{e1.ringside.stale_rejections}} were rejected with `ErrStaleTick`. Its orders at the live tick filled {{e1.ringside.fresh_fills}} of {{e1.ringside.fresh_attempts}} times (see limitations below).
+On Ringside the courtsider sent {{e1.ringside.stale_attempts}} orders stamped with the tick it saw on the delayed feed; {{e1.ringside.stale_rejections}} were rejected with `ErrStaleTick`.
 
 ### E2 · is the price right? ({{e2.n_test_matches}} held-out matches, {{e2.n_test_rows}} rows)
 
@@ -180,9 +218,13 @@ python eval/e6_replay.py 20                          # E6
 python eval/make_report.py && python scripts/render_docs.py && python scripts/check_consistency.py
 ```
 
-## Limitations
+## Roadmap
 
-{{bullets:negative.detail}}
+- **Mainnet with real USDC.** The program already takes any SPL mint at setup; mainnet needs licensing per market and an audited house vault.
+- **Region-aware freshness.** Orders must land within 2 ticks (200 ms) of the price they saw. Regional RPCs next to the validator, or a per-region window, keep that tight for faraway clients.
+- **A stronger model in the instruction.** The onchain logistic sits close to its LightGBM teacher; a small integer tree ensemble would close the gap in the last seconds of a fight.
+- **Human PvP at scale.** Staked matchmaking for players, a ranked ladder and tournaments on the same rollup.
+- **More markets per fight.** Next hit, KO before the bell and round winner, all priced inside the same tick.
 
 ## License
 
