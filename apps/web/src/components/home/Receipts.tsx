@@ -50,9 +50,11 @@ export function Receipts() {
               {links?.[s.k] && (
                 <a href={links[s.k]} target="_blank" rel="noreferrer" className="press num rounded-md bg-slate px-5 py-3 text-[13px] font-semibold text-chalk">OPEN ON THE EXPLORER ↗</a>
               )}
+              <span className="flex items-center gap-3">
               <span className="num text-[13px] text-ink-quiet">{String(i + 1).padStart(2, "0")} / {String(SLIDES.length).padStart(2, "0")}</span>
               <button onClick={() => go(-1)} className="press grid h-11 w-11 place-items-center rounded-full border border-slate/30 hover:bg-slate hover:text-chalk" aria-label="Previous receipt">←</button>
               <button onClick={() => go(1)} className="press grid h-11 w-11 place-items-center rounded-full border border-slate/30 hover:bg-slate hover:text-chalk" aria-label="Next receipt">→</button>
+              </span>
             </div>
           </div>
           <div className="rc-art relative aspect-[1.35] w-full" style={{ background: s.bg, clipPath: "polygon(0% 0%, 100% 50%, 100% 50%, 0% 100%)" }}>

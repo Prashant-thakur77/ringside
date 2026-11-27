@@ -57,7 +57,7 @@ export function Hero({ liveId }: { liveId?: string }) {
   useGSAP(
     () => {
       paint();
-      if (reduced()) return;
+      if (reduced()) return void gsap.set(root.current, { visibility: "visible" });
       const s = shape.current;
       // Load: each shard grows out of its own corner, then the clash.
       const from = { r: 0, b: 0 };
@@ -76,9 +76,9 @@ export function Hero({ liveId }: { liveId?: string }) {
         .from(".hero-cta > *, .hero-side", { y: 16, opacity: 0, duration: 0.6, stagger: 0.06 }, 0.7)
         .from(".hero-card", { scale: 0.86, opacity: 0, duration: 0.9 }, 0.5)
         .from(".hero-l", { yPercent: 100, duration: 1, stagger: 0.045 }, 0.55)
-        .to(".card-words", { opacity: 0, y: -10, duration: 0.4, ease: "power2.in" }, 2.4)
-        .fromTo(".card-line", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 2.2, ease: "power2.inOut" }, 2.6)
-        .from(".card-meta", { opacity: 0, duration: 0.4 }, 2.6);
+        .from(".card-meta", { opacity: 0, duration: 0.4 }, 1.2);
+      // Start states are applied by the from() tweens above; only now is the hero allowed to show.
+      gsap.set(root.current, { visibility: "visible" });
 
       // Pointer: the corners lean a few percent toward the pointer.
       const lean = { x: 0, y: 0 };
@@ -100,7 +100,7 @@ export function Hero({ liveId }: { liveId?: string }) {
       const mm = gsap.matchMedia();
       mm.add("(min-width: 900px)", () => {
         const card = root.current!.querySelector<HTMLElement>(".hero-card")!;
-        const st = gsap.timeline({ scrollTrigger: { trigger: ".hero-pin", start: "top top", end: "+=120%", scrub: 0.8, pin: true } });
+        const st = gsap.timeline({ scrollTrigger: { trigger: root.current, start: "top top", end: "+=120%", scrub: 0.8, pin: true } });
         st.to(card, {
           scale: () => Math.max(innerWidth / card.offsetWidth, innerHeight / card.offsetHeight) * 1.02,
           borderRadius: 0, ease: "power2.inOut", duration: 1,
@@ -116,6 +116,25 @@ export function Hero({ liveId }: { liveId?: string }) {
     },
     { scope: root, dependencies: [], revertOnUpdate: true },
   );
+  // The card says PRICE THE PUNCH, then (once the match data is here) the words leave and the line draws.
+  const born = useRef(Date.now());
+  useGSAP(
+    () => {
+      if (!d) return;
+      const line = root.current!.querySelector(".card-line");
+      if (reduced()) {
+        gsap.set(".card-words", { opacity: 0 });
+        gsap.set(line, { strokeDashoffset: 0 });
+        return;
+      }
+      const wait = Math.max(0, 2.2 - (Date.now() - born.current) / 1000);
+      gsap.timeline({ delay: wait })
+        .to(".card-words", { opacity: 0, y: -10, duration: 0.35, ease: "power2.in" })
+        .fromTo(line, { strokeDashoffset: 1, opacity: 1 }, { strokeDashoffset: 0, duration: 2.2, ease: "power2.inOut" }, 0.25);
+    },
+    { scope: root, dependencies: [d], revertOnUpdate: true },
+  );
+
   useEffect(() => {
     const r = () => {
       if (!gsap.isTweening(shape.current)) {
@@ -136,7 +155,7 @@ export function Hero({ liveId }: { liveId?: string }) {
   }, []);
 
   return (
-    <section ref={root} className="hero-pin relative min-h-[calc(100svh-84px)] overflow-hidden bg-slate md:h-[calc(100svh-84px)] md:min-h-[640px]" aria-labelledby="hero-title">
+    <section ref={root} className="hero-pin hero-hide relative min-h-[calc(100svh-84px)] overflow-hidden bg-slate md:h-[calc(100svh-84px)] md:min-h-[640px]" aria-labelledby="hero-title">
       <div className="shard-r absolute inset-0 bg-hue" style={{ clipPath: poly(RED) }} aria-hidden />
       <div className="shard-b absolute inset-0 bg-hue" style={{ clipPath: poly(BLUE) }} aria-hidden />
       <svg className="impact pointer-events-none absolute left-[63%] top-[35%] hidden md:block" width="90" height="90" viewBox="-45 -45 90 90" aria-hidden>
@@ -172,7 +191,7 @@ export function Hero({ liveId }: { liveId?: string }) {
               </div>
               <svg viewBox="0 0 460 250" className="absolute inset-0 h-full w-full" preserveAspectRatio="none" aria-label={gap ? `Odds line of devnet match ${gap.match_id}` : "Odds line"}>
                 <line x1="18" x2="442" y1="125" y2="125" stroke="rgba(243,238,228,.18)" strokeDasharray="4 6" />
-                {d && <path className="card-line" d={d} pathLength={1} strokeDasharray="1" fill="none" stroke="var(--color-chalk)" strokeWidth="3.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
+                {d && <path className="card-line" d={d} pathLength={1} strokeDasharray="1" strokeDashoffset="1" fill="none" stroke="var(--color-chalk)" strokeWidth="3.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
               </svg>
               <div className="pointer-events-none absolute inset-x-6 bottom-6 overflow-hidden">
                 <p className="bleed-title display translate-y-[120%] text-[clamp(28px,3.4vw,64px)] font-semibold text-chalk">Every punch moves the price</p>

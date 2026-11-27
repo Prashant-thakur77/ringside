@@ -2,7 +2,7 @@
 // Five stacked chapters. Each panel sticks and the next slides over it while the one beneath sinks back.
 // Every art card is drawn in code from the subject: the ring, the price curve, the freshness window,
 // the sealed ticket, the hash chain (real hashes from a devnet match).
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 import { gsap, useGSAP, reduced } from "@/lib/motion";
 import { useGap, useResults, fmt } from "@/lib/home-data";
 
@@ -48,12 +48,12 @@ function WindowArt() {
       <line x1="40" x2="360" y1="200" y2="200" stroke="#0b0c14" strokeWidth="3" />
       {Array.from({ length: 17 }, (_, i) => <line key={i} x1={40 + i * 20} x2={40 + i * 20} y1="190" y2={i % 5 === 0 ? "218" : "210"} stroke="#0b0c14" strokeWidth="2" />)}
       <rect x="282" y="150" width="58" height="100" fill="#d4572f" fillOpacity=".18" stroke="#d4572f" strokeWidth="2" />
-      <text x="282" y="140" fill="#a8401f" fontFamily="var(--font-plex-mono)" fontSize="13">window: 2 ticks</text>
+      <text x="340" y="140" textAnchor="end" fill="#a8401f" fontFamily="var(--font-plex-mono)" fontSize="13">window: 2 ticks</text>
       <line x1="340" x2="340" y1="120" y2="260" stroke="#d4572f" strokeWidth="3" />
-      <text x="300" y="280" fill="#0b0c14" fontFamily="var(--font-plex-mono)" fontSize="13">book tick</text>
+      <text x="340" y="276" textAnchor="end" fill="#0b0c14" fontFamily="var(--font-plex-mono)" fontSize="13">book tick</text>
       <line x1="120" x2="120" y1="150" y2="250" stroke="#f4845f" strokeWidth="3" strokeDasharray="6 5" />
       <text x="72" y="140" fill="#a8401f" fontFamily="var(--font-plex-mono)" fontSize="13">seen tick (TV)</text>
-      <g transform="translate(200 320) rotate(-8)"><rect x="-120" y="-24" width="240" height="48" fill="none" stroke="#a8401f" strokeWidth="4" /><text x="0" y="8" textAnchor="middle" fill="#a8401f" fontFamily="var(--font-plex-mono)" fontWeight="700" fontSize="20">REJECTED · STALE</text></g>
+      <g transform="translate(196 334) rotate(-6)"><rect x="-120" y="-24" width="240" height="48" fill="none" stroke="#a8401f" strokeWidth="4" /><text x="0" y="8" textAnchor="middle" fill="#a8401f" fontFamily="var(--font-plex-mono)" fontWeight="700" fontSize="20">REJECTED · STALE</text></g>
     </svg>
   );
 }
@@ -157,11 +157,12 @@ export function Chapters() {
 
   return (
     <section ref={root} aria-label="How Ringside works, in five rounds">
-      {ch.map((c) => (
-        <article key={c.n} className={`chapter relative min-h-[100svh] overflow-hidden md:sticky md:top-0 md:h-[100svh] ${c.bg} ${c.fg}`}>
+      {ch.map((c, k) => (
+        <Fragment key={c.n}>
+        <article className={`chapter relative min-h-[100svh] overflow-hidden md:sticky md:top-0 md:h-[100svh] ${c.bg} ${c.fg}`}>
           <div className="chapter-in mx-auto grid h-full max-w-[1440px] gap-6 px-4 pb-12 pt-20 md:grid-cols-[1.1fr_1fr] md:grid-rows-1 md:px-8">
             <div className="flex flex-col justify-between">
-              <h3 className="overflow-hidden pb-[.04em] pt-[.08em]"><span className="ch-rise display block text-[clamp(72px,11vw,180px)] font-semibold leading-[.9]">{c.t}</span></h3>
+              <h3 className="overflow-hidden pb-[.16em] pt-[.08em]"><span className="ch-rise display block text-[clamp(72px,11vw,180px)] font-semibold leading-[.9]">{c.t}</span></h3>
               <div className="grid gap-6 md:grid-cols-[auto_1fr] md:items-end md:gap-10">
                 <span className="num text-[clamp(64px,8vw,128px)] font-semibold leading-none opacity-35">{c.n}</span>
                 <div className="max-w-[46ch]">
@@ -175,6 +176,9 @@ export function Chapters() {
             </div>
           </div>
         </article>
+        {/* hold: the panel stays put for most of a viewport before the next one covers it */}
+        {k < ch.length - 1 && <div aria-hidden className="hidden h-[70vh] md:block" />}
+        </Fragment>
       ))}
     </section>
   );

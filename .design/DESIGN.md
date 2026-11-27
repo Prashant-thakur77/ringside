@@ -57,8 +57,9 @@ Header scorebug (live clock + tick freshness, pinned on every page) · lobby row
 3. Scrub a replay and press Verify: the hash chain re-computes in your browser.
 4. Fight: control a fighter (WASD / tap) against the AI.
 
-## 2026-11-27 · Vivid direction (owner's pick)
-The owner chose a vivid look built on a broadcast-poster structure: vermilion corner red #ff3d2e, electric corner blue #2f5bff, bell yellow #ffd23f, canvas paper #f3eee4, fight-night ink #0b0c14 / navy #121a4d. Token names stay (slate=ink, chalk=paper, brass=bell). Signature: the two corners' colour shards clash in the hero; the gap scrub; the stamped tickets. All contrast pairs pass 4.5:1 (.design/palette-check.mjs).
+## 2026-11-27 · Current direction (owner's pick): broadcast-poster structure, one hue
+Structure and motion follow the owner's chosen reference closely (marquee bar, hanging tabs, shard hero with a giant spaced wordmark, card that grows full-bleed, word-fill statement, stacked numbered chapters, chevron slider, giant numbers behind a ticket, ticket pile CTA, shard menu, dark footer with rising wordmark).
+Palette is one hue family plus neutrals: coral #f4845f (main surfaces, tabs), deep coral #d4572f (cards, accents on paper), oxblood #2b1611 (dark chapters), ink #0b0c14, paper #f3eee4, mint #c9f7e6 (marquee bar only), beige #e7d5bd (wordmark on ink). Corner red/blue appear only where they carry match data (arena, odds, fills). Type: Schibsted Grotesk (sentence case, tight tracking), Newsreader for large statements, IBM Plex Mono for numbers. All text pairs pass 4.5:1, large text 3:1 (.design/palette-check.mjs).
 
 ## Home page v2: the story page (dials CRAZINESS 7, MOTION 7, DENSITY 5, ART 6, PLAY 7, CALM 6)
 Stack: GSAP 3 (ScrollTrigger, SplitText) via `useGSAP`, Lenis smooth scroll synced to ScrollTrigger (off for reduced motion and coarse pointers). One ticker. Content is visible without JS: start states are set by script.

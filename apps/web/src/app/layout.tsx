@@ -18,6 +18,9 @@ export const viewport: Viewport = { themeColor: "#0b0c14", width: "device-width"
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${mono.variable} ${serif.variable}`}>
+      <head>
+        <noscript><style>{`.hero-hide{visibility:visible!important}`}</style></noscript>
+      </head>
       <body id="top">
         <Providers>
           <Scorebug />

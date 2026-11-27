@@ -160,7 +160,16 @@ export default function Docs() {
           <P>Every account a trade or a tick writes is delegated to the same TEE validator, because only accounts on one validator can change together in one rollup transaction, and privacy needs the TEE.</P>
 
           <H2 id="magicblock">MagicBlock primitives</H2>
-          <div className="mt-6 overflow-x-auto">
+          <dl className="mt-6 divide-y divide-slate/15 border-y border-slate/15 md:hidden">
+            {PRIMS.map(([k, a, b]) => (
+              <div key={k} className="py-4">
+                <dt className="font-semibold">{k}</dt>
+                <dd className="mt-1 text-[15px] leading-relaxed">{a}</dd>
+                <dd className="mt-1 text-[15px] leading-relaxed text-slate/65">Without it: {b}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="mt-6 hidden overflow-x-auto md:block">
             <table className="w-full min-w-[640px] text-left text-[15px]">
               <thead><tr className="num border-b-2 border-slate text-[12px]"><th className="py-2 pr-4">PRIMITIVE</th><th className="pr-4">WHAT IT DOES HERE</th><th>WITHOUT IT</th></tr></thead>
               <tbody>

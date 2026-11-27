@@ -72,7 +72,7 @@ export function Card() {
                     <span className={r.winner === 2 ? "text-blue-ink" : "text-chalk-quiet"}>{labelFor(r.fighters[1])}</span>
                   </span>
                   <span className="flex items-baseline gap-4">
-                    <span className="num text-[12px] text-chalk-quiet">{r.winner === 3 ? "DRAW" : `${r.winner === 1 ? "RED" : "BLUE"} · T${r.tick}`}</span>
+                    <span className="num text-[12px] text-chalk-quiet">#{String(r.match_id).slice(-4)} · {r.winner === 3 ? "DRAW" : `${r.winner === 1 ? "RED" : "BLUE"} · T${r.tick}`}</span>
                     <Link href={`/replay/${r.match_id}`} className="num text-sm text-hue hover:underline">Replay + verify →</Link>
                   </span>
                 </li>

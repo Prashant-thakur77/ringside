@@ -24,7 +24,7 @@ export function Waitlist() {
         <div>
           <p className="num text-[12px] text-slate/75">MAINNET WAITLIST</p>
           <h2 id="wl-title" className="display mt-3 text-[clamp(48px,7vw,112px)] font-semibold">
-            Live on devnet.<br /><span className="text-slate/45">Mainnet is next.</span>
+            Live on devnet.<br /><span className="text-hue-dark">Mainnet is next.</span>
           </h2>
           <p className="mt-6 max-w-[48ch] text-[17px] leading-relaxed text-slate/85">
             Every match today runs on Solana devnet with test-dollars. Leave your email and we&apos;ll write once, when real-stake bouts open.

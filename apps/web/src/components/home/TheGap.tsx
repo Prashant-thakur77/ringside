@@ -19,7 +19,7 @@ function Price({ v, tone }: { v: number; tone: "red" | "blue" }) {
   return (
     <span className="num inline-flex gap-[3px]">
       {s.split("").map((c, i) => (
-        <span key={i} className={`flap h-[1.25em] w-[.78em] text-[clamp(28px,3.4vw,52px)] ${tone === "red" ? "text-hue" : "text-beige"}`}>
+        <span key={i} className={`flap h-[1.25em] w-[.78em] text-[clamp(20px,3.4vw,52px)] ${tone === "red" ? "text-hue" : "text-beige"}`}>
           <span key={c} className="changed">{c}</span>
         </span>
       ))}
@@ -35,6 +35,7 @@ export function TheGap() {
   const hit = gap?.hit_tick ?? 0;
   const t0 = hit - 12, t1 = hit + 58;
   const shot = hit + 3; // the courtsider reacts 3 ticks after seeing the hit at the venue
+  const stampAt = shot + 6; // the books answer: shown with step 04
 
   useGSAP(
     () => {
@@ -70,7 +71,7 @@ export function TheGap() {
 
   return (
     <section
-      id="gap" ref={root} className="relative h-[460vh] bg-slate text-chalk" aria-labelledby="gap-title"
+      id="gap" ref={root} className="relative h-[280vh] bg-slate text-chalk md:h-[300vh]" aria-labelledby="gap-title"
       onKeyDown={(e) => { if (e.key === "ArrowRight") step(1); if (e.key === "ArrowLeft") step(-1); }}
     >
       <div className="sticky top-0 flex h-[100svh] flex-col px-3 pb-4 pt-14 md:px-8 md:pb-6 md:pt-16">
@@ -85,13 +86,13 @@ export function TheGap() {
           </div>
         </div>
 
-        <div className="mx-auto mt-3 grid w-full max-w-[1400px] flex-1 content-start gap-2 md:mt-6 md:grid-cols-2 md:content-stretch md:gap-4">
-          <p className="text-[14px] leading-snug text-chalk md:hidden" aria-live="polite"><span className="num text-hue">{String(phase + 1).padStart(2, "0")}</span> {captions[phase]}</p>
+        <div className="mx-auto mt-3 grid w-full max-w-[1400px] grid-cols-2 content-start gap-2 md:mt-6 md:gap-4">
+          <p className="col-span-2 text-[14px] leading-snug text-chalk md:hidden" aria-live="polite"><span className="num text-hue">{String(phase + 1).padStart(2, "0")}</span> {captions[phase]}</p>
           {/* the venue */}
           <div className={`relative overflow-hidden rounded-2xl p-4 transition-colors duration-200 md:p-5 ${T >= hit && T < hit + 4 ? "bg-hue text-slate" : "bg-slate-2"}`}>
-            <p className="num text-[12px] opacity-80">AT THE VENUE · ON RINGSIDE</p>
-            <p className="num mt-1 text-[clamp(22px,2.6vw,36px)] font-semibold">{clock(T)} · TICK {pad(T)}</p>
-            <p className="display mt-1 text-[clamp(20px,2.4vw,34px)] font-semibold md:mt-3">{T >= hit ? "Red landed the hit" : "Exchanging jabs"}</p>
+            <p className="num text-[10px] opacity-80 md:text-[12px]">AT THE VENUE · ON RINGSIDE</p>
+            <p className="num mt-1 text-[clamp(13px,2.6vw,36px)] font-semibold">{clock(T)} · TICK {pad(T)}</p>
+            <p className="display mt-1 text-[clamp(15px,2.4vw,34px)] font-semibold md:mt-3">{T >= hit ? "Red landed the hit" : "Exchanging jabs"}</p>
             <div className="mt-2 flex items-end justify-between gap-4 md:mt-4">
               <div>
                 <p className="num text-[11px] opacity-80">RINGSIDE BOOK · RED</p>
@@ -102,9 +103,9 @@ export function TheGap() {
           </div>
           {/* the broadcast */}
           <div className="relative overflow-hidden rounded-2xl bg-hue-dark p-4 md:p-5">
-            <p className="num text-[12px] text-chalk-quiet">ON TV · 5 S BEHIND</p>
-            <p className="num mt-1 text-[clamp(22px,2.6vw,36px)] font-semibold">{clock(Math.max(0, tv))} · TICK {pad(tv)}</p>
-            <p className="display mt-1 text-[clamp(20px,2.4vw,34px)] font-semibold md:mt-3">{tv >= hit ? "Red landed the hit" : "Exchanging jabs"}</p>
+            <p className="num text-[10px] text-chalk-quiet md:text-[12px]">ON TV · 5 S BEHIND</p>
+            <p className="num mt-1 text-[clamp(13px,2.6vw,36px)] font-semibold">{clock(Math.max(0, tv))} · TICK {pad(tv)}</p>
+            <p className="display mt-1 text-[clamp(15px,2.4vw,34px)] font-semibold md:mt-3">{tv >= hit ? "Red landed the hit" : "Exchanging jabs"}</p>
             <div className="mt-2 flex items-end justify-between gap-4 md:mt-4">
               <div>
                 <p className="num text-[11px] text-chalk-quiet">TV-DELAY BOOK · RED</p>
@@ -114,18 +115,18 @@ export function TheGap() {
             </div>
           </div>
           {/* the two tickets */}
-          <div className="grid grid-cols-2 gap-2 md:col-span-2 md:grid-cols-[1fr_1fr_1.1fr] md:gap-4">
+          <div className="col-span-2 grid grid-cols-2 gap-2 md:grid-cols-[1fr_1fr_1.1fr] md:gap-4">
             <div className={`ticket relative rounded-2xl p-3 transition-opacity md:p-5 duration-300 ${T >= shot ? "opacity-100" : "opacity-25"}`}>
               <p className="num text-[11px] text-ink-quiet">ORDER · TV-DELAY BOOK</p>
               <p className="num mt-1 text-[12px] md:text-[15px]">BUY RED × 3 @ {paid.toFixed(3)} · seen tick {shotSeen}</p>
-              {T >= shot && <span key="f" className="stamp-lg mt-3 text-[12px] text-stamp-blue md:mt-4 md:text-base" style={{ animation: "stamp 280ms var(--ease-snap)" }}>FILLED</span>}
-              {T >= shot && <p className="num mt-3 text-[12px] text-ink-quiet">worth {worth.toFixed(3)} a share at tick {shot}: +{(worth - paid).toFixed(3)} edge</p>}
+              {T >= stampAt && <span key="f" className="stamp-lg mt-3 text-[12px] text-stamp-blue md:mt-4 md:text-base" style={{ animation: "stamp 280ms var(--ease-snap)" }}>FILLED</span>}
+              {T >= stampAt && <p className="num mt-3 text-[12px] text-ink-quiet">worth {worth.toFixed(3)} a share at tick {shot}: +{(worth - paid).toFixed(3)} edge</p>}
             </div>
             <div className={`ticket relative rounded-2xl p-3 transition-opacity md:p-5 duration-300 ${T >= shot ? "opacity-100" : "opacity-25"}`}>
               <p className="num text-[11px] text-ink-quiet">ORDER · RINGSIDE BOOK</p>
               <p className="num mt-1 text-[12px] md:text-[15px]">BUY RED × 3 @ {paid.toFixed(3)} · seen tick {shotSeen}</p>
-              {T >= shot && <span key="r" className="stamp-lg mt-3 text-[12px] text-stamp-red md:mt-4 md:text-base" style={{ animation: "stamp 280ms var(--ease-snap)" }}>REJECTED · STALE TICK</span>}
-              {T >= shot && <p className="num mt-3 text-[12px] text-ink-quiet">book at tick {shot}: {shot - shotSeen} ticks behind, limit {STALE_TICKS}</p>}
+              {T >= stampAt && <span key="r" className="stamp-lg mt-3 text-[12px] text-stamp-red md:mt-4 md:text-base" style={{ animation: "stamp 280ms var(--ease-snap)" }}>REJECTED · STALE TICK</span>}
+              {T >= stampAt && <p className="num mt-3 text-[12px] text-ink-quiet">book at tick {shot}: {shot - shotSeen} ticks behind, limit {STALE_TICKS}</p>}
             </div>
             <div className="hidden flex-col justify-between rounded-2xl border border-rule p-5 md:flex">
               <ol className="space-y-2">

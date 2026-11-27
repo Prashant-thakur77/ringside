@@ -41,7 +41,7 @@ export function TryIt() {
           <div className="num mt-1 flex max-w-[460px] justify-between text-[11px] text-chalk-quiet" aria-hidden>
             {DELAYS.map((d) => <span key={d}>{d / 1000}s</span>)}
           </div>
-          <button onClick={() => setSent((n) => n + 1)} disabled={!gap} className="press num mt-8 rounded-md bg-mint px-6 py-4 text-[14px] font-semibold text-slate disabled:opacity-50">
+          <button onClick={() => setSent((n) => n + 1)} disabled={!gap} className="press num mt-8 rounded-md bg-hue px-6 py-4 text-[14px] font-semibold text-slate disabled:opacity-50">
             SEND THE STALE ORDER
           </button>
         </div>
