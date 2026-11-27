@@ -202,7 +202,7 @@ Ticked only after the acceptance test passed and its output was pasted into docs
 - [x] P10.05 · README §5 MagicBlock usage table with what breaks without each primitive
 - [x] P10.06 · README §6 results E1–E7 + negative result + weakest case, held-out stated
 - [x] P10.07 · README §7 reproduce: one command per experiment
-- [x] P10.08 · README §8 closest projects paragraph
+- [x] P10.08 · README §8 closest projects paragraph — removed: the owner's rules exclude naming other projects (decisions.md)
 - [x] P10.09 · README §9 run locally / deploy
 - [x] P10.10 · `/docs` page diagram matches README
 - [x] P10.11 · docs/video.md script + shot list per plan §15
