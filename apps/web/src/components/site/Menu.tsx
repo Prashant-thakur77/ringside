@@ -26,9 +26,13 @@ export function Menu({ open, onClose, liveId }: { open: boolean; onClose: () => 
         .timeline({ paused: true, defaults: { ease: "expo.out" } })
         .set(root.current, { autoAlpha: 1 })
         .to(q(".dim"), { opacity: 1, duration: 0.4 }, 0)
-        .fromTo(q(".shard-deep"), { clipPath: CLOSED }, { clipPath: "polygon(0% 0%, 100% 8%, 100% 100%, 50% 100%)", duration: 0.9 }, 0)
-        .fromTo(q(".shard-main"), { clipPath: CLOSED }, { clipPath: "polygon(0% 6%, 100% 20%, 100% 100%, 64% 100%)", duration: 0.95 }, 0.06)
-        .from(q(".menu-link"), { yPercent: 115, duration: 0.75, stagger: 0.04 }, 0.24)
+        // the ray of light: a curved wedge fans out of the MENU corner and sweeps across like a searchlight
+        .fromTo(q(".beam"), { scale: 0.08, rotate: -62, opacity: 1 }, { scale: 1, rotate: 4, duration: 0.85, ease: "power3.out" }, 0)
+        .fromTo(q(".beam-glow"), { scale: 0.1, rotate: -70, opacity: 0.9 }, { scale: 1.08, rotate: 10, opacity: 0, duration: 1.0, ease: "power2.out" }, 0.02)
+        .to(q(".beam"), { opacity: 0, duration: 0.45, ease: "power1.in" }, 0.75)
+        .fromTo(q(".shard-deep"), { clipPath: CLOSED }, { clipPath: "polygon(0% 0%, 100% 8%, 100% 100%, 50% 100%)", duration: 0.9 }, 0.22)
+        .fromTo(q(".shard-main"), { clipPath: CLOSED }, { clipPath: "polygon(0% 6%, 100% 20%, 100% 100%, 64% 100%)", duration: 0.95 }, 0.3)
+        .from(q(".menu-link"), { yPercent: 115, duration: 0.75, stagger: 0.04 }, 0.42)
         .from(q(".menu-num"), { opacity: 0, x: 10, duration: 0.4, stagger: 0.04 }, 0.4)
         .from(q(".menu-foot > *"), { opacity: 0, y: 12, duration: 0.45, stagger: 0.06 }, 0.5);
     },
@@ -42,7 +46,7 @@ export function Menu({ open, onClose, liveId }: { open: boolean; onClose: () => 
       if (reduced()) t.progress(1);
       else t.timeScale(1).play();
       document.documentElement.style.overflow = "hidden";
-      setTimeout(() => root.current?.querySelector<HTMLElement>(".menu-link")?.focus(), 80);
+      setTimeout(() => root.current?.querySelector<HTMLElement>(".menu-link")?.focus({ preventScroll: true }), 700);
     } else {
       if (reduced()) t.progress(0);
       else t.timeScale(1.8).reverse();
@@ -73,6 +77,12 @@ export function Menu({ open, onClose, liveId }: { open: boolean; onClose: () => 
       <div className="dim absolute inset-0 bg-slate/60 opacity-0" onClick={onClose} />
       <div className="shard shard-deep absolute inset-0 bg-hue-deep" onClick={onClose} />
       <div className="shard shard-main absolute inset-0 origin-top-left bg-hue" />
+      {/* quarter-circle sector anchored at the top-left corner, masked to a ~42° wedge: the beam */}
+      <div aria-hidden className="beam pointer-events-none absolute left-0 top-0 h-[170vmax] w-[170vmax] origin-top-left rounded-br-[100%] bg-hue"
+        style={{ maskImage: "conic-gradient(from 98deg at 0 0, #000 0deg 42deg, transparent 42deg)", WebkitMaskImage: "conic-gradient(from 98deg at 0 0, #000 0deg 42deg, transparent 42deg)" }} />
+      <div aria-hidden className="beam-glow pointer-events-none absolute left-0 top-0 h-[170vmax] w-[170vmax] origin-top-left rounded-br-[100%]"
+        style={{ background: "radial-gradient(circle at 0 0, rgba(255,236,220,.55), rgba(244,132,95,.25) 40%, transparent 70%)",
+          maskImage: "conic-gradient(from 92deg at 0 0, #000 0deg 54deg, transparent 54deg)", WebkitMaskImage: "conic-gradient(from 92deg at 0 0, #000 0deg 54deg, transparent 54deg)" }} />
       <nav className="absolute inset-0 flex flex-col items-end justify-end px-5 pb-10 pt-28 md:px-10 md:pb-12" aria-label="Menu links">
         <ul className="menu-list text-right">
           {links.map((l, i) => (
